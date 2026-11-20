@@ -202,7 +202,7 @@ impl TouchPad {
         let (c, r) = Button::Pause.circle();
         draw_circle(c.x, c.y, r * 1.5, Color::new(1.0, 1.0, 1.0, 0.18));
         draw_circle_lines(c.x, c.y, r * 1.5, 3.0, Color::new(1.0, 0.77, 0.16, 0.9));
-        centered("BACK", c.x, c.y + 6.0, 16.0, Color::new(1.0, 1.0, 1.0, 0.95));
+        centered("BACK", c.x, c.y + 8.0, 22.0, Color::new(1.0, 1.0, 1.0, 0.95));
     }
 
     /// Draw the controls in canvas coordinates (call with the game camera set).
@@ -219,7 +219,7 @@ impl TouchPad {
         draw_circle_lines(base.x, base.y, STICK_RADIUS, 3.0, Color::new(1.0, 0.77, 0.16, if active { 0.7 } else { 0.35 }));
         draw_circle(knob.x, knob.y, 36.0, Color::new(1.0, 0.77, 0.16, if active { 0.75 } else { 0.4 }));
         if !active {
-            centered("MOVE", STICK_HOME.x, STICK_HOME.y + STICK_RADIUS + 28.0, 18.0, Color::new(1.0, 1.0, 1.0, 0.45));
+            centered("MOVE", STICK_HOME.x, STICK_HOME.y + STICK_RADIUS + 30.0, 22.0, Color::new(1.0, 1.0, 1.0, 0.55));
         }
         for b in BUTTONS {
             let (c, r) = b.circle();
@@ -227,7 +227,8 @@ impl TouchPad {
             let fill = if b == Button::Fire { Color::new(0.95, 0.36, 0.33, if on { 0.7 } else { 0.38 }) } else { Color::new(1.0, 1.0, 1.0, if on { 0.32 } else { 0.14 }) };
             draw_circle(c.x, c.y, r, fill);
             draw_circle_lines(c.x, c.y, r, 3.0, Color::new(1.0, 1.0, 1.0, if on { 0.9 } else { 0.5 }));
-            let size = if b == Button::Fire { 26.0 } else if r < 45.0 { 16.0 } else { 20.0 };
+            // big enough to read when the whole canvas is shrunk onto a phone
+            let size = if b == Button::Fire { 34.0 } else if b == Button::Pause { 24.0 } else if r < 45.0 { 22.0 } else { 26.0 };
             centered(b.label(), c.x, c.y + size * 0.35, size, Color::new(1.0, 1.0, 1.0, 0.9));
         }
     }

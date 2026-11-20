@@ -1168,6 +1168,14 @@ pub fn prewarm_font_atlas() {
             font.populate_font_cache(chars, (f32::from(s) * dpi).ceil() as u16);
         }
     }
+    // The web build draws text at its canvas size and the camera stretches it
+    // onto the screen (1.2-2x on phones). Filter the glyphs smoothly so that
+    // stretch reads as soft, not blocky. (The atlas starts on a nearest filter.)
+    #[cfg(target_arch = "wasm32")]
+    {
+        let mut font = font;
+        font.set_filter(FilterMode::Linear);
+    }
 }
 
 pub fn centered(text: &str, cx: f32, y: f32, size: f32, col: Color) {

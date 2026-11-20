@@ -2303,9 +2303,18 @@ impl App {
         // one line at 24 px fits the short bubble; a longer hint (up to 150 chars) gets a
         // slightly taller bubble and a smaller size so it never runs into the help line at y 710
         let bx = 118.0;
-        let text_w = VW - 40.0 - bx - 36.0;
+        // on a touch screen's floor the joystick and buttons own the bottom: Hoot talks from the top,
+        // clear of the pause button
+        let top = self.touch.seen && self.touch_controls();
+        let right = if top { VW - 100.0 } else { VW - 40.0 };
+        let text_w = right - bx - 36.0;
         let one_line = wrap(&l.text, 24.0, text_w).len() <= 1;
-        let (y, h) = if one_line { (622.0 - lift, 68.0) } else { (612.0 - lift, 80.0) };
+        let (y, h) = match (top, one_line) {
+            (true, true) => (72.0, 68.0),
+            (true, false) => (72.0, 80.0),
+            (false, true) => (622.0 - lift, 68.0),
+            (false, false) => (612.0 - lift, 80.0),
+        };
         let px = 4.0;
         let ox = 40.0;
         let oy = y + h - 16.0 * px * pop + (self.t * 3.0).sin() * 2.0 * pop;
@@ -2314,7 +2323,7 @@ impl App {
         if pop < 1.0 {
             return;
         }
-        panel(bx, y, VW - 40.0 - bx, h, KSU_GOLD);
+        panel(bx, y, right - bx, h, KSU_GOLD);
         // the bubble's tail points at Hoot
         draw_triangle(vec2(bx + 2.0, y + 26.0), vec2(bx + 2.0, y + 44.0), vec2(bx - 12.0, y + 36.0), KSU_GOLD);
         let name = &self.ai_fx.data.owl_name;
@@ -2326,7 +2335,7 @@ impl App {
             let size = [21.0, 20.0, 18.0, 16.0].into_iter().find(|&sz| wrap(&l.text, sz, text_w).len() as f32 * sz * 1.15 <= h - 34.0).unwrap_or(16.0);
             text_typed(&l.text, l.shown as usize, bx + 18.0, y + 46.0, size, text_w, PAPER);
         }
-        draw_text(&l.tag, VW - 52.0 - l.tag_w, y + 22.0, 18.0, DIM);
+        draw_text(&l.tag, right - 12.0 - l.tag_w, y + 22.0, 18.0, DIM);
     }
 
     fn pick(&mut self, i: usize) {
@@ -3478,6 +3487,9 @@ fn frame_dt(raw: f32) -> f32 {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    // web: a panic prints its message to the browser console instead of a bare "unreachable"
+    #[cfg(target_arch = "wasm32")]
+    std::panic::set_hook(Box::new(|info| macroquad::miniquad::error!("{}", info)));
     let seed = (macroquad::miniquad::date::now() * 1000.0) as u64;
     // CC_SEED=n: the same floors every run (screenshots, play-tests)
     #[cfg(not(target_arch = "wasm32"))]
