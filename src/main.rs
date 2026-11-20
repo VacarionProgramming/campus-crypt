@@ -3460,7 +3460,9 @@ fn window_conf() -> Conf {
         window_title: "Campus Crypt".to_owned(),
         window_width: 1280,
         window_height: 720,
-        high_dpi: false,
+        // web: draw at the screen's real pixel density (3x on an iPhone), not CSS
+        // pixels the browser then stretches; native keeps its logical-size canvas
+        high_dpi: cfg!(target_arch = "wasm32"),
         sample_count: 1,
         ..Default::default()
     };
