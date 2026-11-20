@@ -1020,6 +1020,7 @@ impl App {
         shadow_centered("CAMPUS CRYPT", cx, title_y, title_size, KSU_GOLD);
         if view == TitleView::Main {
             centered("A dungeon crawler of scams, deadlines, and split-second choices.", cx, 218.0, 28.0, PAPER);
+            centered("by Deyanna Gladney & Rythm-Prince Ogburn", cx, 250.0, 20.0, DIM);
             // the student and the Keeper flank the menu
             let bob = (self.t * 2.0).sin() * 4.0;
             glow(cx - 372.0, 420.0, 140.0, Color::new(1.0, 0.6, 0.2, 1.0), 1.2);
@@ -2988,6 +2989,7 @@ fn automation() -> Auto {
         fight_seek: false,
         long_debrief: false,
         shot_events: false,
+        title_view: None,
         shots_taken: Vec::new(),
         shot_request: None,
         last: None,
