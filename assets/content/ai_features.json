@@ -1,0 +1,499 @@
+{
+  "owl_name": "Hoot",
+  "red_flags": {
+    "mismatched_sender": {
+      "label": "Sender doesn't match",
+      "tip": "Names and addresses are easy to fake. Look the office up yourself instead of replying."
+    },
+    "suspicious_link": {
+      "label": "Mystery link",
+      "tip": "Skip the message's link. Open the site you already know by typing it in yourself."
+    },
+    "urgency": {
+      "label": "Rush pressure",
+      "tip": "A countdown is there to stop you from checking. Slow down and verify first."
+    },
+    "upfront_fee": {
+      "label": "Pay or send money first",
+      "tip": "Real jobs, refunds, aid, and renters don't make you pay a fee or send money back first."
+    },
+    "credential_request": {
+      "label": "Asks for your login",
+      "tip": "No real office asks for your password, code, or bank details in a message. Never send them."
+    },
+    "too_good_pay": {
+      "label": "Too good to be true",
+      "tip": "Huge pay or a too-cheap deal is the bait. Check it through a source you find yourself."
+    },
+    "gift_cards": {
+      "label": "Gift card payment",
+      "tip": "Anyone who wants to be paid in gift cards is running a scam. That request alone means stop."
+    },
+    "secrecy": {
+      "label": "Keep it secret",
+      "tip": "Being told not to ask anyone is a warning sign. Ask someone you trust."
+    }
+  },
+  "scam_templates": [
+    {
+      "id": "aid_refund_email",
+      "channel": "email",
+      "sender_name": "Campus Aid Refund Desk",
+      "fake_address": "finaid-ksu-owls@freemail.example",
+      "subject": "Action needed: your aid refund is on hold",
+      "topic": "a financial aid refund that is supposedly frozen until the student confirms their account",
+      "sign_off": "- Aid Refund Desk",
+      "flags": [
+        "mismatched_sender",
+        "suspicious_link",
+        "urgency",
+        "credential_request",
+        "upfront_fee"
+      ],
+      "flag_lines": {
+        "urgency": "Act today, or your refund will be cancelled for the whole term.",
+        "credential_request": "Reply with your NetID password so we can confirm it is really you.",
+        "upfront_fee": "A small processing fee of 25 dollars releases the funds."
+      },
+      "bodies": [
+        "Hi Owl, our records show your semester refund is stuck in review. We just need you to confirm a few details before we can release it to you.",
+        "Good news, Owl! A refund is waiting with your name on it, but our system flagged your account. Please confirm your details so the money can move."
+      ]
+    },
+    {
+      "id": "remote_internship_dm",
+      "channel": "dm",
+      "sender_name": "Talent Partner, Owl Opportunities",
+      "fake_address": "careers-ksu-owls@freemail.example",
+      "subject": "Remote internship offer, just for you!",
+      "topic": "a surprise remote internship offer for a student who never applied",
+      "sign_off": "- Your Talent Partner",
+      "flags": [
+        "mismatched_sender",
+        "too_good_pay",
+        "upfront_fee",
+        "urgency",
+        "secrecy"
+      ],
+      "flag_lines": {
+        "too_good_pay": "The role pays 60 dollars per hour for a few easy shifts a week.",
+        "upfront_fee": "You just need to pay a 90 dollar equipment fee before your start date.",
+        "urgency": "This offer expires tonight, so confirm today.",
+        "secrecy": "Please keep this between us until onboarding is done."
+      },
+      "bodies": [
+        "Hey there! I found your profile and you are exactly what our team needs. You have been selected for a flexible remote internship on our team.",
+        "Congrats, future intern! Our client loved your profile and wants you on the team. The work is easy and you can do it from your dorm."
+      ]
+    },
+    {
+      "id": "professor_gift_card_email",
+      "channel": "email",
+      "sender_name": "Your Professor (personal account)",
+      "fake_address": "prof-ksu-owls@freemail.example",
+      "subject": "Quick favor before class?",
+      "topic": "a message pretending to be the student's professor, asking the student to BUY gift cards with their own money and send the codes as a favor (the student pays; the gift cards are never a reward or a prize)",
+      "sign_off": "- Sent from my phone",
+      "flags": [
+        "mismatched_sender",
+        "gift_cards",
+        "urgency",
+        "secrecy"
+      ],
+      "flag_lines": {
+        "gift_cards": "Can you pick up three gift cards and send me the codes? I will pay you back.",
+        "urgency": "I need this in the next hour, before my meeting starts.",
+        "secrecy": "Please don't mention this to the department, it is a surprise."
+      },
+      "bodies": [
+        "Hi, are you around? I am stuck in meetings all day and could really use your help with something small.",
+        "Hello, I hope your week is going well. I am away from my desk and need a quick favor from a student I can trust."
+      ]
+    },
+    {
+      "id": "parking_ticket_text",
+      "channel": "text",
+      "sender_name": "Campus Parking Notice",
+      "fake_address": "parking-ksu-owls@freemail.example",
+      "subject": "Unpaid parking citation",
+      "topic": "a text claiming the student owes a parking citation from the deck",
+      "sign_off": "- Parking Notice Center",
+      "flags": [
+        "suspicious_link",
+        "urgency",
+        "upfront_fee",
+        "credential_request"
+      ],
+      "flag_lines": {
+        "urgency": "Pay today or the fine doubles tomorrow morning.",
+        "upfront_fee": "Pay the 45 dollar citation now to keep your permit active.",
+        "credential_request": "Sign in with your student login to view the photo of your car."
+      },
+      "bodies": [
+        "Notice: a vehicle linked to your account received a citation in the parking deck. Your permit is now under review.",
+        "Alert: our cameras flagged your car in a restricted space this week. Your account shows an unpaid balance."
+      ]
+    },
+    {
+      "id": "textbook_deal_dm",
+      "channel": "dm",
+      "sender_name": "Book Swap Seller",
+      "fake_address": "books-ksu-owls@freemail.example",
+      "subject": "Your whole textbook list, super cheap",
+      "topic": "a seller offering every textbook for a class at an impossibly low price",
+      "sign_off": "- Book Swap",
+      "flags": [
+        "gift_cards",
+        "too_good_pay",
+        "urgency",
+        "secrecy"
+      ],
+      "flag_lines": {
+        "gift_cards": "I only take gift card codes, it is faster for me.",
+        "too_good_pay": "You get every book on your list for just 20 dollars total, brand new.",
+        "urgency": "Five other students want this bundle, so I need an answer in ten minutes.",
+        "secrecy": "Do not tell the campus store about this deal or they will shut it down."
+      },
+      "bodies": [
+        "Hey, saw you are in that big intro class this term. I have the whole book bundle and I am clearing it out fast.",
+        "Hi! I am graduating and selling my entire shelf of textbooks. Your class list matches mine exactly, lucky you."
+      ]
+    },
+    {
+      "id": "push_approval_text",
+      "channel": "text",
+      "sender_name": "Campus IT Help Desk",
+      "fake_address": "it-helpdesk-ksu@freemail.example",
+      "subject": "Account alert: deactivation notice",
+      "topic": "a text pretending to be the campus IT help desk, saying the student's account will be shut off unless they approve a sign-in prompt they did not start and text back the code from it",
+      "sign_off": "- IT Help Desk Team",
+      "flags": [
+        "credential_request",
+        "urgency"
+      ],
+      "flag_lines": {
+        "urgency": "Your account will be shut off tonight if we do not hear back.",
+        "credential_request": "Approve the next prompt on your phone and text us the verification code it shows."
+      },
+      "bodies": [
+        "Hello, this is the campus help desk. We noticed unusual activity on your student account and paused it while we take a look.",
+        "Hi Owl, our system flagged repeated access attempts on your account. We are standing by to restore it as soon as you respond."
+      ]
+    },
+    {
+      "id": "sublease_overpay_dm",
+      "channel": "dm",
+      "sender_name": "Future Subleaser",
+      "fake_address": "sublet-ksu-owls@freemail.example",
+      "subject": "Your sublease? I will take it!",
+      "topic": "a stranger who wants to sublease the student's apartment sight unseen, mails a check for more than the rent, and asks the student to send the extra back",
+      "sign_off": "- Your new subleaser",
+      "flags": [
+        "mismatched_sender",
+        "upfront_fee",
+        "urgency",
+        "secrecy"
+      ],
+      "flag_lines": {
+        "upfront_fee": "I mailed a check for extra, so please deposit it and send money back for the difference.",
+        "urgency": "My movers need the difference by midnight, so please hurry.",
+        "secrecy": "Please keep this between us, my landlord gets fussy about subleases."
+      },
+      "bodies": [
+        "Hi! I saw your sublease post and I love the place, no tour needed. I am moving near campus for spring and it sounds perfect.",
+        "Hello! I am a transfer student and your sublease is exactly what I need. I trust you completely, so I would like to lock it in sight unseen."
+      ]
+    },
+    {
+      "id": "scholarship_email",
+      "channel": "email",
+      "sender_name": "Owl Scholars Award Committee",
+      "fake_address": "awards-ksu-owls@freemail.example",
+      "subject": "Congratulations, you have been selected!",
+      "topic": "a surprise scholarship the student never applied for, which can only be claimed by paying a charge or sending personal details",
+      "sign_off": "- Award Committee",
+      "flags": [
+        "mismatched_sender",
+        "suspicious_link",
+        "upfront_fee",
+        "credential_request",
+        "urgency",
+        "too_good_pay"
+      ],
+      "flag_lines": {
+        "upfront_fee": "To release the award, pay a small processing fee with your debit card.",
+        "credential_request": "Reply with your student ID and bank details so we can send the award.",
+        "urgency": "This award expires at the end of the day unless you claim it.",
+        "too_good_pay": "It covers your tuition for the year, with no essay and no experience needed."
+      },
+      "bodies": [
+        "Dear Owl, out of many students, you were chosen for a special award honoring campus spirit. Our committee was thrilled by your record.",
+        "Hello scholar, your name came up in our review of promising students this term. We are delighted to share some exciting award news."
+      ]
+    },
+    {
+      "id": "ticket_resale_dm",
+      "channel": "dm",
+      "sender_name": "Game Day Ticket Seller",
+      "fake_address": "tix-ksu-owls@freemail.example",
+      "subject": "Sold-out game tickets, still available",
+      "topic": "a stranger reselling tickets to a sold-out campus game who wants to be paid by gift card or a deposit before handing anything over",
+      "sign_off": "- Ticket guy",
+      "flags": [
+        "gift_cards",
+        "too_good_pay",
+        "urgency",
+        "secrecy",
+        "upfront_fee"
+      ],
+      "flag_lines": {
+        "gift_cards": "Pay me with gift cards and text me the codes, then the seats are yours.",
+        "too_good_pay": "Front-row seats for just 30 dollars, a total steal.",
+        "urgency": "Lots of people want them, so I need an answer in the next hour.",
+        "secrecy": "Keep it quiet, the box office does not like resales.",
+        "upfront_fee": "Send a deposit first to hold them, and I will bring the tickets to campus."
+      },
+      "bodies": [
+        "Hey Owl! I have seats for the big sold-out game and I cannot go anymore. Figured a fellow student should get them instead of a stranger.",
+        "Hi there, my plans changed and I am stuck with tickets for the sold-out show on campus. Happy to pass them along to another student."
+      ]
+    }
+  ],
+  "safe_messages": [
+    {
+      "id": "registrar_reminder",
+      "channel": "email",
+      "sender": "Office of the Registrar <registrar@ksu.example>",
+      "subject": "Reminder: registration window opens next week",
+      "body": "Your registration window for next term opens next Monday. You can review your time ticket in the student portal you normally use. Questions? Visit the Registrar's office in person or call the number on the official KSU website.",
+      "tells": [
+        "Matches dates the school already posts",
+        "Gives you a week, not a countdown",
+        "Tells you to use the portal you already know"
+      ]
+    },
+    {
+      "id": "advisor_meeting",
+      "channel": "email",
+      "sender": "Your Academic Advisor <advising@ksu.example>",
+      "subject": "Advising appointments are open",
+      "body": "Advising appointments for next term are now open. Book a slot through the advising scheduler on the KSU website when it works for you. Bring your degree audit and any questions about your plan.",
+      "tells": [
+        "Expected news: advising opens every term",
+        "No money, codes, or logins requested",
+        "You book through a site you find yourself"
+      ]
+    },
+    {
+      "id": "career_fair",
+      "channel": "email",
+      "sender": "Career Planning <careers@ksu.example>",
+      "subject": "Career fair this Thursday in the student center",
+      "body": "Employers will be in the student center this Thursday afternoon. Bring a few copies of your resume and stop by any booth that interests you. There is no cost to attend and no sign-up is required.",
+      "tells": [
+        "An event you can check on the campus calendar",
+        "In-person event, no fees",
+        "Nobody asks for private details"
+      ]
+    },
+    {
+      "id": "library_hold",
+      "channel": "text",
+      "sender": "Campus Library (text alerts)",
+      "subject": "Your hold is ready",
+      "body": "The book you placed on hold is ready at the front desk. It will stay on the hold shelf for seven days. Bring your student ID card to pick it up.",
+      "tells": [
+        "Matches something you actually asked for",
+        "A calm seven-day window",
+        "Asks you to come in, not to send anything"
+      ]
+    },
+    {
+      "id": "parking_permit_reminder",
+      "channel": "email",
+      "sender": "Campus Parking Office <parking@ksu.example>",
+      "subject": "Spring parking permits go on sale next month",
+      "body": "Spring parking permits go on sale next month. Look for the permit page on the campus parking site you normally use, or stop by the parking office in person. Nothing is needed from you yet.",
+      "tells": [
+        "Lets you stop by the office in person",
+        "No link, no countdown, nothing owed",
+        "Points you to a site you already use"
+      ]
+    },
+    {
+      "id": "shuttle_schedule",
+      "channel": "text",
+      "sender": "Campus Shuttle (text alerts)",
+      "subject": "Finals week shuttle schedule",
+      "body": "Finals week shuttle times between the Kennesaw and Marietta campuses are posted on the campus transportation page. Plan a little extra travel time on exam days. No reply is needed.",
+      "tells": [
+        "Alerts you signed up for yourself",
+        "Shares info and asks for nothing",
+        "Sends you to a page you can find yourself"
+      ]
+    },
+    {
+      "id": "it_maintenance",
+      "channel": "email",
+      "sender": "Campus IT Help Desk <helpdesk@ksu.example>",
+      "subject": "Planned maintenance this weekend",
+      "body": "Campus email and the student portal will have planned maintenance early Sunday morning. You do not need to do anything. If something looks odd afterward, contact the help desk using the number on the official campus website.",
+      "tells": [
+        "A plain notice with no pressure or deadline",
+        "Asks you to do nothing at all",
+        "Says to use contact info you look up yourself"
+      ]
+    }
+  ],
+  "keeper_taunts": {
+    "default": [
+      "So, you met my floor's trickster and lived. Let us see what you remember.",
+      "Every Owl thinks they spotted the trap. Few can explain it to me.",
+      "The stairs are behind me, scholar. First, a question about your last choice."
+    ],
+    "inbox_mimic": [
+      "That chest with envelope teeth still chatters up there. Let us see what you remember about it.",
+      "The Mimic loves a shiny seal and a ticking clock. Tell me what you made of its treasure.",
+      "Treasure that arrives by email tends to bite. I have a question about yours."
+    ],
+    "deadline_wraith": [
+      "The Wraith's paper pile still rustles behind you. I wonder what you did with it.",
+      "Every due date shouted at once up there. Down here, only my question speaks.",
+      "Ah, the stack of syllabi that hums all night. Let us talk about how you faced it."
+    ],
+    "password_hydra": [
+      "One key, many heads, endless bickering. Let us see what you did about that key ring.",
+      "I hear hissing from the vault behind you. Tell me how you handled all those doors.",
+      "The Hydra's heads are still arguing over a passphrase. My question is about yours."
+    ],
+    "internship_impostor": [
+      "A dream job, a shiny check, and a borrowed cloak. I have questions, recruit.",
+      "The Impostor's clipboard is still squeaking somewhere. Let us discuss that offer.",
+      "Smooth talk, quick start, strange payroll. My question is about how you handled it."
+    ],
+    "ticket_troll": [
+      "The Troll's paper tickets still flutter down the ramp. Let us see what you made of that text.",
+      "A fine that shows up by text with a ticking clock. I am curious what you did next.",
+      "Under the parking deck, the Troll counts its tickets. Tell me about yours."
+    ],
+    "commute_chimera": [
+      "A car head, a bus head, and a stopwatch head, all hungry for your schedule. Let us talk.",
+      "Kennesaw in the morning, Marietta by lunch. I want to hear about that trip.",
+      "The Chimera purrs whenever a trip goes unplanned. My question is about your day."
+    ],
+    "gift_card_gargoyle": [
+      "Half-price books and a very strange way to pay. Tell me what you made of it.",
+      "The Gargoyle's tower of textbooks wobbles behind you. I have a question about that deal.",
+      "Stone wings, cheap books, payment in plastic. Let us see what you remember."
+    ],
+    "push_poltergeist": [
+      "Buzz, buzz, approve? The Poltergeist hopes you are sleepy. I hope you are awake.",
+      "Pop-ups rattling at night are this floor's favorite trick. Let us talk about them.",
+      "Your phone kept buzzing up there, Owl. My question is about that late-night alert."
+    ],
+    "overpay_ogre": [
+      "A check far too big and an oops far too quick. I have a question for you, scholar.",
+      "The Ogre still waves that oversized check around. Let us see what you did with it.",
+      "Sublease deals with movers in a hurry are this floor's specialty. Tell me what you recall."
+    ],
+    "cram_lich": [
+      "Finals week rattles even my old bones. Let us see what you did with the Lich's bargain.",
+      "Flashcards, energy drinks, and no sleep. The Lich throws quite a party. My question awaits.",
+      "The library lights burn late on this floor. Tell me how you handled finals week."
+    ]
+  },
+  "owl_hints": {
+    "default": [
+      "Hoo, take a breath. Who really sent this, and how could you check without replying?",
+      "Hoo! Look for pressure, a strange sender, or a request for money or logins.",
+      "Hoo, ask yourself what an official office would actually ask you to do."
+    ],
+    "inbox_mimic": [
+      "Hoo, did you ask for this message, or did it just show up wanting your login?",
+      "Hoo, would a real aid office ever need your password in a reply?"
+    ],
+    "deadline_wraith": [
+      "Hoo, everything looks due right now. Which one is actually due first?",
+      "Hoo, does that big pile look smaller once you cut it into little pieces?"
+    ],
+    "password_hydra": [
+      "Hoo, if one key leaks, how many of your doors does it open?",
+      "Hoo, how could you keep a different key for every door without memorizing them all?"
+    ],
+    "internship_impostor": [
+      "Hoo, why would a real employer want your bank details before you even start?",
+      "Hoo, did you ever apply for this job? Who could tell you if the company is real?"
+    ],
+    "ticket_troll": [
+      "Hoo, would a real parking office send a pay link with a countdown in a text?",
+      "Hoo, did you ask for this text, or did a pay link just show up on its own?"
+    ],
+    "commute_chimera": [
+      "Hoo, how long does the trip between campuses really take at lunchtime?",
+      "Hoo, where would you park, and how much wiggle room does your day have?"
+    ],
+    "gift_card_gargoyle": [
+      "Hoo, why would an honest seller only take one odd way to pay, and only right now?",
+      "Hoo, is there somewhere on campus where this book might already be waiting?"
+    ],
+    "push_poltergeist": [
+      "Hoo, did you start that sign-in? If not, who did, and who should know?",
+      "Hoo, would a real help desk text you to tap yes just to stop the buzzing?"
+    ],
+    "overpay_ogre": [
+      "Hoo, why would someone overpay and then ask you to send the extra back fast?",
+      "Hoo, if that check bounces later, whose money did you send away?"
+    ],
+    "cram_lich": [
+      "Hoo, finals are stacked close together. Is a sleepless night really the plan?",
+      "Hoo, where do sleep and meals fit on your calendar this week?"
+    ]
+  },
+  "tier_lines": {
+    "up_standard": [
+      "The crypt stops going easy on you. The torches burn a little brighter.",
+      "Dust swirls and the torches flare. The crypt has decided you are ready for more."
+    ],
+    "up_sharp": [
+      "The crypt notices your sharp eyes and sends its sneakier tricks.",
+      "Cobwebs twitch as you walk by. The crypt saves its trickier traps for Owls like you."
+    ],
+    "up_expert": [
+      "The crypt senses you are getting cocky. Its oldest tricks are waking up.",
+      "Old bones rattle in the walls. The crypt digs out the tricks it saves for experts."
+    ],
+    "down_gentle": [
+      "The crypt eases off and lets you catch your breath. Steady now, Owl.",
+      "The torches dim to a cozy glow. The crypt gives you a moment to gather yourself."
+    ],
+    "down_standard": [
+      "The crypt loosens its grip a little. Take your time on the next floor.",
+      "The echoes quiet down. The crypt lets the next floor move at a calmer pace."
+    ],
+    "down_sharp": [
+      "The crypt backs off a step, but it is still watching you closely.",
+      "The crypt pulls back a pace, though its dusty eyes keep following you."
+    ]
+  },
+  "debrief": {
+    "intro_clean": "Clean run, Owl! Every trap in the crypt got a careful look from you.",
+    "intro_mistakes": "Here is your study guide, Owl. The crypt pulled some sneaky tricks this run.",
+    "intro_lost": "The crypt wore you down this time, Owl. Here is what to practice before the next descent.",
+    "line_choice": "Floor {floor}, {who}: you picked {choice}. {flag}",
+    "line_keeper": "Floor {floor}, the Keeper's tip: {tip}",
+    "line_spot": "Floor {floor}, spot the fake: the fake slipped by this time. Its giveaway: {flag}.",
+    "line_scam": "Floor {floor}, {who}: that message was a trap in disguise. Its giveaway: {flag}.",
+    "outro": [
+      "Next time a message rushes you, pause and check it through an official channel you look up yourself.",
+      "Keep that habit: slow down, check the sender, and never send a password or payment from a message."
+    ],
+    "lost_tips": [
+      "Take each message slowly: check who sent it, and look things up yourself.",
+      "When a message rushes you, treat that rush as your cue to stop and check."
+    ],
+    "clean_tips": [
+      "Keep checking senders and looking things up yourself, just like you did down here.",
+      "When a message rushes you, treat that rush as your cue to slow down."
+    ]
+  }
+}

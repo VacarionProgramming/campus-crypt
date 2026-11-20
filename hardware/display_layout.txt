@@ -1,0 +1,23 @@
+LT:W0:CAMPUS CRYPT
+LT:W1:waiting{dots}
+LT:M0:CAMPUS CRYPT
+LT:M1:Press Enter
+LT:P0:HP {hp}/{max} {bar}
+LT:P1:Kn{kn} F{fl}/{fls}
+LT:F0:* INBOX MIMIC *
+LT:F1:F{fl}/{fls} FIGHT
+LT:X0:HP {hp}/{max} {bar}
+LT:X1:PAUSE F{fl}/{fls}
+LT:D0:OVERWHELMED x_x
+LT:D1:F{fl}/{fls}
+LM:W:0
+LM:M:0
+LM:P:0
+LM:F:0
+LM:X:0
+LM:D:0
+LM:L:0
+LM:H:0
+LM:V:0
+LM:S:0
+LB:3

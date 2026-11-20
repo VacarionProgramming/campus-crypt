@@ -1,0 +1,50 @@
+[package]
+name = "campus_crypt"
+version = "0.1.0"
+edition = "2021"
+description = "Campus Crypt: a pixel-art dungeon crawler of scams, deadlines, and split-second choices"
+
+[dependencies]
+macroquad = { version = "0.4", default-features = false, features = ["audio"] }
+# encounters.json is parsed with serde (works on native and wasm)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Native-only extras:
+#  - serialport: optional USB link to the ELEGOO/Arduino controller (bonus)
+#  - ureq: optional HTTPS call to an OpenAI-compatible chat API for character lines
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+serialport = { version = "4", default-features = false, optional = true }
+ureq = { version = "2", default-features = false, features = ["tls", "json"], optional = true }
+#  - lewton: decodes the music tracks on a background thread, so a missing or
+#    broken file is caught there (quad-snd already depends on it natively and
+#    would panic on a bad file) and the main thread never waits on decoding
+lewton = "0.9"
+
+# hardware/tools/live.sh uses this to reach the Arduino display when the game isn't running
+[[bin]]
+name = "crypt_display"
+required-features = ["hardware"]
+
+[features]
+default = ["hardware", "ai"]
+hardware = ["dep:serialport"]
+ai = ["dep:ureq"]
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# Size-tuned variant for the web build, measured against release:
+#   cargo build --profile wasm-release --target wasm32-unknown-unknown
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+
+[profile.dev]
+opt-level = 1
+[profile.dev.package."*"]
+opt-level = 3

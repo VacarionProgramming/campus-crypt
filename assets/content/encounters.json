@@ -1,0 +1,898 @@
+{
+  "encounters": [
+    {
+      "id": "inbox_mimic",
+      "name": "The Inbox Mimic",
+      "room_intro": "Torchlight catches a mail alcove in the campus crypt. A chest with envelope-teeth rattles like a new alert, hugging a glowing scroll stamped URGENT TREASURE.",
+      "character": {
+        "name": "The Inbox Mimic",
+        "portrait_hint": "A grinning treasure chest with envelope teeth and a peeling fake Federal Student Aid seal."
+      },
+      "scenario": "URGENT, brave Owl! Your leftover Federal Student Aid grant of $3,450 expires at midnight. Reply with your StudentAid.gov password and tap this portal to claim your treasure now!\n\n- Office of Student Treasure\naid-office@ksu-grants-secure.net",
+      "choices": [
+        {
+          "id": "inspect_sender",
+          "label": "Inspect sender",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hey, quit squinting at my return address! My shiny seal was supposed to dazzle you, not get inspected. Ugh, back in the chest I go.",
+          "warning_signs": [
+            "The sender domain isn't studentaid.gov or kennesaw.edu.",
+            "It asks for your StudentAid.gov password. Federal Student Aid never will.",
+            "A grant that 'expires at midnight' is a pressure tactic, not a normal aid notice."
+          ],
+          "safer_next_move": "Open StudentAid.gov or official KSU channels yourself instead of using a link or address from the message.",
+          "keeper": {
+            "question": "You checked the sender: aid-office@ksu-grants-secure.net. What's your next move?",
+            "answer": "Go to StudentAid.gov or KSU yourself and report the message, without using its link.",
+            "wrong": [
+              "Reply with your password, since the email mentions KSU so it's probably fine.",
+              "Tap the portal link to see what it says, but only type your password if it looks official."
+            ]
+          }
+        },
+        {
+          "id": "click_link",
+          "label": "Click link",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Ooh, a click! My golden treasure trap works like a charm. Come closer, adventurer, I have so many more urgent surprises for you!",
+          "warning_signs": [
+            "Surprise aid portals are often look-alike sites built to steal logins.",
+            "Federal Student Aid will not ask you to confirm a password from a message.",
+            "Official mail comes from addresses like noreply@studentaid.gov, not look-alike domains."
+          ],
+          "safer_next_move": "If a link already got clicked, do not enter any passwords; go directly to StudentAid.gov, change yours if needed, and report the message.",
+          "keeper": {
+            "question": "You tapped the portal link and it asks for your StudentAid.gov password. What now?",
+            "answer": "Don't type it. Close the page, go to StudentAid.gov yourself, and report the message.",
+            "wrong": [
+              "Enter the password so the grant isn't lost, and change it some time next week.",
+              "Forward the link to your friends so they can claim their grants too."
+            ]
+          }
+        },
+        {
+          "id": "report_it",
+          "label": "Report it",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You reported me? Rude! My gold paint is flaking off and my perfectly good hoax is ruined. Fine, I will go sulk in the spam folder.",
+          "warning_signs": [
+            "A mismatched sender plus a password request is enough reason to report, not reply.",
+            "Urgency is there to keep you from checking through official channels.",
+            "Forwarding a phish helps KSU IT spot traps aimed at other Owls too."
+          ],
+          "safer_next_move": "Report the message with KSU's Phish Alert button or by forwarding it to abuse@kennesaw.edu, without clicking any links.",
+          "keeper": {
+            "question": "You reported it. A second message arrives: 'Last chance, reply now!' What do you do?",
+            "answer": "Report that one too, and check your aid only by going to StudentAid.gov yourself.",
+            "wrong": [
+              "Reply to ask if it's real, and include your student ID and birthday so they can look you up faster.",
+              "Open the new link right away, since getting a second notice means the message must be official."
+            ]
+          }
+        }
+      ],
+      "keeper": {
+        "question": "A message says your aid grant expires at midnight unless you reply with your password. What do you do?",
+        "answer": "Don't reply or click. Check your aid by going to StudentAid.gov yourself, and report the message.",
+        "wrong": [
+          "Reply with your password once, just so the aid office can confirm that the request really came from you.",
+          "Tap the portal link right away and claim the grant before it expires at midnight tonight."
+        ]
+      },
+      "keeper_box": {
+        "from": "KSU Student Aid <finaid@kenesaw.example>",
+        "subject": "Spring refund ready - review direct deposit by 5 PM",
+        "snippet": "Hi Owl, your spring refund has been approved. Before we release it, please review the direct deposit account on file. Reviews after 5 PM today move to the next disbursement cycle.",
+        "fine_print": "To keep access, confirm your login on the review page.",
+        "link": "https://kenesaw-aid.example/refund-review",
+        "question": "The Keeper drops one more message into your inbox. What's your move?",
+        "answer": "Open the aid portal on your own",
+        "wrong": [
+          "Hit Review before the 5 PM cutoff",
+          "Reply and ask them to confirm it"
+        ],
+        "warning": "The sender is kenesaw.example, one letter off, and the small print wants your login before a same-day cutoff."
+      }
+    },
+    {
+      "id": "deadline_wraith",
+      "name": "The Deadline Wraith",
+      "room_intro": "A lecture hall in the crypt echoes with ticking. A wraith stitched from stacked syllabi drifts over three due dates that all claim to be tonight.",
+      "character": {
+        "name": "The Deadline Wraith",
+        "portrait_hint": "A tattered hooded specter made of overlapping syllabi and glowing due-date stamps."
+      },
+      "scenario": "The Wraith fans out a midterm review, a lab report, and a group slide deck, each stamped DUE NOW. Your candles flicker. The pile waits to see whether you make a plan or let every task crash down at once.",
+      "choices": [
+        {
+          "id": "prioritize",
+          "label": "Prioritize",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Wait, you picked the most urgent task first? My whole pile went quiet. That is so unfair. I am drifting off to haunt a dusty shelf.",
+          "warning_signs": [
+            "When everything is stamped 'due now,' urgency is hiding the real order.",
+            "Starting the loudest task is not the same as starting the one that is due soonest."
+          ],
+          "safer_next_move": "List every deadline, then start with the work that is due soonest or that blocks other people.",
+          "keeper": {
+            "question": "You listed every deadline. Where do you start?",
+            "answer": "Start with the work due soonest, or the part your group is waiting on.",
+            "wrong": [
+              "Start with whatever is due last, since it feels the least stressful.",
+              "Start with none of them yet, and wait until you're in the perfect mood to work on everything."
+            ]
+          }
+        },
+        {
+          "id": "break_into_steps",
+          "label": "Break into steps",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hey, you chopped my big scary pile into tiny snack-size tasks! That is no fun at all. I am going to go sulk in the lost-and-found.",
+          "warning_signs": [
+            "A huge task looks impossible until it is cut into short, concrete actions.",
+            "Staring at the whole pile burns focus before any work begins."
+          ],
+          "safer_next_move": "Break the next assignment into a first 25-minute step you can actually finish today.",
+          "keeper": {
+            "question": "The lab report still feels too big to start. What's a good next step?",
+            "answer": "Pick one short first step you can finish today, and do it.",
+            "wrong": [
+              "Wait for a free weekend to do the whole report in one go.",
+              "Skip it and hope the deadline gets extended."
+            ]
+          }
+        },
+        {
+          "id": "postpone",
+          "label": "Postpone",
+          "outcome": "risky",
+          "effects": {
+            "health": -1,
+            "focus": -2,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Later, you say? Delightful! I will just stack these due dates a little higher while you nap. I love a good pile-up.",
+          "warning_signs": [
+            "Putting the whole pile off makes later hours harder, not lighter.",
+            "Avoidance likes to disguise itself as 'I'll start when I have more time.'"
+          ],
+          "safer_next_move": "Pick one small, scheduled start time today instead of waiting for a perfect open hour.",
+          "keeper": {
+            "question": "You put the whole pile off, and it's still there tomorrow. What now?",
+            "answer": "Pick one small start time today and begin with the task due soonest.",
+            "wrong": [
+              "Keep waiting for a perfect free afternoon, then try to do everything at once in a single sitting.",
+              "Stop checking the deadlines entirely so the pile stops stressing you out every time you look."
+            ]
+          }
+        }
+      ],
+      "keeper": {
+        "question": "Three assignments are all stamped DUE NOW. What's the best first move?",
+        "answer": "List every deadline, then start with what's due soonest or what your group is waiting on.",
+        "wrong": [
+          "Put all three off until you finally have a whole free weekend to do them all at once.",
+          "Skip the group deck, since your teammates can probably cover your part without you anyway."
+        ]
+      }
+    },
+    {
+      "id": "password_hydra",
+      "name": "The Password Hydra",
+      "room_intro": "A vault door blocks the hall, guarded by a hydra whose heads all chant the same worn passphrase. New heads sprout whenever that phrase is reused.",
+      "character": {
+        "name": "The Password Hydra",
+        "portrait_hint": "A many-headed lock-serpent; each head wears a recycled login glyph."
+      },
+      "scenario": "The Hydra offers a 'convenient' deal: one familiar password for email, campus portals, and a mystery internship site. 'Why remember more?' the heads chorus, already leaning toward your key ring.",
+      "choices": [
+        {
+          "id": "reuse_password",
+          "label": "Reuse password",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": 0,
+            "knowledge": 1
+          },
+          "fallback_reaction": "One key for every door? My heads are passing it around like a party snack. Thank you kindly, adventurer, we love sharing!",
+          "warning_signs": [
+            "A reused password lets one breach unlock your other accounts.",
+            "A 'convenient' shared passphrase is a master key for attackers."
+          ],
+          "safer_next_move": "Use a unique password on each account, starting with email and campus logins.",
+          "keeper": {
+            "question": "You used one password everywhere, and the internship site just got breached. What now?",
+            "answer": "Change it on the breached site first, then email and campus logins, each with its own.",
+            "wrong": [
+              "Keep using it everywhere, since a breach at one small internship site can't possibly reach your other accounts.",
+              "Add a 1 to the end of the old password and use that on every site instead."
+            ]
+          }
+        },
+        {
+          "id": "make_stronger",
+          "label": "Make stronger one",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Drat, that key is far too twisty for my teeth! But if you use it on every door, my other heads will come sniffing around your other doors.",
+          "warning_signs": [
+            "A long, odd passphrase is harder to guess than a short one.",
+            "One strong password reused everywhere is still a single point of failure."
+          ],
+          "safer_next_move": "Keep the stronger password unique to one account, at least 12 characters long, and consider a password manager so you do not have to memorize every one.",
+          "keeper": {
+            "question": "You made one long, strong password. Where should you use it?",
+            "answer": "On one account only. Give every other account its own, ideally in a password manager.",
+            "wrong": [
+              "On every account, since a strong password is safe to reuse.",
+              "On every account, and write it on a sticky note on your laptop lid so you never forget it."
+            ]
+          }
+        },
+        {
+          "id": "use_password_manager",
+          "label": "Use password manager",
+          "outcome": "safe",
+          "effects": {
+            "health": 1,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "A locked vault of unique keys? My heads are arguing over whose fault this is. Fine, fine, we give up and slink back to our puddle.",
+          "warning_signs": [
+            "Memorizing every unique password is how people slip back into reuse.",
+            "A reputable password manager can create and store a different password per site."
+          ],
+          "safer_next_move": "Set up a reputable password manager and let it generate a unique password for each of your accounts.",
+          "keeper": {
+            "question": "You set up a password manager. What's the next step?",
+            "answer": "Let it create a unique password for each account, starting with email and campus logins.",
+            "wrong": [
+              "Save one password in it and keep reusing that same password on every site you sign up for.",
+              "Use your birthday as the master password so it's easy to remember."
+            ]
+          }
+        }
+      ],
+      "keeper": {
+        "question": "The Hydra wants you to use one password for every account. What's the safer move?",
+        "answer": "Give each account its own password, starting with email and campus logins, ideally in a password manager.",
+        "wrong": [
+          "Use one familiar password on every account, so you never forget it and never get locked out of anything.",
+          "Use the same password on every site, but add the site's name to the end so it looks different."
+        ]
+      }
+    },
+    {
+      "id": "internship_impostor",
+      "name": "The Internship Impostor",
+      "room_intro": "A candlelit career-fair stall appears in the crypt. A smiling recruiter in a slightly off company cloak waves you over with a too-good offer and a shiny check.",
+      "character": {
+        "name": "The Internship Impostor",
+        "portrait_hint": "A too-polished recruiter in a borrowed company cloak, holding a clipboard and a shiny fake check."
+      },
+      "scenario": "Congratulations! You've been selected for a remote internship at $45/hour, starting today. Send your Social Security number and bank details so we can deposit your welcome check. Deposit it, wire us the equipment fee, and you're hired!\n\n- Talent Desk, jobs@owl-interns-careers.com",
+      "choices": [
+        {
+          "id": "comply",
+          "label": "Comply",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Wonderful, a team player! My dream-job pitch is going perfectly. Just sign right here on my very official, very shiny clipboard!",
+          "warning_signs": [
+            "Real employers don't demand your SSN or bank info up front.",
+            "A check you are asked to deposit and wire back is a classic fake-check scam.",
+            "Pressure to start today and pay an equipment fee is a red flag."
+          ],
+          "safer_next_move": "If you already shared details or moved money, contact your bank right away and report the offer to the FTC and FBI IC3.",
+          "keeper": {
+            "question": "You already sent your bank details and deposited their check. What now?",
+            "answer": "Call your bank right away, wire nothing, and report the offer to the FTC and FBI IC3.",
+            "wrong": [
+              "Wire the equipment fee they asked for, since the check already showed up in your account and looks fine.",
+              "Wait a few weeks without telling anyone, just to see whether the job somehow turns out to be real."
+            ]
+          }
+        },
+        {
+          "id": "verify_offer",
+          "label": "Verify offer",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "Wait, you are calling the real company? No need, no need! My synergy-driven offer is, uh, expiring. I must flee. Clipboard, away!",
+          "warning_signs": [
+            "Unexpected offers from unofficial email domains deserve a slow second look.",
+            "Verify the recruiter through the company's official site or campus career services, not the message's contact info."
+          ],
+          "safer_next_move": "Look up the company yourself and confirm the internship through official careers pages or KSU career services.",
+          "keeper": {
+            "question": "You can't find the company on any official site. What do you do?",
+            "answer": "Treat it as a likely scam: send nothing, and report it or ask KSU career services.",
+            "wrong": [
+              "Send your Social Security number anyway, since the pay is great and the job sounds real.",
+              "Email the recruiter to ask if they're real, and trust their answer."
+            ]
+          }
+        },
+        {
+          "id": "walk_away",
+          "label": "Walk away",
+          "outcome": "safe",
+          "effects": {
+            "health": 1,
+            "focus": 0,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You are just walking away from my amazing offer? Spoilsport! My cloak is slipping and my clipboard is empty. Fine, I am packing up my stall.",
+          "warning_signs": [
+            "An offer that asks for payment, a check deposit, or sensitive data up front is not a real hiring step.",
+            "Walking away from pressure is safer than sending bank details to an unverified 'recruiter.'"
+          ],
+          "safer_next_move": "Walk away from any job offer that asks for payment, a check deposit, or sensitive data before you can independently verify it.",
+          "keeper": {
+            "question": "The 'recruiter' emails again, offering more money if you start today. What now?",
+            "answer": "Keep walking away. Don't reply, and report the message to KSU or the FTC.",
+            "wrong": [
+              "Reply with your bank details right away, since they raised the pay and the offer is better now.",
+              "Deposit their check first, and then decide later whether you should wire them the fee they asked for."
+            ]
+          }
+        }
+      ],
+      "keeper": {
+        "question": "An offer wants your SSN and bank details before you can check the company. What do you do?",
+        "answer": "Send nothing. Verify the company yourself or through KSU career services; walk away if it wants money first.",
+        "wrong": [
+          "Send your SSN and bank details right away so they can set up direct deposit for your first paycheck.",
+          "Deposit their welcome check today, then wire the equipment fee back to them right away so you can start on time."
+        ]
+      }
+    },
+    {
+      "id": "ticket_troll",
+      "name": "The Ticket Troll",
+      "room_intro": "Under a parking deck ramp, a troll in a reflective vest counts paper tickets by flashlight. Your phone buzzes while you circle for a spot near your first class.",
+      "character": {
+        "name": "The Ticket Troll",
+        "portrait_hint": "A stubby troll in a neon safety vest, clutching a fan of fake parking tickets and a glowing phone."
+      },
+      "scenario": "CAMPUS PARKING NOTICE: Unpaid citation on your vehicle. Pay $35 within 24 hours or a $95 late fee is added and your permit is suspended. Pay now: campus-parking-pay.info/owl\n\nReply STOP to opt out.",
+      "choices": [
+        {
+          "id": "tap_pay_link",
+          "label": "Tap pay link",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Ha, a tap! My little toll booth of tickets is open for business. Step right up, there is always room under my ramp for another!",
+          "warning_signs": [
+            "A surprise text link asking you to pay a citation.",
+            "A tight deadline plus a bigger late fee is pressure to pay before you check.",
+            "The link's domain is not a campus .edu address."
+          ],
+          "safer_next_move": "If you tapped it, enter nothing; check for citations on the campus parking site you look up yourself, and call your bank if you paid.",
+          "keeper": {
+            "question": "You tapped the link and it wants your card number to pay the citation. What now?",
+            "answer": "Close it, type nothing, and check the campus parking site you look up yourself.",
+            "wrong": [
+              "Pay it quickly with your debit card, since the late fee would cost even more.",
+              "Text the link to your roommate so they can pay it for you."
+            ]
+          }
+        },
+        {
+          "id": "reply_stop",
+          "label": "Reply STOP",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Drat, no payment! But your reply tells me a real person reads my texts, so your number stays pinned to my ramp. Half a heist is fine by me.",
+          "warning_signs": [
+            "Replying, even with STOP, tells scammers your number is active.",
+            "Opt-out wording is copied from real texts to make a fake one look normal."
+          ],
+          "safer_next_move": "Don't reply to it; forward the text to 7726 (SPAM), delete it, and check the campus parking site yourself.",
+          "keeper": {
+            "question": "You replied STOP, and now more parking texts keep arriving. What do you do with them?",
+            "answer": "Don't reply. Forward them to 7726, delete them, and check the parking site yourself.",
+            "wrong": [
+              "Reply to each one asking them to stop, and include your full name so they can find you in their system.",
+              "Tap the newest link, since getting so many texts means the citation must be real."
+            ]
+          }
+        },
+        {
+          "id": "check_parking_site",
+          "label": "Check parking site",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "Wait, you went to the real parking site and found no ticket at all? My citation was pure fiction. Fine, I am crawling back under my ramp.",
+          "warning_signs": [
+            "A text you did not expect is not proof that you owe anything.",
+            "Official campus sites end in .edu; look-alike domains tack on words like pay or secure."
+          ],
+          "safer_next_move": "Look up the campus parking office's site yourself to check for citations, then report the text and delete it.",
+          "keeper": {
+            "question": "The official parking site shows no citations at all. What do you do with the text?",
+            "answer": "Report it by forwarding it to 7726 or at ReportFraud.ftc.gov, then delete it.",
+            "wrong": [
+              "Pay it anyway through the text's link, just in case the site is behind.",
+              "Reply with your plate and permit number so they can recheck it."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "commute_chimera",
+      "name": "The Commute Chimera",
+      "room_intro": "The crypt corridor forks toward two glowing campuses, Kennesaw and Marietta. A three-headed beast blocks the fork: a car, a shuttle bus, and a ticking stopwatch.",
+      "character": {
+        "name": "The Commute Chimera",
+        "portrait_hint": "A chimera with a car head, a shuttle-bus head and a stopwatch head, tangled in a campus map."
+      },
+      "scenario": "Your new schedule has a morning lab on the Marietta campus and a lecture on the Kennesaw campus right after lunch. The Chimera purrs: no need to plan, just dash between them and see what happens. Gas, parking, and the shuttle will sort themselves out.",
+      "choices": [
+        {
+          "id": "wing_it",
+          "label": "Wing it",
+          "outcome": "risky",
+          "effects": {
+            "health": -1,
+            "focus": -2,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Yes, wing it! My stopwatch head adores a frantic dash between campuses. I will make every red light extra dramatic, just for you!",
+          "warning_signs": [
+            "Cross-campus travel takes time your class schedule does not show.",
+            "Without a plan, gas, parking, and shuttle waits all get decided in a rush."
+          ],
+          "safer_next_move": "Check the official campus shuttle schedule and drive times, then block travel time plus a buffer in your calendar.",
+          "keeper": {
+            "question": "You winged it and reached the lecture late and frazzled. What's a better plan for next week?",
+            "answer": "Look up shuttle and drive times, then block travel plus a buffer between classes.",
+            "wrong": [
+              "Keep winging it, and just drive faster whenever you are running late.",
+              "Skip the second class every week, since getting there is too stressful to plan."
+            ]
+          }
+        },
+        {
+          "id": "drive_daily",
+          "label": "Drive every time",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hmph, you made it on time, so my stopwatch head is sulking. But my car head is purring, because every solo trip eats gas and parking time.",
+          "warning_signs": [
+            "Driving works, but gas and parking time add up over a term.",
+            "Using one plan for every day skips options like the campus shuttle."
+          ],
+          "safer_next_move": "Compare the campus shuttle with driving for each day, and budget for gas and parking time before you commit.",
+          "keeper": {
+            "question": "Driving gets you there, but gas costs keep surprising you. What's a smart next step?",
+            "answer": "Compare the shuttle with driving, and put gas in a weekly budget.",
+            "wrong": [
+              "Put every tank of gas on a credit card and don't look at the total until the semester ends.",
+              "Park in a no-parking zone and just pay whatever tickets show up."
+            ]
+          }
+        },
+        {
+          "id": "plan_route",
+          "label": "Plan the route",
+          "outcome": "safe",
+          "effects": {
+            "health": 1,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You looked up the shuttle times and added a buffer? My heads have nothing left to chase. Fine, I give up and curl up in the parking deck.",
+          "warning_signs": [
+            "A schedule that looks fine on paper can hide a tight cross-campus trip.",
+            "A buffer leaves room for traffic, parking, and shuttle waits."
+          ],
+          "safer_next_move": "Put each trip in your calendar with its travel time and a buffer, using the official shuttle schedule.",
+          "keeper": {
+            "question": "You planned the route. What helps the plan hold up on a busy day?",
+            "answer": "A buffer for traffic and parking, plus a backup like the shuttle.",
+            "wrong": [
+              "Plan every trip down to the exact minute with no extra time, so you never waste a second waiting.",
+              "Count on finding a parking spot right by the door every single time, even at noon."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "gift_card_gargoyle",
+      "name": "The Gift Card Gargoyle",
+      "room_intro": "Deep in the library stacks, a stone gargoyle guards a wobbly tower of textbooks. A taped flyer flaps beside it: HALF-PRICE RENTALS, TODAY ONLY.",
+      "character": {
+        "name": "The Gift Card Gargoyle",
+        "portrait_hint": "A pudgy stone gargoyle perched on a textbook tower, wings made of fanned-out gift cards."
+      },
+      "scenario": "Hey Owl! I have your chem textbook for half the bookstore price. Lots of people want it, so I can only hold it if you send $60 in gift cards or a Zelle payment within the hour. I'm away this week, but I'll ship it right after. No refunds, sorry!",
+      "choices": [
+        {
+          "id": "pay_gift_cards",
+          "label": "Pay in gift cards",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Gift card codes, my favorite snack! My textbook tower grows taller. Do not worry, the book ships the moment I feel like it. Hee hee!",
+          "warning_signs": [
+            "Gift card payments are like cash: hard to get back.",
+            "No refunds plus no meetup means there is no way to check the book exists."
+          ],
+          "safer_next_move": "Contact the gift card company right away to report the scam, keep the card and receipt, and report it at ReportFraud.ftc.gov.",
+          "keeper": {
+            "question": "You sent the gift card codes, and the seller went quiet. What now?",
+            "answer": "Call the gift card company right away, keep the receipts, and report it to the FTC.",
+            "wrong": [
+              "Send more gift cards, since the seller says shipping needs one more payment.",
+              "Wait a few more weeks without reporting it, in case the book shows up after all."
+            ]
+          }
+        },
+        {
+          "id": "ask_for_photos",
+          "label": "Ask for photos",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Photos? I have lovely ones of a book I found online. Drat, you have not paid me yet, but my flyer keeps flapping just for you.",
+          "warning_signs": [
+            "Photos are easy to copy and don't prove the book exists.",
+            "Asking questions is good, but the gift card demand is the red flag."
+          ],
+          "safer_next_move": "Stop dealing with any seller who wants gift cards or Zelle up front, and check the library or bookstore instead.",
+          "keeper": {
+            "question": "The seller sends nice photos and still wants gift cards first. What's the safer move?",
+            "answer": "Stop there. Photos prove nothing, and only scammers ask for gift cards.",
+            "wrong": [
+              "Send the gift card codes now, since the photos show that the book is real.",
+              "Send half in gift cards now, and promise the other half once the book arrives."
+            ]
+          }
+        },
+        {
+          "id": "check_library",
+          "label": "Check the library",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You found a reserve copy at the library desk? My stone wings droop. Nobody pays me in gift cards for a book they can borrow. I give up.",
+          "warning_signs": [
+            "Only scammers demand payment in gift cards.",
+            "A seller who is always away and wants money first may not have the book at all.",
+            "A one-hour hold is pressure to pay before you can check."
+          ],
+          "safer_next_move": "Check the library's course reserves and the campus bookstore first, and never pay a stranger with gift cards.",
+          "keeper": {
+            "question": "The library has a reserve copy, but the seller texts again: last chance! What do you do?",
+            "answer": "Use the reserve copy or the bookstore, and ignore the seller.",
+            "wrong": [
+              "Send the gift cards anyway, since owning a copy beats waiting at the reserve desk.",
+              "Zelle the seller a deposit to hold the book, just in case the reserve copy is checked out."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "push_poltergeist",
+      "name": "The Push Poltergeist",
+      "room_intro": "Two in the morning in the dorm wing of the crypt. A poltergeist made of pop-up alerts rattles your phone across the nightstand, over and over.",
+      "character": {
+        "name": "The Push Poltergeist",
+        "portrait_hint": "A wobbly ghost stitched from notification bubbles, one finger hovering over a giant Approve button."
+      },
+      "scenario": "Your phone keeps buzzing with sign-in approval requests you didn't start. Then a text: CAMPUS IT HELP DESK: Your account will be deactivated tonight. Approve the next request to stop the alerts and keep access.\n\nThe Poltergeist hovers, finger over the Approve button.",
+      "choices": [
+        {
+          "id": "deny_and_report",
+          "label": "Deny and report",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You denied me and called the real help desk? My pop-ups are fizzling out. Fine, I will go haunt an empty vending machine instead. Boo hoo.",
+          "warning_signs": [
+            "A flood of approval requests is a trick to wear you down until you tap yes.",
+            "The text came from an unknown number, not a channel you looked up yourself."
+          ],
+          "safer_next_move": "Deny the request, change your password on the official campus site, and report it to the campus IT help desk.",
+          "keeper": {
+            "question": "You denied the request. The text says to call a number to restore access. What do you do?",
+            "answer": "Skip that number. Contact the campus IT help desk using contact info from the official site.",
+            "wrong": [
+              "Call the number in the text and read them the code that just showed up on your phone.",
+              "Reply to the text with your username and password so they can restore your access."
+            ]
+          }
+        },
+        {
+          "id": "approve_push",
+          "label": "Approve it",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Ooh, you tapped approve! My haunting worked like a charm. I am floating right into your account now. What a cozy little inbox you have!",
+          "warning_signs": [
+            "A sign-in you didn't start means someone may have your password.",
+            "Campus IT will not text you to approve a request just to stop alerts.",
+            "Deactivated tonight is a pressure tactic."
+          ],
+          "safer_next_move": "If you approved one, change your password on the official campus site right away and call the campus IT help desk using a number you look up.",
+          "keeper": {
+            "question": "You approved a sign-in request you didn't start. What should you do first?",
+            "answer": "Change your password on the official site and call the IT help desk at a number you look up.",
+            "wrong": [
+              "Do nothing, since the approval already went through and there is nothing left to fix.",
+              "Approve any other requests that pop up too, so the account stays active tonight."
+            ]
+          }
+        },
+        {
+          "id": "ignore_alerts",
+          "label": "Ignore the alerts",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hmph, no approval for me, how rude. But nobody reported me either, so I keep rattling around with your password. Boo, sort of.",
+          "warning_signs": [
+            "Ignoring is a start, but someone still has your password.",
+            "Unreported attempts leave campus IT unaware of the problem."
+          ],
+          "safer_next_move": "Deny any request you did not start, then change your password and report the attempts to the campus IT help desk.",
+          "keeper": {
+            "question": "You ignored the alerts, but they start again the next night. What now?",
+            "answer": "Deny them, change your password on the official site, and report it to IT.",
+            "wrong": [
+              "Approve one just to make them stop, since one approval can't hurt.",
+              "Turn off sign-in approvals so the alerts stop for good."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "overpay_ogre",
+      "name": "The Overpay Ogre",
+      "room_intro": "A crypt hallway lined with off-campus apartment doors. A cheerful ogre stands in one marked SUBLEASE, waving a check that is far too big.",
+      "character": {
+        "name": "The Overpay Ogre",
+        "portrait_hint": "A grinning ogre in a moving-company cap, holding an oversized novelty check."
+      },
+      "scenario": "Hi! I'm a student moving near campus for spring and I'd love your sublease, sight unseen. I mailed a check for $1,900, but rent is only $900, oops! Please deposit it and Zelle me the extra $1,000 today. My movers need it by tonight.",
+      "choices": [
+        {
+          "id": "refund_extra",
+          "label": "Send back the extra",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You sent the extra? Splendid! My giant check is made of pure paper dreams. I will be over here admiring my favorite kind of oops.",
+          "warning_signs": [
+            "An overpay plus a refund request is a fake check scam.",
+            "A check can look cleared and still bounce weeks later, and the bank will want that money back.",
+            "Zelle payments work like cash and are hard to reverse."
+          ],
+          "safer_next_move": "Tell your bank right away, ask if the payment can be stopped, and report it to the FTC and FBI IC3.",
+          "keeper": {
+            "question": "You sent the extra money, and now the check bounced. What now?",
+            "answer": "Call your bank right away, send nothing more, and report it to the FTC and FBI IC3.",
+            "wrong": [
+              "Send the rest of the extra too, since the sublease can't be finalized until it's all paid.",
+              "Deposit the replacement check they promise, and refund that one quickly as well."
+            ]
+          }
+        },
+        {
+          "id": "wait_to_clear",
+          "label": "Wait for it to clear",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hmph, no refund from you tonight. But you think a little waiting turns my check real, and I adore that plan. Half a heist for me!",
+          "warning_signs": [
+            "Funds can show as available before a fake check bounces.",
+            "Waiting is good, but any plan to send the extra back is the trap."
+          ],
+          "safer_next_move": "Do not send back any part of a check you were overpaid; ask your bank to verify it and report the offer.",
+          "keeper": {
+            "question": "Your bank app shows the check's money as available. Is it safe to send back the extra?",
+            "answer": "No. Available isn't cleared, and a fake check can bounce weeks later. Send nothing back.",
+            "wrong": [
+              "Yes, available means the check is real, so send the extra back by Zelle right now.",
+              "Yes, as long as you send the refund in a few smaller payments instead of one big one."
+            ]
+          }
+        },
+        {
+          "id": "decline_and_report",
+          "label": "Decline and report",
+          "outcome": "safe",
+          "effects": {
+            "health": 1,
+            "focus": 0,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You turned down my oversized check and reported me? My doorway suddenly feels very small. Fine, I am stomping off in defeat.",
+          "warning_signs": [
+            "A renter who has not seen the place but sends a big check fast is a red flag.",
+            "A real renter will not need you to send money back to their movers."
+          ],
+          "safer_next_move": "Decline any deal that overpays you and asks for money back, and report it at ReportFraud.ftc.gov.",
+          "keeper": {
+            "question": "The renter says the check was an honest mistake and begs you to refund the extra. What now?",
+            "answer": "Hold firm: don't refund anything, and report it to the FTC.",
+            "wrong": [
+              "Deposit the check and refund the extra, since they said sorry and it was probably a mistake.",
+              "Send them your online banking login so they can fix the overpayment themselves."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cram_lich",
+      "name": "The Cram Lich",
+      "room_intro": "Finals week. The library glows past midnight as a lich of crumpled flashcards rises from a heap of energy-drink cans and late-night dining hall boxes.",
+      "character": {
+        "name": "The Cram Lich",
+        "portrait_hint": "A skeletal lich in a cloak of crumpled flashcards, crowned with highlighters."
+      },
+      "scenario": "Three finals land in two days. The Cram Lich offers a bargain: skip sleep, study everything tonight, and figure out the rest on exam morning. Your planner sits unopened in your bag. What's your move?",
+      "choices": [
+        {
+          "id": "all_nighter",
+          "label": "Pull an all-nighter",
+          "outcome": "risky",
+          "effects": {
+            "health": -1,
+            "focus": -2,
+            "knowledge": 1
+          },
+          "fallback_reaction": "An all-nighter! My flashcards are dancing. Every hour of sleep you skip is another candle on my cake. What a party this finals week is!",
+          "warning_signs": [
+            "An all-nighter leaves no time to rest before the next exam.",
+            "Studying everything at once makes it hard to see what needs work."
+          ],
+          "safer_next_move": "Map each final's date, then spread study blocks across the days with time for sleep and meals.",
+          "keeper": {
+            "question": "You pulled an all-nighter, and two more finals are ahead. What's the better plan now?",
+            "answer": "Rest, then map the remaining finals and spread study blocks across the days left.",
+            "wrong": [
+              "Pull another all-nighter tonight, and one more for the last exam.",
+              "Stop studying for the rest of the week, since one rough night means there's no point planning."
+            ]
+          }
+        },
+        {
+          "id": "plan_study_blocks",
+          "label": "Plan study blocks",
+          "outcome": "safe",
+          "effects": {
+            "health": 1,
+            "focus": 1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Study blocks with sleep and meals penciled in? My flashcards are falling apart. Fine, I am shuffling off to the lost-and-found.",
+          "warning_signs": [
+            "A plan for the whole week shows which exam needs time first.",
+            "Breaks, meals, and sleep belong on the plan, not just study time."
+          ],
+          "safer_next_move": "Block study time for each final across the week, soonest exam first, with sleep and meals on the calendar too.",
+          "keeper": {
+            "question": "Your study blocks are set. A friend says to scrap them for one big cram night. What do you do?",
+            "answer": "Keep the plan, and adjust blocks if needed.",
+            "wrong": [
+              "Scrap the plan and cram everything in one night, since that's what everyone else is doing.",
+              "Delete the calendar and decide what to study each morning based on whatever feels urgent."
+            ]
+          }
+        },
+        {
+          "id": "cram_one",
+          "label": "Cram one exam only",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Hmph, you have a plan for this exam, how annoying. But the others are all mine, piling up nicely in my flashcard tower.",
+          "warning_signs": [
+            "Planning one exam is a start, but the others need time too.",
+            "Finals close together leave little room to catch up later."
+          ],
+          "safer_next_move": "Give every final its own study blocks on your calendar, starting with the soonest one.",
+          "keeper": {
+            "question": "You planned for one exam, but two others are close behind. What's the next step?",
+            "answer": "Add study blocks for the other finals, starting with the soonest.",
+            "wrong": [
+              "Leave the other two exams for the morning of each test and hope it works out.",
+              "Swap all your sleep for study time on the other two, since rest can wait until break."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# quad-snd's web audio functions are provided by mq_js_bundle.js at runtime,
+# so let the wasm linker leave them as imports.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "link-arg=--allow-undefined"]
