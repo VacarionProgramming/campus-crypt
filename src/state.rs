@@ -143,6 +143,8 @@ pub struct Run {
     pub stairs_open: bool,
     /// Health from before the Keeper's quiz, while the arena lends full hearts
     pub arena_saved_health: Option<i32>,
+    /// Keepers beaten in a Risk It bonus round
+    pub keepers_defeated: u32,
 }
 
 impl Run {
@@ -160,6 +162,7 @@ impl Run {
             bosses_left: 0,
             stairs_open: false,
             arena_saved_health: None,
+            keepers_defeated: 0,
         }
     }
 
@@ -236,6 +239,30 @@ impl Run {
         self.keepers.push(KeeperResult { floor: self.room, correct, wardens_beaten: 0 });
         self.phase = Phase::KeeperVerdict;
         Some(if correct { self.stats.apply(KEEPER_REWARD) } else { Effects::default() })
+    }
+
+    /// A Risk It round's result, only after a correct answer (still on the
+    /// verdict): a win is +1 Health (+1 Focus when Health is full), a knockout
+    /// is -1 Health but never below 1, time up changes nothing.
+    pub fn risk_it(&mut self, o: crate::risk_it::Outcome) -> Option<Effects> {
+        use crate::risk_it::Outcome;
+        let correct = self.keepers.last().is_some_and(|k| k.correct);
+        if self.phase != Phase::KeeperVerdict || !correct {
+            return None;
+        }
+        let e = match o {
+            Outcome::Defeated => {
+                self.keepers_defeated += 1;
+                if self.stats.health < MAX_HEALTH {
+                    Effects { health: 1, ..Effects::default() }
+                } else {
+                    Effects { focus: 1, ..Effects::default() }
+                }
+            }
+            Outcome::KnockedOut if self.stats.health > 1 => Effects { health: -1, ..Effects::default() },
+            _ => Effects::default(),
+        };
+        Some(self.stats.apply(e))
     }
 
     /// KeeperVerdict -> Explore with the stairs open (correct), or BossFight (wrong).
@@ -870,4 +897,40 @@ mod tests {
         r.room = 9;
         assert_eq!(r.keeper_tally(), "Floor Keepers answered 9/10");
     }
+
+    #[test]
+    fn risk_it_rewards_and_never_kills() {
+        use crate::risk_it::Outcome;
+        let at_verdict = |health: i32, correct: bool| {
+            let mut r = Run::new(10, 10);
+            r.stats.health = health;
+            r.phase = Phase::KeeperQuiz;
+            r.answer_keeper(correct).unwrap();
+            r
+        };
+        let mut r = at_verdict(3, true);
+        r.risk_it(Outcome::Defeated).unwrap();
+        assert_eq!((r.stats.health, r.keepers_defeated), (4, 1));
+        let mut r = at_verdict(MAX_HEALTH, true);
+        let focus = r.stats.focus;
+        r.risk_it(Outcome::Defeated).unwrap();
+        assert_eq!((r.stats.health, r.stats.focus), (MAX_HEALTH, (focus + 1).min(MAX_FOCUS)));
+        let mut r = at_verdict(3, true);
+        r.risk_it(Outcome::KnockedOut).unwrap();
+        assert_eq!(r.stats.health, 2);
+        let mut r = at_verdict(1, true);
+        r.risk_it(Outcome::KnockedOut).unwrap();
+        assert_eq!(r.stats.health, 1, "a knockout never ends the run");
+        let mut r = at_verdict(3, true);
+        r.risk_it(Outcome::TimeUp).unwrap();
+        assert_eq!((r.stats.health, r.keepers_defeated), (3, 0));
+        // only after a right answer, and the stairs still open
+        let mut r = at_verdict(3, false);
+        assert!(r.risk_it(Outcome::Defeated).is_none());
+        let mut r = at_verdict(3, true);
+        r.risk_it(Outcome::KnockedOut);
+        r.leave_verdict();
+        assert!(r.stairs_open && r.phase == Phase::Explore);
+    }
+
 }

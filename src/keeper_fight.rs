@@ -905,6 +905,21 @@ impl Fight {
     }
 
     fn draw_dodge(&self, d: &Dodge, o: Vec2, t: f32) {
+        draw_pattern(d, o);
+        let blink = self.invuln > 0.0 && (t * 18.0).sin() < 0.0;
+        if !blink {
+            draw_sprite_centered(&BOX_OWL, o.x + self.owl.x, o.y + self.owl.y, 1.6, self.facing_left, WHITE);
+        }
+        if d.reduced {
+            centered("Reduced motion: no attacks. Catch your breath.", o.x + BOX_W * 0.5, o.y + 40.0, 20.0, DIM);
+        }
+    }
+}
+
+/// One attack pattern inside the box at `o` (the clock, hazards, the button);
+/// shared with the Risk It round.
+pub fn draw_pattern(d: &Dodge, o: Vec2) {
+    {
         if d.pattern == Pattern::Clock && !d.reduced {
             // the 5:00 PM dial behind the hand
             let p = o + HAND_PIVOT;
@@ -937,13 +952,6 @@ impl Fight {
             draw_rectangle(x, y, BUTTON_W, BUTTON_H, Color::new(0.2, 0.45, 0.95, 1.0));
             draw_rectangle_lines(x, y, BUTTON_W, BUTTON_H, 2.0, WHITE);
             centered("CONFIRM LOGIN", x + BUTTON_W * 0.5, y + 20.0, 16.0, WHITE);
-        }
-        let blink = self.invuln > 0.0 && (t * 18.0).sin() < 0.0;
-        if !blink {
-            draw_sprite_centered(&BOX_OWL, o.x + self.owl.x, o.y + self.owl.y, 1.6, self.facing_left, WHITE);
-        }
-        if d.reduced {
-            centered("Reduced motion: no attacks. Catch your breath.", o.x + BOX_W * 0.5, o.y + 40.0, 20.0, DIM);
         }
     }
 }

@@ -21,6 +21,7 @@ mod ai;
 mod ai_features;
 mod art;
 mod perf;
+mod risk_it;
 mod audio;
 mod content;
 mod crawl;
@@ -44,6 +45,7 @@ use crawl::{wardens_for, Control, Pace, Power, Tier, World, WorldEvent, TILE};
 use hardware::{Hardware, HwEvent, HwState};
 use keeper::Quiz;
 use keeper_fight::{Fight, FightEvent, FightInput, Stage as FightStage};
+use risk_it::{RiskEvent, RiskIt};
 use macroquad::prelude::*;
 use state::{Ending, Phase, Run, MAX_FOCUS, MAX_HEALTH};
 use std::fmt::Write as _;
@@ -504,6 +506,8 @@ struct Auto {
     /// CC_SHOT_EVENTS=1: save screenshots/<prefix><screen>.png the first time each AI-extras
     /// screen is on show (side games, Hoot, Keeper taunt/verdict, tier banner, debrief), then quit
     shot_events: bool,
+    /// CC_RISK=1: pick RISK IT after every right answer
+    risk: bool,
     /// CC_TITLE=options|howto: open the title on that view (for screenshots)
     title_view: Option<String>,
     shots_taken: Vec<String>,
@@ -554,6 +558,10 @@ struct App {
     quiz_pick: Option<usize>,
     /// floor 1's Keeper fight, while it's on (None = the plain quiz)
     fight: Option<Fight>,
+    /// the Risk It bonus round, on a right answer's verdict screen
+    risk: Option<RiskIt>,
+    /// verdict screen after a right answer: 0 = SPARE (stairs), 1 = RISK IT
+    verdict_sel: usize,
     /// R: reduced motion (the Keeper fight drops its attacks)
     reduced_motion: bool,
     /// master volume 0..1 (sound effects and music)
@@ -666,6 +674,8 @@ impl App {
             quiz: None,
             quiz_pick: None,
             fight: None,
+            risk: None,
+            verdict_sel: 0,
             reduced_motion: saved.reduced_motion,
             master_volume: saved.master,
             settings_open: false,
@@ -981,6 +991,7 @@ impl App {
         self.quiz = None;
         self.quiz_pick = None;
         self.fight = None;
+        self.risk = None;
         self.settings_open = false;
         self.sel = 0;
         self.line = None;
@@ -1299,7 +1310,7 @@ impl App {
             Phase::Encounter => self.encounter(inp, dt),
             Phase::Reaction | Phase::Lesson => self.reaction(inp),
             Phase::KeeperQuiz => self.keeper_quiz(inp, dt),
-            Phase::KeeperVerdict => self.keeper_verdict(inp),
+            Phase::KeeperVerdict => self.keeper_verdict(inp, dt),
             Phase::Ending => self.ending(inp),
             Phase::Explore | Phase::BossFight => {}
         }
@@ -2603,7 +2614,7 @@ impl App {
         self.sfx(Sfx::Click);
     }
 
-    fn keeper_verdict(&mut self, inp: Input) {
+    fn keeper_verdict(&mut self, inp: Input, dt: f32) {
         let (Some(q), Some(pick)) = (self.quiz.as_ref().map(Rc::clone), self.quiz_pick) else {
             draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.62));
             self.run.leave_verdict();
@@ -2611,6 +2622,11 @@ impl App {
         };
         // after the Mimic fight the verdict stays on the fight's black stage
         let mimic = q.mail.is_some();
+        if self.risk.is_some() {
+            draw_rectangle(0.0, 0.0, VW, VH, BLACK);
+            self.risk_round(&inp, dt, mimic);
+            return;
+        }
         draw_rectangle(0.0, 0.0, VW, VH, if mimic { BLACK } else { Color::new(0.0, 0.0, 0.0, 0.62) });
         let correct = q.is_correct(pick);
         let oc = if correct { SAFE } else { RISKY };
@@ -2673,36 +2689,133 @@ impl App {
             text_block(w, 88.0, yy + 20.0, 24.0, VW - 160.0, PAPER);
         }
 
-        let label = if correct {
-            if self.run.is_last_floor() {
-                "To the way out  [Enter]"
-            } else {
-                "To the stairs  [Enter]"
+        if correct {
+            // SPARE (the stairs, as always) or RISK IT (the bonus round)
+            let stairs = if self.run.is_last_floor() { "SPARE: to the way out" } else { "SPARE: to the stairs" };
+            let labels = [stairs, "RISK IT: bonus round"];
+            let cols = [SAFE, RISKY];
+            if inp.left || inp.up || inp.right || inp.down {
+                self.verdict_sel = 1 - self.verdict_sel.min(1);
+                self.sfx(Sfx::Click);
             }
-        } else {
-            "Face 2 wardens  [Enter]"
-        };
+            let mut picked = None;
+            for (i, label) in labels.iter().enumerate() {
+                let r = Rect::new(VW * 0.5 - 420.0 + i as f32 * 430.0, 652.0, 410.0, 52.0);
+                let hover = r.contains(inp.mouse);
+                if hover && inp.mouse_moved {
+                    self.verdict_sel = i;
+                }
+                if hover && inp.click {
+                    picked = Some(i);
+                }
+                let on = self.verdict_sel == i;
+                panel(r.x, r.y - if on { 3.0 } else { 0.0 }, r.w, r.h, if on || hover { WHITE } else { cols[i] });
+                let t = self.txt.chose.get(key(&[i, 77]), |b| {
+                    let _ = write!(b, "{}  {label}", i + 1);
+                });
+                centered(t, r.x + r.w * 0.5, 686.0 - if on { 3.0 } else { 0.0 }, 26.0, cols[i]);
+            }
+            centered("Left/Right + Enter, 1-2 or click.  Risk It: grab 3 red flags in the box for +1 Health.", VW * 0.5, 624.0, 18.0, DIM);
+            if let Some(d) = inp.digit.filter(|&d| d < 2) {
+                picked = Some(d);
+            }
+            if inp.confirm {
+                picked = Some(self.verdict_sel);
+            }
+            match picked {
+                Some(1) => {
+                    self.risk = Some(RiskIt::new(self.run_seed ^ q.id, self.run.room, self.reduced_motion));
+                    self.verdict_sel = 0;
+                    self.sfx(Sfx::Equip);
+                    self.hw.send_event(HwEvent::Menu);
+                    if self.auto.on {
+                        println!("[auto] risk it: round starts on floor {}", self.run.room + 1);
+                    }
+                }
+                Some(_) => self.leave_keeper_verdict(),
+                None => {}
+            }
+            return;
+        }
         let r = Rect::new(VW * 0.5 - 200.0, 652.0, 400.0, 52.0);
         let hover = r.contains(inp.mouse);
         panel(r.x, r.y, r.w, r.h, if hover { WHITE } else { oc });
-        centered(label, VW * 0.5, 686.0, 28.0, oc);
+        centered("Face 2 wardens  [Enter]", VW * 0.5, 686.0, 28.0, oc);
         if inp.confirm || (inp.click && hover) {
-            self.run.leave_verdict();
-            self.line = None;
-            match self.run.phase {
-                Phase::Explore => {
-                    self.sfx(Sfx::LevelUp);
-                    self.world.player.invuln = 1.0;
-                    self.show_banner("THE STAIRS ARE OPEN".into(), "The Keeper steps aside. Take the stairs.".into(), SAFE);
-                }
-                Phase::BossFight => {
-                    self.arena = None; // built next frame, behind the black fade
-                    self.room_fade = 1.0;
-                    self.sfx(Sfx::Stairs);
-                    self.show_banner("THE KEEPER'S WARDENS".into(), "Full hearts for this fight only. Beat both to open the stairs.".into(), RISKY);
-                }
-                _ => {}
+            self.leave_keeper_verdict();
+        }
+    }
+
+    /// Off the verdict screen: the stairs open (right) or the wardens' arena (wrong).
+    fn leave_keeper_verdict(&mut self) {
+        self.run.leave_verdict();
+        self.line = None;
+        self.risk = None;
+        self.verdict_sel = 0;
+        match self.run.phase {
+            Phase::Explore => {
+                self.sfx(Sfx::LevelUp);
+                self.world.player.invuln = 1.0;
+                self.show_banner("THE STAIRS ARE OPEN".into(), "The Keeper steps aside. Take the stairs.".into(), SAFE);
             }
+            Phase::BossFight => {
+                self.arena = None; // built next frame, behind the black fade
+                self.room_fade = 1.0;
+                self.sfx(Sfx::Stairs);
+                self.show_banner("THE KEEPER'S WARDENS".into(), "Full hearts for this fight only. Beat both to open the stairs.".into(), RISKY);
+            }
+            _ => {}
+        }
+    }
+
+    /// The Risk It round (risk_it.rs): dodge the Keeper's attacks, grab red flags.
+    fn risk_round(&mut self, inp: &Input, dt: f32, mimic: bool) {
+        let Some(r) = self.risk.as_mut() else { return };
+        let ev = r.update(dt, inp.mv);
+        r.draw(if mimic { "The Inbox Mimic" } else { keeper::KEEPER_NAME }, self.t);
+        let leave = r.can_leave() && (inp.confirm || inp.click);
+        let help = if r.done() { "Enter: to the stairs" } else { "WASD/arrows: move.  Touch the red flags, dodge everything else." };
+        centered(help, VW * 0.5, 676.0, 20.0, DIM);
+        match ev {
+            Some(RiskEvent::Hit) => {
+                self.sfx(Sfx::Hurt);
+                self.hw.send_event(HwEvent::Hit);
+            }
+            Some(RiskEvent::Flag) => self.sfx(Sfx::Coin),
+            Some(RiskEvent::Finished(o)) => {
+                let before = self.run.stats;
+                self.run.risk_it(o);
+                let after = self.run.stats;
+                let reward = match o {
+                    risk_it::Outcome::Defeated if after.health > before.health => "+1 Health. The Keeper bows out.".to_string(),
+                    risk_it::Outcome::Defeated if after.focus > before.focus => "Health is full: +1 Focus instead.".to_string(),
+                    risk_it::Outcome::Defeated => "Health and Focus are full. Bragging rights only.".to_string(),
+                    risk_it::Outcome::KnockedOut if after.health < before.health => "-1 Health. The stairs still open.".to_string(),
+                    risk_it::Outcome::KnockedOut => "Your last heart is safe: the box can't end a run.".to_string(),
+                    risk_it::Outcome::TimeUp => "No harm done. The stairs are open.".to_string(),
+                };
+                if self.auto.on {
+                    println!("[auto] risk it: {:?}, health {} -> {}, focus {} -> {}", o, before.health, after.health, before.focus, after.focus);
+                }
+                match o {
+                    risk_it::Outcome::Defeated => {
+                        self.sfx(Sfx::LevelUp);
+                        self.hw.send_event(HwEvent::LevelUp);
+                    }
+                    risk_it::Outcome::KnockedOut => {
+                        self.sfx(Sfx::Hurt);
+                        self.hw.send_event(HwEvent::Hit);
+                    }
+                    risk_it::Outcome::TimeUp => self.sfx(Sfx::Click),
+                }
+                if let Some(r) = self.risk.as_mut() {
+                    r.reward = reward;
+                }
+            }
+            None => {}
+        }
+        if leave {
+            self.leave_keeper_verdict();
         }
     }
 
@@ -2731,8 +2844,11 @@ impl App {
         // out of the Keepers actually reached (Run::keeper_tally): an early death never reads "0/10"
         let (kc, kn, wb, kills) = (self.run.keepers_correct(), self.run.keepers.len(), self.run.wardens_beaten(), self.kills as usize);
         let run = &self.run;
-        let t = self.txt.ending_keepers.get(key(&[kc, kn, wb, kills, run.room]), |b| {
+        let t = self.txt.ending_keepers.get(key(&[kc, kn, wb, kills, run.room, run.keepers_defeated as usize]), |b| {
             let _ = write!(b, "{}   -   Wardens beaten {wb}   -   Monsters defeated {kills}", run.keeper_tally());
+            if run.keepers_defeated > 0 {
+                let _ = write!(b, "   -   Keepers defeated {}", run.keepers_defeated);
+            }
         });
         centered(t, VW * 0.5, 192.0, 20.0, DIM);
         panel(40.0, 204.0, VW - 80.0, 432.0, KSU_GOLD);
@@ -2942,6 +3058,7 @@ impl App {
             (Screen::Title, _) => 'M',
             (_, Phase::Ending) if self.run.ending() == Ending::Overwhelmed => 'D',
             (_, Phase::KeeperQuiz) if self.fight.is_some() => 'F',
+            (_, Phase::KeeperVerdict) if self.risk.is_some() => 'F',
             _ if self.settings_open => 'X',
             _ => 'P',
         };
@@ -3041,7 +3158,12 @@ impl App {
                 _ => None,
             }),
             (Screen::Playing, Phase::KeeperQuiz) if typed(&self.taunt) && t > 2.1 => Some(format!("f{floor:02}_keeper_taunt")),
-            (Screen::Playing, Phase::KeeperVerdict) if self.verdict_ready && t > 2.4 => Some(format!("f{floor:02}_keeper_verdict")),
+            (Screen::Playing, Phase::KeeperVerdict) if self.risk.is_some() => self.risk.as_ref().and_then(|r| match r.outcome {
+                None if r.t > 4.0 && r.flag.is_some() => Some(format!("f{floor:02}_risk_round")),
+                Some(_) if r.can_leave() => Some(format!("f{floor:02}_risk_result")),
+                _ => None,
+            }),
+            (Screen::Playing, Phase::KeeperVerdict) if self.verdict_ready && t > 1.0 => Some(format!("f{floor:02}_keeper_verdict")),
             (Screen::Playing, Phase::Ending) if self.room_fade <= 0.0 => {
                 let ready = self.ai_fx.poll_debrief(&self.loaded.content, get_time()).is_some();
                 if !ready && !self.auto.shots_taken.iter().any(|s| s == "ending_debrief_wait") {
@@ -3117,6 +3239,21 @@ impl App {
                     }
                     return;
                 }
+                Phase::KeeperVerdict if self.risk.is_some() => {
+                    // CC_RISK=1: the bonus round: head for the flags, dodge the rest
+                    // (CC_FIGHT_SEEK=1: fly into the attacks instead)
+                    if let Some(r) = &self.risk {
+                        if r.done() {
+                            if r.can_leave() && self.auto.timer > 1.5 {
+                                self.auto.timer = 0.0;
+                                inp.confirm = true;
+                            }
+                        } else {
+                            inp.mv = r.auto_steer(self.auto.fight_seek);
+                        }
+                    }
+                    return;
+                }
                 Phase::KeeperQuiz if self.fight.is_some() => {
                     // floor 1's fight: CC_KEEPER r = investigate then SPARE, w = bad acts;
                     // dodge on the Mimic's turns (CC_FIGHT_SEEK=1: fly into attacks instead)
@@ -3169,6 +3306,9 @@ impl App {
                     inp.digit = Some(if right { q.correct } else { (q.correct + 1) % q.options.len() });
                 }
             }
+            (Screen::Playing, Phase::KeeperVerdict) if self.auto.risk && self.verdict_ready && self.run.keepers.last().is_some_and(|k| k.correct) => {
+                inp.digit = Some(1);
+            }
             _ => inp.confirm = true,
         }
     }
@@ -3210,6 +3350,7 @@ fn automation() -> Auto {
             fight_seek: env("CC_FIGHT_SEEK").as_deref() == Some("1"),
             long_debrief: env("CC_DEBRIEF_LONG").as_deref() == Some("1"),
             shot_events: env("CC_SHOT_EVENTS").as_deref() == Some("1"),
+            risk: env("CC_RISK").as_deref() == Some("1"),
             title_view: env("CC_TITLE"),
             shots_taken: Vec::new(),
             shot_request: None,
@@ -3232,6 +3373,7 @@ fn automation() -> Auto {
         fight_seek: false,
         long_debrief: false,
         shot_events: false,
+        risk: false,
         title_view: None,
         shots_taken: Vec::new(),
         shot_request: None,
