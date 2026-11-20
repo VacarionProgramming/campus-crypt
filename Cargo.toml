@@ -1,6 +1,6 @@
 [package]
 name = "campus_crypt"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Campus Crypt: a pixel-art dungeon crawler of scams, deadlines, and split-second choices"
 
