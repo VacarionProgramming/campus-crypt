@@ -2,6 +2,8 @@
 
 **A dungeon crawler of scams, deadlines, and split-second choices.**
 
+### ▶ [Play in your browser](https://vacarionprogramming.github.io/campus-crypt/)
+
 Campus Crypt is a funny pixel-art dungeon crawler for KSU students. You play a student fighting your way down through **10 floors** of a candlelit crypt under the Kennesaw and Marietta campuses. Each floor hides a trap that looks like real campus life: a fake financial-aid message, a pile-up of deadlines, a password shortcut, an internship offer that's too good to be true, a fake parking-ticket text, the Kennesaw-Marietta commute, a textbook seller who wants gift cards, sign-in approvals you didn't start, a sublease overpayment check, and finals-week cramming. Find the floor's character, choose what to do, and the game shows you the warning signs and a safer next move. Then the **Floor Keeper** at the stairs checks what you learned: answer right and the stairs open; answer wrong and you fight its **two wardens** first.
 
 The game teaches you to spot warning signs and take a better next step. It does not claim to prevent scams or improve grades.
