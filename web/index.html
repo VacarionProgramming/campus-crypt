@@ -2,14 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- phones: fill the screen, no pinch or double-tap zoom (the game has its own touch controls) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#08060c">
   <title>Campus Crypt</title>
   <style>
     html, body, canvas { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
       position: absolute; background: #08060c; z-index: 0; }
+    /* touches go to the game, never to scrolling, zooming or text selection */
+    html, body, canvas { touch-action: none; -webkit-user-select: none; user-select: none;
+      -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+    #rotate { display: none; }
+    /* a phone held upright: ask for landscape (the game is 16:9) */
+    @media (orientation: portrait) and (pointer: coarse) {
+      #rotate { display: flex; position: fixed; inset: 0; z-index: 10; background: #08060c; color: #EDE6D1;
+        flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px;
+        font: 600 20px/1.4 system-ui, -apple-system, sans-serif; text-align: center; }
+      #rotate b { color: #FFC529; font: 800 28px ui-monospace, Menlo, monospace; letter-spacing: .06em; }
+      #rotate span { font-size: 56px; }
+    }
   </style>
 </head>
 <body>
   <canvas id="glcanvas" tabindex="1"></canvas>
+  <div id="rotate"><b>CAMPUS CRYPT</b><span aria-hidden="true">↻</span>Turn your phone sideways to play.<br>Joystick on the left, buttons on the right.</div>
   <!-- miniquad loader + quad-snd web audio plugin (copied from their crates) -->
   <script src="gl.js"></script>
   <script src="audio.js"></script>

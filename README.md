@@ -76,6 +76,8 @@ The full state diagram is in [docs/FLOWCHART.md](docs/FLOWCHART.md). The engine 
 | Floor 1 fight: dodge | WASD / arrows |
 | Reduced motion (floor 1 fight: no attacks; saved) | R |
 | Settings (master / music volume, reduced motion) | Title: arrows or mouse, top right. On a floor or in the arena: Esc or O pauses and opens them |
+
+**On a phone or tablet** (the web version): turn the phone sideways. Touch controls appear the first time you touch the screen: a joystick on the left (put your thumb anywhere there and drag), and on the right **FIRE** (hold; aim assist picks the nearest monster), **ROLL**, **TALK** (talk, answer, confirm), **HOOT** and a pause button. They show only while you move or fight; on every other screen, tap what you want. Screens that only Esc closes get a **BACK** button. Code: `src/touch.rs`.
 | Mute everything | M |
 | Music on/off (sound effects stay) | N |
 | Screenshot (native) | F12 → `screenshots/manual_NN.png` |

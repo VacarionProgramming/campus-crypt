@@ -32,6 +32,7 @@ mod keeper_fight;
 mod settings;
 mod music;
 mod state;
+mod touch;
 
 use ai::{LineSource, ReactionRequest, Reactor};
 use ai_features::{scamgen, tips, AiFeatures, ScamMessage, SpotRound, TierChange};
@@ -560,6 +561,10 @@ struct App {
     fight: Option<Fight>,
     /// the Risk It bonus round, on a right answer's verdict screen
     risk: Option<RiskIt>,
+    /// on-screen joystick and buttons (phones; hidden until the first touch)
+    touch: touch::TouchPad,
+    /// the HOOT button was tapped this frame (same as T)
+    touch_hoot: bool,
     /// verdict screen after a right answer: 0 = SPARE (stairs), 1 = RISK IT
     verdict_sel: usize,
     /// R: reduced motion (the Keeper fight drops its attacks)
@@ -675,6 +680,8 @@ impl App {
             quiz_pick: None,
             fight: None,
             risk: None,
+            touch: touch::TouchPad::default(),
+            touch_hoot: false,
             verdict_sel: 0,
             reduced_motion: saved.reduced_motion,
             master_volume: saved.master,
@@ -1029,6 +1036,33 @@ impl App {
         self.display_live.update(&mut self.hw, dt);
         let view = View::new();
         let mut inp = Input::read(&view, &self.hw);
+        // touch controls (phones): merged into the same Input as the keyboard
+        let controls = self.touch_controls();
+        let t = self.touch.update(|p| view.to_virtual(p), controls);
+        if controls && self.touch.seen {
+            // a touch is also a simulated mouse: it must not fire, aim or click on its own
+            inp.attack = t.fire || is_key_down(KeyCode::Space) || is_key_down(KeyCode::J);
+            inp.mouse_attack = false;
+            inp.mouse_moved = false;
+            inp.click = false;
+        }
+        if t.mv != Vec2::ZERO {
+            inp.mv = t.mv;
+        }
+        inp.dodge |= t.roll;
+        inp.interact |= t.talk;
+        inp.confirm |= t.talk;
+        inp.back |= t.pause;
+        inp.up |= t.up;
+        inp.down |= t.down;
+        inp.left |= t.left;
+        inp.right |= t.right;
+        self.touch_hoot = t.hoot;
+        if self.touch.seen && !controls && self.touch_back() && inp.click && touch::Button::Pause.hit(inp.mouse) {
+            // the BACK button stands in for Esc where nothing else closes the screen
+            inp.back = true;
+            inp.click = false;
+        }
         if is_key_pressed(KeyCode::M) {
             self.muted = !self.muted;
         }
@@ -1071,6 +1105,11 @@ impl App {
         match self.screen {
             Screen::Title => self.title(inp),
             Screen::Playing => self.playing(inp, dt),
+        }
+        if self.touch.seen && self.touch_controls() {
+            self.touch.draw();
+        } else if self.touch.seen && self.touch_back() {
+            self.touch.draw_back();
         }
         set_default_camera();
         self.hw_sync(dt);
@@ -1335,6 +1374,27 @@ impl App {
     /// A choice screen just opened: ignore answers for a moment, and until every
     /// confirm/swing key and the mouse button are let go, so a held swing or a
     /// mashed key can't pick an answer by accident.
+    /// The on-screen joystick and buttons show only where you move or fight;
+    /// everywhere else a tap is a click.
+    fn touch_controls(&self) -> bool {
+        self.screen == Screen::Playing
+            && !self.pending_floor
+            && !self.settings_open
+            && !self.tip_log_open
+            && match self.run.phase {
+                Phase::Explore => self.mini.is_none(),
+                Phase::BossFight => true,
+                Phase::KeeperQuiz => self.fight.is_some(),
+                Phase::KeeperVerdict => self.risk.as_ref().is_some_and(|r| !r.done()),
+                _ => false,
+            }
+    }
+
+    /// Screens only Esc closes: on a touch screen they get a BACK button.
+    fn touch_back(&self) -> bool {
+        self.settings_open || self.tip_log_open || (self.screen == Screen::Title && self.title_view == TitleView::Options)
+    }
+
     fn lock_choices(&mut self) {
         self.choice_lock = CHOICE_LOCK_SECS;
         self.choice_open = false;
@@ -1629,7 +1689,10 @@ impl App {
             let _ = write!(b, "Click/Space: fire   Shift: roll   E: talk   T: ask Hoot   L: tips   H: hints {}", if on { "on" } else { "off" });
         });
         let hw = measure_text(help, None, 20, 1.0).width;
-        draw_text(help, VW - 24.0 - hw, VH - 26.0, 20.0, DIM);
+        if !self.touch.seen {
+            // keyboard hints; a touch screen has its buttons there instead
+            draw_text(help, VW - 24.0 - hw, VH - 26.0, 20.0, DIM);
+        }
         // compass arrow
         let off = self.world.offset();
         let p = self.world.player.pos + off;
@@ -1960,7 +2023,8 @@ impl App {
                 centered(t, VW * 0.5, y + 46.0, 24.0, PAPER);
             }
         }
-        draw_text("Beat both wardens to open the stairs.   Click/Space: fire   Shift: roll", 20.0, VH - 22.0, 20.0, DIM);
+        let hint = if self.touch.seen { "Beat both wardens to open the stairs." } else { "Beat both wardens to open the stairs.   Click/Space: fire   Shift: roll" };
+        draw_text(hint, 20.0, VH - 22.0, 20.0, DIM);
         self.draw_reticle(&inp);
     }
 
@@ -2151,7 +2215,7 @@ impl App {
                 self.tip_wait = Some(t);
             }
         }
-        if is_key_pressed(KeyCode::T) && (on_floor || reading) && !self.pending_floor {
+        if (is_key_pressed(KeyCode::T) || self.touch_hoot) && (on_floor || reading) && !self.pending_floor {
             if !self.ai_fx.hints.enabled {
                 self.show_banner("HOOT IS NAPPING".into(), "Press H to wake Hoot up.".into(), DIM);
             } else {
