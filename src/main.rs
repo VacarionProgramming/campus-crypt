@@ -1247,7 +1247,7 @@ impl App {
         centered("HOW TO PLAY", cx, 214.0, 34.0, KSU_GOLD);
         let rooms = self.run.rooms;
         let lines: [(&str, String); 9] = [
-            ("Goal", format!("Go down {rooms} floors. Each hides a trap that looks like real campus life.")),
+            ("Goal", format!("Go down {rooms} floors. Each hides a trap from real campus life.")),
             ("Move", "WASD or the arrow keys".into()),
             ("Fire", "Hold Space, J or the left mouse button (the mouse aims)".into()),
             ("Roll", "Shift, K or right-click: a quick dodge".into()),
@@ -3500,6 +3500,7 @@ async fn main() {
     next_frame().await;
     // grow the font atlas now, not mid-frame (avoids "glBindTexture ... deleted texture")
     art::prewarm_font_atlas();
+    art::load_smooth_fonts();
 
     let loaded = content::load();
     let audio = Audio::new().await;

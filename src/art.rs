@@ -42,8 +42,105 @@ fn text_px(size: f32) -> (u16, f32) {
     (px as u16, size / px)
 }
 
-/// `macroquad::text::draw_text`, rasterized at screen resolution.
+// ---------------------------------------------------------------- smooth text
+//
+// Body text (everything under title size) is drawn in Source Code Pro, a
+// vector font (assets/fonts, SIL OFL 1.1), rasterized at the size it really
+// shows on screen, so it stays sharp at any size. Titles keep the pixel font,
+// ProggyClean, which is the game's look.
+//
+// Native: one font, rasterized at the window's real size every frame.
+// Web: macroquad's font atlas must not grow mid-game there (on WebGL that
+// garbled text and textures), so `load_smooth_fonts` makes one font per raster
+// size, from the screen's scale when held sideways, and fills each one at
+// startup. Each size has its own small atlas that grows at most once, while it
+// is nearly empty; text snaps to the nearest size and is scaled to fit exactly.
+
+const SMOOTH_TTF: &[u8] = include_bytes!("../assets/fonts/SourceCodePro-Bold.ttf");
+/// Text this big or bigger (titles) keeps the pixel font.
+const PIXEL_FROM: f32 = 47.5;
+/// Source Code Pro is wider and taller than ProggyClean at the same size.
+const SMOOTH_SIZE: f32 = 0.78;
+/// Web: canvas sizes (after `SMOOTH_SIZE`) that get a raster font of their own.
+#[cfg(target_arch = "wasm32")]
+const WEB_BUCKETS: [f32; 12] = [8.0, 10.0, 12.0, 13.5, 15.0, 17.0, 19.0, 21.0, 23.5, 26.0, 30.0, 34.0];
+
+thread_local! {
+    /// (raster px, font): one entry per raster size on the web; one entry (px 0) on native
+    static SMOOTH: RefCell<Vec<(u16, Font)>> = const { RefCell::new(Vec::new()) };
+    static WEB_SCALE: Cell<f32> = const { Cell::new(1.0) };
+}
+
+#[cfg(target_arch = "wasm32")]
+fn text_chars() -> Vec<char> {
+    let mut all: Vec<char> = (' '..='~').collect();
+    // typographic punctuation that written and AI lines can carry
+    all.extend(['\u{2018}', '\u{2019}', '\u{201C}', '\u{201D}', '\u{2013}', '\u{2014}', '\u{2026}', '\u{2022}', '\u{00E9}', '\u{00D7}', '\u{2192}']);
+    all
+}
+
+/// Load the smooth font (call once at startup, after the window exists).
+pub fn load_smooth_fonts() {
+    let Ok(mut base) = load_ttf_font_from_bytes(SMOOTH_TTF) else { return };
+    base.set_filter(FilterMode::Linear);
+    #[cfg(not(target_arch = "wasm32"))]
+    SMOOTH.with(|f| f.borrow_mut().push((0, base)));
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = base;
+        // the canvas scale this screen shows when held sideways, in quarter steps
+        let dpi = miniquad::window::dpi_scale();
+        let (w, h) = (screen_width() * dpi, screen_height() * dpi);
+        let (long, short) = (w.max(h), w.min(h));
+        let scale = (((long / VW).min(short / VH) * 4.0).round() / 4.0).clamp(0.5, 3.0);
+        WEB_SCALE.with(|c| c.set(scale));
+        let chars = text_chars();
+        let mut fonts = Vec::new();
+        for b in WEB_BUCKETS {
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let px = (b * scale).round().max(6.0) as u16;
+            if fonts.iter().any(|(p, _)| *p == px) {
+                continue;
+            }
+            let Ok(mut f) = load_ttf_font_from_bytes(SMOOTH_TTF) else { continue };
+            f.set_filter(FilterMode::Linear);
+            f.populate_font_cache(&chars, px);
+            fonts.push((px, f));
+        }
+        SMOOTH.with(|s| *s.borrow_mut() = fonts);
+    }
+}
+
+/// The smooth font and raster size for canvas size `size`, if it is loaded.
+fn smooth(size: f32) -> Option<(Font, u16)> {
+    SMOOTH.with(|s| {
+        let s = s.borrow();
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let (_, f) = s.first()?;
+            let px = (size * text_scale()).round().clamp(1.0, 512.0);
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            Some((f.clone(), px as u16))
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let want = size * WEB_SCALE.with(|c| c.get());
+            let (px, f) = s.iter().min_by(|a, b| (f32::from(a.0) - want).abs().total_cmp(&(f32::from(b.0) - want).abs()))?;
+            Some((f.clone(), *px))
+        }
+    })
+}
+
+/// `macroquad::text::draw_text`: body text in the smooth font at screen
+/// resolution, titles in the pixel font.
 pub fn draw_text(text: impl AsRef<str>, x: f32, y: f32, font_size: f32, color: Color) -> TextDimensions {
+    if font_size < PIXEL_FROM {
+        let size = font_size * SMOOTH_SIZE;
+        if let Some((font, px)) = smooth(size) {
+            let params = TextParams { font: Some(&font), font_size: px, font_scale: size / f32::from(px.max(1)), color, ..Default::default() };
+            return macroquad::text::draw_text_ex(text.as_ref(), x, y, params);
+        }
+    }
     let (px, k) = text_px(font_size);
     // snap the baseline to a whole screen pixel so glyphs don't blur
     let s = text_scale();
@@ -53,7 +150,14 @@ pub fn draw_text(text: impl AsRef<str>, x: f32, y: f32, font_size: f32, color: C
 
 /// `macroquad::text::measure_text`, measured the same way `draw_text` draws.
 pub fn measure_text(text: impl AsRef<str>, font: Option<&Font>, font_size: u16, font_scale: f32) -> TextDimensions {
-    let (px, k) = text_px(font_size as f32 * font_scale);
+    let size = f32::from(font_size) * font_scale;
+    if size < PIXEL_FROM {
+        let size = size * SMOOTH_SIZE;
+        if let Some((f, px)) = smooth(size) {
+            return macroquad::text::measure_text(text.as_ref(), Some(&f), px, size / f32::from(px.max(1)));
+        }
+    }
+    let (px, k) = text_px(size);
     macroquad::text::measure_text(text.as_ref(), font, px, k)
 }
 
