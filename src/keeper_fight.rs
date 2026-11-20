@@ -784,7 +784,7 @@ pub fn step(run: &mut crate::state::Run, f: &mut Fight, dt: f32, inp: &FightInpu
 
 // ---------------------------------------------------------------- drawing
 
-use crate::art::{centered, draw_sprite_centered, heart, panel, text_block, wrap, AT_SIGN, BOX_OWL, DIM, ENVELOPE, INK, KSU_GOLD, PAPER, RISKY};
+use crate::art::{centered, draw_sprite_centered, draw_text, heart, panel, text_block, wrap, AT_SIGN, BOX_OWL, DIM, ENVELOPE, INK, KSU_GOLD, PAPER, RISKY};
 use crate::keeper::Mail;
 
 /// Box position on the 1280x720 canvas.

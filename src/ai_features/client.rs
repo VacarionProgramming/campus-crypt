@@ -24,6 +24,8 @@ pub enum JobKey {
     Floor(usize),
     /// end-of-run study guide
     Debrief,
+    /// AI-written encounter for generated slot n
+    Gen(usize),
 }
 
 #[derive(Clone, Debug, PartialEq)]

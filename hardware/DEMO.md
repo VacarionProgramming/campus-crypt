@@ -50,9 +50,10 @@ Click **→ (Upload)**. After about 20 seconds the IDE says **"Done uploading."*
    E:LVL
    S:5,5,1,1,4,0,F,F,10
    E:STAIRS
+   E:TIP
    S:0,5,2,3,4,1,D,F,10
    ```
-   You should get `HP 4/5` + bar / `Kn2 F3/10`, `F  3` on the 4-digit display, a heart flash, a burst, then the fight screen (`* INBOX MIMIC *`, a blinking `5:00`, a heart dodging in a box), stairs, and the skull. While it gets `S:` lines it also prints `HB` twice a second. After 3 s without an `S:` line it goes back to "waiting...".
+   You should get `HP 4/5` + bar / `Kn2 F3/10`, `F  3` on the 4-digit display, a heart flash, a burst, then the fight screen (`* INBOX MIMIC *`, a blinking `5:00`, a heart dodging in a box), stairs, a blinking owl (Hoot's tip), and the skull. While it gets `S:` lines it also prints `HB` twice a second. After 3 s without an `S:` line it goes back to "waiting...".
 
 ### 7. Close the Serial Monitor (important)
 

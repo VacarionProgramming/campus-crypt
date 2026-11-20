@@ -59,6 +59,7 @@ Nothing is shared (the Uno build needed a shared D2/D3 bus and a 74HC595; the Me
 | `E:HIT` | Health lost, a wrong Keeper answer, or a hit in the fight box: heart flash |
 | `E:LVL` | A right answer, a safe choice or a beaten warden: burst |
 | `E:STAIRS` | Down the stairs: stairs icon |
+| `E:TIP` | Hoot (the owl companion) has a tip: a blinking owl on the matrix for about 3 s |
 | `E:DIE` | Overwhelmed: skull |
 | `E:MENU` | Back on the title screen: title scroll |
 | `PING` | "Are you there?" The board answers `HELLO:CRYPT` |

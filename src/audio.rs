@@ -20,9 +20,11 @@ pub enum Sfx {
     Death,
     Click,
     Equip,
+    /// the foam-dart blaster
+    Pew,
 }
 
-const SFX_COUNT: usize = 11;
+const SFX_COUNT: usize = 12;
 
 pub struct Audio {
     sounds: Vec<Sound>,
@@ -185,6 +187,13 @@ fn synth(s: Sfx) -> Vec<f32> {
             tone(&mut b, 0.02, 0.2, 2093.0, 2093.0, 0.12, 0);
             b
         }
+        Sfx::Pew => {
+            // a soft foam "fwip": a puff of air and a quick upward chirp
+            let mut b = buf(0.09);
+            noise(&mut b, 0.0, 0.05, 0.25, 0.5, 41);
+            tone(&mut b, 0.0, 0.07, 520.0, 980.0, 0.18, 0);
+            b
+        }
     }
 }
 
@@ -202,6 +211,7 @@ impl Audio {
             Sfx::Death,
             Sfx::Click,
             Sfx::Equip,
+            Sfx::Pew,
         ];
         let mut sounds = Vec::with_capacity(SFX_COUNT);
         for s in all {

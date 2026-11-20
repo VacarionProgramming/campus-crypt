@@ -33,8 +33,10 @@ mod music;
 mod state;
 
 use ai::{LineSource, ReactionRequest, Reactor};
-use ai_features::{scamgen, AiFeatures, ScamMessage, SpotRound, TierChange};
+use ai_features::{scamgen, tips, AiFeatures, ScamMessage, SpotRound, TierChange};
 use art::*;
+// crisp text: these shadow macroquad's versions from the prelude glob
+use art::{draw_text, measure_text};
 use audio::{Audio, Sfx};
 use music::{Music, Track};
 use content::{Effects, Encounter, Loaded, Outcome};
@@ -77,8 +79,10 @@ struct Input {
     back: bool,
     /// E / Enter (or the joystick button near something): talk, answer, descend
     interact: bool,
-    /// Space / J / left mouse held (or the joystick button): swing
+    /// Space / J / left mouse held (or the joystick button): fire the foam-dart blaster
     attack: bool,
+    /// Shift / K / right-click: dodge roll
+    dodge: bool,
     /// the attack came from the mouse: aim at it
     mouse_attack: bool,
     /// autopilot aim in world coordinates
@@ -121,12 +125,13 @@ impl Input {
             down: p(KeyCode::Down) || p(KeyCode::S) || nav.down,
             left: p(KeyCode::Left) || p(KeyCode::A) || nav.left,
             right: p(KeyCode::Right) || p(KeyCode::D) || nav.right,
-            // no Space: it's the swing key, and a held swing must never pick an answer
+            // no Space: it's the fire key, and a held trigger must never pick an answer
             confirm: p(KeyCode::Enter) || p(KeyCode::KpEnter) || p(KeyCode::E) || nav.select,
             back: p(KeyCode::Escape),
             interact: p(KeyCode::E) || p(KeyCode::Enter) || p(KeyCode::KpEnter) || nav.select,
             attack: d(KeyCode::Space) || d(KeyCode::J) || is_mouse_button_down(MouseButton::Left) || hw.button_held(),
             mouse_attack: is_mouse_button_down(MouseButton::Left),
+            dodge: p(KeyCode::LeftShift) || p(KeyCode::RightShift) || p(KeyCode::K) || is_mouse_button_pressed(MouseButton::Right),
             aim_world: None,
             digit,
             mouse: view.to_virtual(mouse_position().into()),
@@ -160,6 +165,8 @@ impl View {
         let (x, y) = (((pw - w) * 0.5).floor(), ((ph - h) * 0.5).floor());
         let mut cam = Camera2D::from_display_rect(Rect::new(0.0, VH, VW, -VH));
         cam.viewport = Some((x as i32, y as i32, w as i32, h as i32));
+        // text is rasterized at this many screen pixels per canvas pixel
+        art::set_text_scale(w / VW);
         View { cam, rect: Rect::new(x / dpi, y / dpi, w / dpi, h / dpi) }
     }
 
@@ -230,6 +237,9 @@ fn enc_at(loaded: &Loaded, room: usize) -> &Encounter {
     let list = &loaded.content.encounters;
     &list[state::encounter_for_floor(room, list.len())]
 }
+
+/// How long a tip bubble stays up on the floor (on a scenario it stays until you choose).
+const OWL_FLOOR_SECS: f32 = 11.0;
 
 fn new_run(loaded: &Loaded) -> Run {
     let n = loaded.content.encounters.len();
@@ -525,6 +535,10 @@ struct App {
     /// shared so per-frame code can borrow an encounter while mutating `self`
     /// (previously the whole Encounter was cloned every frame)
     loaded: Rc<Loaded>,
+    /// the content as loaded from disk; `loaded` is this plus any AI-written encounters swapped in for the run
+    orig_loaded: Rc<Loaded>,
+    /// set while the current floor's encounter was written by the AI (and passed the rubric)
+    gen_note: Option<&'static str>,
     reactor: Reactor,
     audio: Audio,
     hw: Hardware,
@@ -564,7 +578,7 @@ struct App {
     run_seed: u32,
     /// seconds left before a freshly opened choice screen takes an answer
     choice_lock: f32,
-    /// the choice screen takes input (lock over and every confirm/swing key released)
+    /// the choice screen takes input (lock over and every confirm/fire key released)
     choice_open: bool,
     /// the stairs were taken: build the next floor next frame, behind a black screen
     pending_floor: bool,
@@ -598,6 +612,14 @@ struct App {
     owl: Option<Line>,
     /// seconds since Hoot popped in (pop-in animation)
     owl_t: f32,
+    /// last time the mouse moved or fired: while recent, the blaster aims at it (twin-stick)
+    mouse_aim_t: f64,
+    /// a tip that arrived where it can't be drawn (the lesson screen); it pops in once the floor is back
+    tip_wait: Option<tips::Tip>,
+    /// Hoot's tip log overlay (L) is open
+    tip_log_open: bool,
+    /// how many tips the log is scrolled down (0 = newest first)
+    tip_log_scroll: usize,
     /// the Floor Keeper's opening taunt on the quiz screen
     taunt: Option<Line>,
     /// each floor's side game, planned at run start
@@ -631,6 +653,8 @@ impl App {
         let hw_on = false;
         let run = new_run(&loaded);
         App {
+            orig_loaded: loaded.clone(),
+            gen_note: None,
             loaded,
             reactor,
             audio,
@@ -679,6 +703,10 @@ impl App {
             ai_fx,
             owl: None,
             owl_t: 0.0,
+            mouse_aim_t: -99.0,
+            tip_wait: None,
+            tip_log_open: false,
+            tip_log_scroll: 0,
             taunt: None,
             sides: Vec::new(),
             mini: None,
@@ -877,7 +905,34 @@ impl App {
         enc_at(&self.loaded, self.run.room)
     }
 
+    /// Swap in this floor's AI-written encounter if one arrived and passed the rubric
+    /// (`ai_features::genenc`); otherwise the scripted encounter stays.
+    fn apply_generated(&mut self) {
+        self.gen_note = None;
+        let Some(res) = self.ai_fx.generated_encounter(self.run.room) else { return };
+        match res {
+            Ok(enc) => {
+                let mut encounters = self.loaded.content.encounters.clone();
+                let idx = state::encounter_for_floor(self.run.room, encounters.len());
+                encounters[idx] = enc;
+                self.loaded = Rc::new(Loaded {
+                    content: content::Content { encounters },
+                    ai_prompt: self.loaded.ai_prompt.clone(),
+                    source: self.loaded.source.clone(),
+                    warnings: self.loaded.warnings.clone(),
+                });
+                self.txt = Texts::default();
+                self.gen_note = Some("AI-WRITTEN");
+            }
+            Err(why) => eprintln!("floor {}: scripted encounter (AI-written one skipped: {why})", self.run.room),
+        }
+    }
+
     fn start_run(&mut self) {
+        // drop last run's AI-written encounters and any text cached for them
+        self.loaded = self.orig_loaded.clone();
+        self.gen_note = None;
+        self.txt = Texts::default();
         self.run = new_run(&self.loaded);
         self.run_seed = macroquad::rand::rand();
         self.pending_floor = false;
@@ -888,6 +943,8 @@ impl App {
         self.txt.notes_key = None;
         // resets the AI extras and prefetches floor 1's banter, the 3 scam bodies and the tier lines
         self.ai_fx.begin_run(&self.loaded.content, self.run_seed, get_time());
+        self.tip_wait = None;
+        self.tip_log_open = false;
         self.plan_sides();
         self.mini = None;
         self.minis_opened = 0;
@@ -899,12 +956,15 @@ impl App {
 
     /// Build the current floor and announce it.
     fn enter_floor(&mut self) {
+        self.apply_generated();
         self.world = World::floor(self.tier());
         self.world.god = self.auto.god;
         // this floor's Keeper banter + owl hint start downloading now (free if already asked)
         self.ai_fx.begin_floor(&self.loaded.content, self.run.room, get_time());
         self.mini = None;
         self.owl = None;
+        self.tip_wait = None;
+        self.ai_fx.cancel_tip();
         self.taunt = None;
         match self.side() {
             Some(Side::Scam(_)) => {
@@ -1136,18 +1196,19 @@ impl App {
         panel(cx - 400.0, 170.0, 800.0, 450.0, KSU_GOLD);
         centered("HOW TO PLAY", cx, 214.0, 34.0, KSU_GOLD);
         let rooms = self.run.rooms;
-        let lines: [(&str, String); 8] = [
+        let lines: [(&str, String); 9] = [
             ("Goal", format!("Go down {rooms} floors. Each hides a trap that looks like real campus life.")),
             ("Move", "WASD or the arrow keys".into()),
-            ("Swing", "Space, J or the left mouse button".into()),
+            ("Fire", "Hold Space, J or the left mouse button (the mouse aims)".into()),
+            ("Roll", "Shift, K or right-click: a quick dodge".into()),
             ("Talk", "E or Enter near the floor's character, then 1-3 to answer".into()),
             ("Keeper", "Answer the Floor Keeper to open the stairs; miss = fight 2 wardens".into()),
-            ("Hints", "H: Hoot's hints on/off   -   M mute   -   N music".into()),
+            ("Hoot", "T ask  -  L tip log  -  H hints  -  M mute  -  N music".into()),
             ("Pause", "Esc or O: pause and Options".into()),
             ("Arduino", "Optional: a Mega 2560 mirrors the game on an LCD and an 8x8 matrix".into()),
         ];
         for (i, (k, v)) in lines.iter().enumerate() {
-            let y = 268.0 + i as f32 * 40.0;
+            let y = 262.0 + i as f32 * 36.0;
             draw_text(k, cx - 370.0, y, 22.0, KSU_GOLD);
             draw_text(v, cx - 250.0, y, 20.0, PAPER);
         }
@@ -1168,6 +1229,21 @@ impl App {
         }
         self.room_fade = (self.room_fade - dt * 2.0).max(0.0);
         let inp = self.gate_choices(inp, dt);
+        // Hoot's tip log (L). Handled before the settings overlay so Esc closes it instead of opening settings.
+        if self.tip_log_open || (is_key_pressed(KeyCode::L) && self.tip_log_ok()) {
+            let opening = !self.tip_log_open;
+            self.tip_log_open = true;
+            if opening {
+                self.tip_log_scroll = 0;
+                self.sfx(Sfx::Click);
+            }
+            self.draw_tip_log(&inp);
+            if !opening && (inp.back || inp.confirm || is_key_pressed(KeyCode::L)) {
+                self.tip_log_open = false;
+                self.sfx(Sfx::Click);
+            }
+            return;
+        }
         // Esc / O: the Options overlay (pauses a floor or the arena)
         let can_pause = !self.pending_floor
             && ((self.run.phase == Phase::Explore && self.mini.is_none()) || (self.run.phase == Phase::BossFight && self.arena.is_some()));
@@ -1204,6 +1280,9 @@ impl App {
             l.shown += TYPE_CPS * dt;
         }
 
+        // Hoot's tips: T asks anytime; a tip is also written after every lesson
+        self.hoot_tips(dt);
+
         // one handler per frame, picked before anything runs, so the key that
         // opens a screen can't also make a choice on it in the same frame
         let phase = self.run.phase;
@@ -1223,6 +1302,15 @@ impl App {
             Phase::KeeperVerdict => self.keeper_verdict(inp),
             Phase::Ending => self.ending(inp),
             Phase::Explore | Phase::BossFight => {}
+        }
+        // Hoot's bubble on the floor (on a scenario, `encounter` draws it) and its thinking line
+        let on_floor = phase == Phase::Explore && !mini;
+        if on_floor && self.owl.is_some() {
+            self.draw_owl(56.0);
+        }
+        if self.ai_fx.tip_busy() && (on_floor || phase == Phase::Encounter) {
+            let dots = 1 + (self.t * 3.0) as usize % 3;
+            draw_text(&"Hoot is thinking..."[..16 + dots], 40.0, VH - 58.0, 22.0, DIM);
         }
         if self.run.phase != Phase::Ending {
             self.draw_hud();
@@ -1266,9 +1354,34 @@ impl App {
         Power { knowledge: s.knowledge, focus: s.focus, can_heal: s.health < MAX_HEALTH }
     }
 
-    fn control(&self, inp: &Input, world: &World) -> Control {
-        let aim = inp.aim_world.or_else(|| inp.mouse_attack.then(|| inp.mouse - world.offset()));
-        Control { mv: inp.mv, attack: inp.attack, aim }
+    /// Mouse aiming stays on for a few seconds after the mouse moves or fires;
+    /// keyboard-only and joystick players get aim assist instead (`World::aim_dir`).
+    const MOUSE_AIM_SECS: f64 = 3.0;
+
+    fn mouse_aiming(&self) -> bool {
+        get_time() - self.mouse_aim_t < Self::MOUSE_AIM_SECS
+    }
+
+    fn control(&mut self, inp: &Input, offset: Vec2) -> Control {
+        if inp.mouse_moved || inp.mouse_attack {
+            self.mouse_aim_t = get_time();
+        }
+        let aim = inp.aim_world.or_else(|| self.mouse_aiming().then(|| inp.mouse - offset));
+        Control { mv: inp.mv, attack: inp.attack, aim, dodge: inp.dodge }
+    }
+
+    /// A small crosshair at the mouse while it aims the blaster.
+    fn draw_reticle(&self, inp: &Input) {
+        if !self.mouse_aiming() || inp.aim_world.is_some() {
+            return;
+        }
+        let m = inp.mouse;
+        let c = Color::from_rgba(255, 140, 40, 230);
+        draw_circle_lines(m.x, m.y, 10.0, 2.0, c);
+        for (dx, dy) in [(1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0)] {
+            draw_line(m.x + dx * 6.0, m.y + dy * 6.0, m.x + dx * 15.0, m.y + dy * 15.0, 2.0, c);
+        }
+        draw_circle(m.x, m.y, 2.0, Color::from_rgba(70, 140, 255, 255));
     }
 
     /// Turn what happened in the world into run changes, sounds and hardware events.
@@ -1352,13 +1465,15 @@ impl App {
     // ------------------------------------------------------------ explore (the floor)
 
     fn explore(&mut self, inp: Input, dt: f32) {
-        let ctl = self.control(&inp, &self.world);
+        let offset = self.world.offset();
+        let ctl = self.control(&inp, offset);
         let power = self.power();
         self.world.update(dt, ctl, power);
         let events = std::mem::take(&mut self.world.events);
         let sounds = std::mem::take(&mut self.world.sounds);
         self.apply_world_events(events, sounds);
         self.draw_world();
+        self.draw_reticle(&inp);
         if self.run.phase != Phase::Explore {
             return; // died to a monster
         }
@@ -1500,7 +1615,7 @@ impl App {
         draw_text(t, 56.0, VH - 26.0, 22.0, PAPER);
         let on = self.ai_fx.hints.enabled;
         let help = self.txt.help.get(key(&[on as usize]), |b| {
-            let _ = write!(b, "Space/click: swing   E: talk   H: owl hints {}", if on { "on" } else { "off" });
+            let _ = write!(b, "Click/Space: fire   Shift: roll   E: talk   T: ask Hoot   L: tips   H: hints {}", if on { "on" } else { "off" });
         });
         let hw = measure_text(help, None, 20, 1.0).width;
         draw_text(help, VW - 24.0 - hw, VH - 26.0, 20.0, DIM);
@@ -1790,8 +1905,8 @@ impl App {
             self.room_fade = 1.0;
         }
         let power = self.power();
-        if let Some(a) = self.arena.as_ref() {
-            let ctl = self.control(&inp, a);
+        if let Some(offset) = self.arena.as_ref().map(|a| a.offset()) {
+            let ctl = self.control(&inp, offset);
             if let Some(a) = self.arena.as_mut() {
                 a.update(dt, ctl, power);
             }
@@ -1834,7 +1949,8 @@ impl App {
                 centered(t, VW * 0.5, y + 46.0, 24.0, PAPER);
             }
         }
-        draw_text("Beat both wardens to open the stairs.   Space/click: swing", 20.0, VH - 22.0, 20.0, DIM);
+        draw_text("Beat both wardens to open the stairs.   Click/Space: fire   Shift: roll", 20.0, VH - 22.0, 20.0, DIM);
+        self.draw_reticle(&inp);
     }
 
     fn draw_banner(&mut self, dt: f32) {
@@ -1939,6 +2055,9 @@ impl App {
         draw_text(t, 420.0, 120.0, 32.0, KSU_GOLD);
         draw_line(420.0, 134.0, 1210.0, 134.0, 1.0, Color::new(1.0, 0.77, 0.16, 0.4));
         text_block(&e.scenario, 420.0, 176.0, 30.0, 790.0, PAPER);
+        if let Some(tag) = self.gen_note {
+            draw_text(tag, 1100.0, 108.0, 18.0, DIM);
+        }
 
         // choices
         let n = e.choices.len().min(4);
@@ -1975,10 +2094,10 @@ impl App {
                 draw_text(l, r.x + 60.0, r.y + bh * 0.5 - total * 0.5 + 26.0 + j as f32 * 34.0 + lift, 32.0, if on { WHITE } else { PAPER });
             }
         }
-        self.draw_owl();
+        self.draw_owl(0.0);
         let on = self.ai_fx.hints.enabled;
         let t = self.txt.enc_help.get(key(&[on as usize]), |b| {
-            let _ = write!(b, "1-3, or arrows + Enter, or click a choice   -   H: owl hints {}", if on { "on" } else { "off" });
+            let _ = write!(b, "1-3, or arrows + Enter, or click a choice   -   T: ask Hoot   -   H: owl hints {}", if on { "on" } else { "off" });
         });
         centered(t, VW * 0.5, 710.0, 22.0, DIM);
         if let Some(d) = inp.digit {
@@ -1994,9 +2113,113 @@ impl App {
         }
     }
 
+    // ------------------------------------------------------------ Hoot's tips
+
+    /// The facts a tip may use: this floor's encounter (and, after a choice, the choice).
+    fn tip_context(&self, kind: tips::TipKind, stage: tips::TipStage) -> tips::TipContext {
+        tips::TipContext { kind, stage, floor: self.run.room, enc: enc_at(&self.loaded, self.run.room).clone(), picked: None }
+    }
+
+    /// Hoot's tips, once per frame: pop a waiting tip back in on the floor, collect a finished
+    /// one, and answer the T key (on the floor or while reading a scenario).
+    fn hoot_tips(&mut self, dt: f32) {
+        let now = get_time();
+        let phase = self.run.phase;
+        let on_floor = phase == Phase::Explore && self.mini.is_none();
+        let reading = phase == Phase::Encounter;
+        if on_floor && self.owl.is_none() {
+            if let Some(t) = self.tip_wait.take() {
+                self.show_tip(t);
+            }
+        }
+        if let Some(t) = self.ai_fx.poll_tip(now) {
+            if t.kind == tips::TipKind::Ask && (on_floor || reading) {
+                self.show_tip(t);
+            } else {
+                // a post-floor tip, or one that finished somewhere it can't be drawn
+                self.tip_wait = Some(t);
+            }
+        }
+        if is_key_pressed(KeyCode::T) && (on_floor || reading) && !self.pending_floor {
+            if !self.ai_fx.hints.enabled {
+                self.show_banner("HOOT IS NAPPING".into(), "Press H to wake Hoot up.".into(), DIM);
+            } else {
+                let stage = if reading { tips::TipStage::Deciding } else { tips::TipStage::Exploring };
+                let ctx = self.tip_context(tips::TipKind::Ask, stage);
+                if self.ai_fx.ask_tip(ctx, now) {
+                    self.sfx(Sfx::Click);
+                }
+            }
+        }
+        // on the floor a bubble fades on its own; on a scenario it stays until a choice is made
+        if on_floor && self.owl.is_some() {
+            self.owl_t += dt;
+            if self.owl_t > OWL_FLOOR_SECS {
+                self.owl = None;
+            }
+        }
+    }
+
+    /// Hoot speaks a tip: the bubble pops in, and the board's matrix shows the owl.
+    fn show_tip(&mut self, t: tips::Tip) {
+        if self.auto.on {
+            println!("[auto] hoot tip ({}): {}", source_tag(&t.source, "line"), t.text);
+        }
+        self.owl = Some(Line::new(t.text, t.source));
+        self.owl_t = 0.0;
+        self.sfx(Sfx::Equip);
+        self.hw.send_event(HwEvent::Tip);
+    }
+
+    /// The tip log opens on the floor, on a scenario and on a lesson.
+    fn tip_log_ok(&self) -> bool {
+        !self.pending_floor
+            && !self.settings_open
+            && self.mini.is_none()
+            && matches!(self.run.phase, Phase::Explore | Phase::Encounter | Phase::Lesson)
+    }
+
+    /// Hoot's tip log: this run's tips, newest first, Up/Down to scroll.
+    fn draw_tip_log(&mut self, inp: &Input) {
+        const PER_PAGE: usize = 4;
+        let total = self.ai_fx.tip_log().len();
+        if inp.up {
+            self.tip_log_scroll = self.tip_log_scroll.saturating_sub(1);
+        }
+        if inp.down {
+            self.tip_log_scroll += 1;
+        }
+        self.tip_log_scroll = self.tip_log_scroll.min(total.saturating_sub(PER_PAGE));
+        self.draw_world();
+        self.draw_hud();
+        draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.72));
+        panel(120.0, 80.0, VW - 240.0, 560.0, KSU_GOLD);
+        centered("HOOT'S TIP LOG", VW * 0.5, 130.0, 34.0, KSU_GOLD);
+        let log = self.ai_fx.tip_log();
+        if log.is_empty() {
+            centered("No tips yet.", VW * 0.5, 300.0, 28.0, PAPER);
+            centered("Press T on a floor or while reading a scenario to ask Hoot.", VW * 0.5, 340.0, 22.0, DIM);
+        }
+        for (i, tip) in log.iter().rev().skip(self.tip_log_scroll).take(PER_PAGE).enumerate() {
+            let y0 = 160.0 + i as f32 * 104.0;
+            let head = format!("FLOOR {}  -  {}", tip.floor + 1, tip.kind.tag());
+            draw_text(&head, 150.0, y0 + 22.0, 22.0, KSU_GOLD);
+            let tag = source_tag(&tip.source, "tip");
+            let tw = measure_text(&tag, None, 18, 1.0).width;
+            draw_text(&tag, VW - 150.0 - tw, y0 + 22.0, 18.0, DIM);
+            text_block(&tip.text, 150.0, y0 + 52.0, 24.0, VW - 300.0, PAPER);
+        }
+        let foot = if total > PER_PAGE {
+            format!("Up/Down: scroll   -   {total} tips   -   L / Esc / Enter: close")
+        } else {
+            "L / Esc / Enter: close".to_string()
+        };
+        centered(&foot, VW * 0.5, 620.0, 20.0, DIM);
+    }
+
     /// Hoot pops in at the bottom of the encounter screen with its one-line nudge
     /// (stays until the choice is made).
-    fn draw_owl(&self) {
+    fn draw_owl(&self, lift: f32) {
         let Some(l) = &self.owl else { return };
         if !self.ai_fx.hints.enabled {
             return;
@@ -2007,7 +2230,7 @@ impl App {
         let bx = 118.0;
         let text_w = VW - 40.0 - bx - 36.0;
         let one_line = wrap(&l.text, 24.0, text_w).len() <= 1;
-        let (y, h) = if one_line { (622.0, 68.0) } else { (612.0, 80.0) };
+        let (y, h) = if one_line { (622.0 - lift, 68.0) } else { (612.0 - lift, 80.0) };
         let px = 4.0;
         let ox = 40.0;
         let oy = y + h - 16.0 * px * pop + (self.t * 3.0).sin() * 2.0 * pop;
@@ -2039,6 +2262,9 @@ impl App {
         }
         self.ai_fx.hints.stop();
         self.owl = None;
+        // a tip still being written was for the undecided scenario: drop it
+        self.tip_wait = None;
+        self.ai_fx.cancel_tip();
         let ch = &e.choices[i];
         self.sel = i;
         self.line = None;
@@ -2100,6 +2326,23 @@ impl App {
                 l.shown = l.len as f32;
             }
             self.applied = self.run.reveal_lesson(&self.loaded.content);
+            // Hoot writes one "for next time" tip while the lesson is read; it pops in back on the floor
+            if self.ai_fx.hints.enabled && !self.run.is_last_lesson() {
+                let picked = tips::Picked {
+                    label: ch.label.clone(),
+                    outcome: ch.outcome,
+                    warning_signs: ch.warning_signs.clone(),
+                    safer_next_move: ch.safer_next_move.clone(),
+                };
+                let ctx = tips::TipContext {
+                    kind: tips::TipKind::PostFloor,
+                    stage: tips::TipStage::Reviewed,
+                    floor: self.run.room,
+                    enc: e.clone(),
+                    picked: Some(picked),
+                };
+                self.ai_fx.ask_tip(ctx, get_time());
+            }
             self.txt.chips.clear();
             if let Some(a) = self.applied {
                 for (name, v, col) in [("Knowledge", a.knowledge, KSU_GOLD), ("Focus", a.focus, FOCUS), ("Health", a.health, RISKY)] {

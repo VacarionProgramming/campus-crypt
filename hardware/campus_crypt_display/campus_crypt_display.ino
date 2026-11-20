@@ -235,6 +235,9 @@ const uint8_t ICON_HEART_SMALL[8] PROGMEM = {0x00, 0x00, 0x24, 0x7E, 0x7E, 0x3C,
 const uint8_t ICON_SKULL[8] PROGMEM = {0x3C, 0x7E, 0xDB, 0xDB, 0xFF, 0x66, 0x3C, 0x24};
 const uint8_t ICON_STAIRS[8] PROGMEM = {0x03, 0x03, 0x0F, 0x0F, 0x3F, 0x3F, 0xFF, 0xFF};
 const uint8_t ICON_PAUSE[8] PROGMEM = {0x00, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x00};
+// Hoot the owl: ears, round face with two eyes (the gaps), beak, feet. The blink fills the eyes in.
+const uint8_t ICON_OWL[8] PROGMEM = {0x42, 0x7E, 0xDB, 0xDB, 0x7E, 0x3C, 0x18, 0x66};
+const uint8_t ICON_OWL_BLINK[8] PROGMEM = {0x42, 0x7E, 0xFF, 0xFF, 0x7E, 0x3C, 0x18, 0x66};
 
 // 5x7 font for the title, column-major (bit 0 = top row)
 const uint8_t FONT_C[5] PROGMEM = {0x3E, 0x41, 0x41, 0x41, 0x22};
@@ -256,7 +259,7 @@ uint8_t titleColumn(uint8_t c) {
 
 // --- animation engine
 // overlay animations (plain constants keep the Arduino IDE's auto-prototypes happy)
-const uint8_t OV_NONE = 0, OV_HIT = 1, OV_LVL = 2, OV_STAIRS = 3;
+const uint8_t OV_NONE = 0, OV_HIT = 1, OV_LVL = 2, OV_STAIRS = 3, OV_TIP = 4;
 uint8_t overlay = OV_NONE;
 unsigned long overlayStart = 0;
 unsigned long lastAnimMs = 0;
@@ -335,6 +338,11 @@ void matrixUpdate() {
     if ((t / 120) % 2 == 0) fbIcon(ICON_HEART); else fbClear();
   } else if (overlay == OV_LVL && t < 1400) {
     drawBurst(t);
+  } else if (overlay == OV_TIP && t < 2800) {
+    // Hoot has a tip: the owl watches you, blinks twice, and its ears twitch
+    bool blink = (t % 900) < 150;
+    fbIcon(blink ? ICON_OWL_BLINK : ICON_OWL);
+    if ((t / 300) % 4 == 3) fb[0] = 0x24;
   } else if (overlay == OV_STAIRS && t < 1500) {
     fbIcon(ICON_STAIRS);
     if ((t / 250) % 2) for (uint8_t r = 0; r < 8; r++) fb[r] = (fb[r] << 1) | (fb[r] >> 7);
@@ -486,6 +494,8 @@ void handleLine(char* line) {
     startOverlay(OV_LVL);
   } else if (strcmp(line, "E:STAIRS") == 0) {
     startOverlay(OV_STAIRS);
+  } else if (strcmp(line, "E:TIP") == 0) {
+    startOverlay(OV_TIP);
   } else if (strcmp(line, "E:DIE") == 0) {
     overlay = OV_NONE;
     gs.mode = 'D';

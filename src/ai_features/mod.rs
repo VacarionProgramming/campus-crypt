@@ -3,6 +3,8 @@
 //! 1. Live scam generator (`scamgen`)      4. Spot-the-fake (`spotfake`)
 //! 2. Floor Keeper banter (`banter`)        5. Owl companion hints (`hints`)
 //! 3. Post-run debrief (`debrief`)          6. Adaptive difficulty narration (`difficulty`)
+//! 7. Hoot's tips: ask anytime + after each floor + tip log (`tips`)
+//! 8. AI-written encounters, verified by a code rubric (`genenc`)
 //!
 //! Guardrails: game state stays deterministic. Code picks every template, red
 //! flag, verdict, label, tier and mistake; the AI only writes prose around them,
@@ -12,7 +14,7 @@
 //! Call budget per run (all prefetched in the background, spaced `MIN_GAP_SECS`
 //! apart, capped at `MAX_CALLS_PER_RUN`): run start = floor 0 pack + 3 scam bodies
 //! + tier narration pack (5 calls); each later floor = 1 floor pack; run end =
-//!   1 debrief. A 10-floor run uses 15. The character reaction (ai::Reactor, 1 per
+//!   1 debrief, plus 3 generated encounters at run start. A 10-floor run uses 18. The character reaction (ai::Reactor, 1 per
 //!   floor) is separate and unchanged.
 
 // The UI wiring lands later (Darby); until then only tests call most of this.
@@ -23,9 +25,11 @@ pub mod client;
 pub mod data;
 pub mod debrief;
 pub mod difficulty;
+pub mod genenc;
 pub mod hints;
 pub mod scamgen;
 pub mod spotfake;
+pub mod tips;
 pub mod validate;
 
 use crate::ai::{self, ChatCaller, Config, LineSource, TokenLimits};
@@ -43,7 +47,7 @@ pub use scamgen::{RedFlag, ScamMessage};
 pub use spotfake::SpotRound;
 
 /// Hard cap on feature calls per run (the last one is reserved for the debrief).
-pub const MAX_CALLS_PER_RUN: u32 = 16;
+pub const MAX_CALLS_PER_RUN: u32 = 19;
 /// Minimum time between two feature calls (Groq free-tier friendly).
 pub const MIN_GAP_SECS: f64 = 3.0;
 /// How long the ending screen waits for the AI debrief before the templated one.
@@ -66,11 +70,13 @@ pub struct AiFeatures {
     client: FeatureClient,
     pub data: data::FeatureData,
     prompts: [Arc<str>; 4],
+    gen_system: Arc<str>,
     seed: u32,
     /// the encounter each prefetched floor pack was written for
     floor_enc: BTreeMap<usize, Encounter>,
     pub log: FeatureLog,
     pub hints: hints::HintTracker,
+    desk: tips::TipDesk,
     tier: SkillTier,
     debrief: Option<(MistakeLog, f64)>,
     debrief_done: Option<Debrief>,
@@ -84,6 +90,7 @@ impl AiFeatures {
     }
 
     fn with(config: Option<Arc<Config>>, assets: data::Assets, caller: ChatCaller, gap: Duration) -> AiFeatures {
+        let desk = tips::TipDesk::new(config.clone(), caller, assets.data.owl_name.clone());
         let client = FeatureClient::new(config, caller, gap, MAX_CALLS_PER_RUN);
         let status = Self::status_for(&client, true);
         let p = assets.prompts;
@@ -91,10 +98,12 @@ impl AiFeatures {
             client,
             data: assets.data,
             prompts: [p.scam_body.into(), p.floor_pack.into(), p.run_pack.into(), p.debrief.into()],
+            gen_system: genenc::GEN_SYSTEM.into(),
             seed: 0,
             floor_enc: BTreeMap::new(),
             log: FeatureLog::default(),
             hints: hints::HintTracker::default(),
+            desk,
             tier: SkillTier::START,
             debrief: None,
             debrief_done: None,
@@ -136,6 +145,7 @@ impl AiFeatures {
         self.floor_enc.clear();
         self.log = FeatureLog::default();
         self.hints.reset();
+        self.desk.begin_run(run_seed);
         self.tier = SkillTier::START;
         self.hints.after_secs = self.tier.params().hint_after_secs;
         self.debrief = None;
@@ -148,6 +158,10 @@ impl AiFeatures {
             if slot == 0 {
                 self.client.submit(JobKey::RunPack, Arc::clone(&self.prompts[2]), "TASK: run_pack\nWrite the six lines now.".into(), PACK_TOKENS, now);
             }
+        }
+        // AI-written encounters for floors 2, 5 and 8 (verified by `genenc::build` when they are used)
+        for slot in 0..genenc::GEN_SLOTS {
+            self.client.submit(JobKey::Gen(slot), Arc::clone(&self.gen_system), genenc::user_message(self.seed, slot), genenc::GEN_TOKENS, now);
         }
     }
 
@@ -174,6 +188,19 @@ impl AiFeatures {
             (Got::Ready(raw), Some(enc)) => (Some(banter::parse_floor_pack(raw, enc)), ""),
             _ => (None, why(&g)),
         }
+    }
+
+    // ---- 8. generated encounters
+
+    /// The verified AI-written encounter for `floor`: None when the floor is not a
+    /// generated floor; Err(reason) when the AI is offline, late, or its text failed
+    /// the rubric (the scripted encounter plays instead).
+    pub fn generated_encounter(&self, floor: usize) -> Option<Result<Encounter, String>> {
+        let slot = genenc::slot_for_floor(floor)?;
+        Some(match self.client.get(JobKey::Gen(slot)) {
+            Got::Ready(raw) => genenc::generate(self.seed, slot, raw),
+            g => Err(why(&g).to_string()),
+        })
     }
 
     // ---- 1. live scam generator
@@ -241,6 +268,35 @@ impl AiFeatures {
             Some(h) => (h, LineSource::Ai),
             None => (hints::scripted_hint(&self.data, &enc_id, self.seed, floor), LineSource::Fallback(if w.is_empty() { "AI line rejected by filter" } else { w })),
         })
+    }
+
+    // ---- 7. Hoot's tips (ask anytime, after each floor, the tip log)
+
+    /// Start a tip (T, or automatically after a floor's lesson). False if an asked tip
+    /// is already being written. Offline or over budget, the scripted tip answers on
+    /// the next `poll_tip`.
+    pub fn ask_tip(&mut self, ctx: tips::TipContext, now: f64) -> bool {
+        self.desk.ask(ctx, now)
+    }
+
+    /// The finished tip, once per request (non-blocking; call every frame).
+    pub fn poll_tip(&mut self, now: f64) -> Option<tips::Tip> {
+        self.desk.poll(&self.data, now)
+    }
+
+    /// A tip is being written ("Hoot is thinking...").
+    pub fn tip_busy(&self) -> bool {
+        self.desk.busy()
+    }
+
+    /// Drop a tip that is still in flight (the player moved on).
+    pub fn cancel_tip(&mut self) {
+        self.desk.cancel();
+    }
+
+    /// Every tip shown this run, oldest first.
+    pub fn tip_log(&self) -> &[tips::Tip] {
+        self.desk.log()
     }
 
     // ---- 6. adaptive difficulty
@@ -320,6 +376,14 @@ mod tests {
             _ => "Hi Owl, great news about your account is waiting for you. We only need a quick confirmation from you to finish things up.".into(),
         })
     }
+    /// Answers the encounter task with the sample reply (written for the sublease theme).
+    fn gen_model(_: &Config, _: &str, user: &str, _: TokenLimits) -> CallResult {
+        if user.starts_with("TASK: generate_encounter") {
+            Ok(genenc::SAMPLE_REPLY.into())
+        } else {
+            Ok("Hoo, nothing to see here for now, friend.".into())
+        }
+    }
     fn offline_model(_: &Config, _: &str, _: &str, _: TokenLimits) -> CallResult {
         Err(AiError::Offline)
     }
@@ -381,7 +445,7 @@ mod tests {
         let c = content();
         let mut f = features(good_model);
         f.begin_run(&c, 5, 0.0);
-        assert_eq!(f.calls_used(), 5, "floor 0 + 3 scams + run pack");
+        assert_eq!(f.calls_used(), 5 + genenc::GEN_SLOTS as u32, "floor 0 + 3 scams + run pack + generated encounters");
         settle(&mut f);
         assert_eq!(f.keeper_taunt(0).1, LineSource::Ai);
         assert_eq!(f.keeper_reaction(0, true), ("Sharp thinking, Owl. I step aside and the stairs are open.".into(), LineSource::Ai));
@@ -399,7 +463,7 @@ mod tests {
         let n = c.encounters.len();
         let run = Run::new(state::floors_for(n), n);
         f.request_debrief(&run, &c, 100.0);
-        assert_eq!(f.calls_used(), 5 + 9 + 1);
+        assert_eq!(f.calls_used(), 5 + genenc::GEN_SLOTS as u32 + 9 + 1);
         assert!(f.calls_used() <= MAX_CALLS_PER_RUN);
         settle(&mut f);
         let d = f.poll_debrief(&c, 101.0).unwrap();
@@ -407,6 +471,31 @@ mod tests {
         assert_eq!(f.poll_debrief(&c, 500.0).unwrap(), d, "stable once decided");
         // floor 9 uses encounter 9 of the 10-encounter file
         assert_eq!(f.floor_enc[&9].id, c.encounters[state::encounter_for_floor(9, n)].id);
+    }
+
+    #[test]
+    fn generated_encounters_arrive_only_on_their_floors_and_only_when_verified() {
+        let c = content();
+        let seed = (0..1000u32).find(|s| genenc::theme_for(*s, 0).id == "sublease_specter").unwrap();
+        let mut f = features(gen_model);
+        f.begin_run(&c, seed, 0.0);
+        settle(&mut f);
+        assert!(f.generated_encounter(0).is_none() && f.generated_encounter(1).is_none() && f.generated_encounter(3).is_none());
+        let e = f.generated_encounter(2).unwrap().unwrap();
+        assert_eq!(e.id, "gen_sublease_specter");
+        assert_eq!(e.choices.len(), 3);
+        // slot 1 has another theme, so the sublease reply misses its planted flags and is rejected
+        assert!(f.generated_encounter(5).unwrap().is_err());
+        // offline: scripted, with a reason
+        let mut g = features(offline_model);
+        g.begin_run(&c, seed, 0.0);
+        settle(&mut g);
+        assert!(g.generated_encounter(2).unwrap().is_err());
+        // a misbehaving model never gets an encounter through
+        let mut h = features(evil_model);
+        h.begin_run(&c, seed, 0.0);
+        settle(&mut h);
+        assert!(h.generated_encounter(2).unwrap().is_err());
     }
 
     #[test]

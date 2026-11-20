@@ -189,6 +189,8 @@ pub enum HwEvent {
     LevelUp,
     Stairs,
     Menu,
+    /// Hoot has a tip for the player: the matrix shows the owl
+    Tip,
 }
 
 impl HwEvent {
@@ -199,6 +201,7 @@ impl HwEvent {
             HwEvent::LevelUp => "E:LVL",
             HwEvent::Stairs => "E:STAIRS",
             HwEvent::Menu => "E:MENU",
+            HwEvent::Tip => "E:TIP",
         }
     }
 }

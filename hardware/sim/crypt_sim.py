@@ -36,7 +36,7 @@ from collections import Counter
 
 HELLO = "HELLO:CRYPT"
 MODES = set("MPFXD")
-EVENTS = {"E:HIT", "E:LVL", "E:STAIRS", "E:DIE", "E:MENU"}
+EVENTS = {"E:HIT", "E:LVL", "E:STAIRS", "E:DIE", "E:MENU", "E:TIP"}
 
 
 class FakePort:

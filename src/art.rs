@@ -3,9 +3,59 @@
 //! (nothing to license or credit).
 
 use macroquad::prelude::*;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+// ---------------------------------------------------------------- crisp text
+//
+// The game draws on a 1280x720 virtual canvas that the camera scales up to the
+// window. Text drawn at its virtual size would be rasterized at 1280x720 and
+// then stretched, so it went soft and blocky on big screens. These two
+// replace macroquad's `draw_text` / `measure_text` (same signatures): glyphs
+// are rasterized at the real on-screen pixel size and drawn back down by the
+// camera, so text stays sharp at any window size or DPI. Layout is unchanged.
+
+thread_local!(static TEXT_SCALE: Cell<f32> = const { Cell::new(1.0) });
+
+/// Physical screen pixels per virtual pixel (set every frame by the view).
+pub fn set_text_scale(s: f32) {
+    // On WebGL, rasterizing glyphs at many screen sizes grows macroquad's font
+    // atlas and corrupts other cached textures (the HUD hearts drew as glyphs),
+    // so the web build keeps text at its virtual size.
+    #[cfg(target_arch = "wasm32")]
+    let s: f32 = {
+        let _ = s;
+        1.0
+    };
+    let s = if s.is_finite() { s.clamp(0.25, 8.0) } else { 1.0 };
+    TEXT_SCALE.with(|c| c.set(s));
+}
+
+fn text_scale() -> f32 {
+    TEXT_SCALE.with(|c| c.get())
+}
+
+/// (raster size in screen pixels, scale back to virtual units)
+fn text_px(size: f32) -> (u16, f32) {
+    let px = (size * text_scale()).round().clamp(1.0, 512.0);
+    (px as u16, size / px)
+}
+
+/// `macroquad::text::draw_text`, rasterized at screen resolution.
+pub fn draw_text(text: impl AsRef<str>, x: f32, y: f32, font_size: f32, color: Color) -> TextDimensions {
+    let (px, k) = text_px(font_size);
+    // snap the baseline to a whole screen pixel so glyphs don't blur
+    let s = text_scale();
+    let (x, y) = ((x * s).round() / s, (y * s).round() / s);
+    macroquad::text::draw_text_ex(text.as_ref(), x, y, TextParams { font_size: px, font_scale: k, color, ..Default::default() })
+}
+
+/// `macroquad::text::measure_text`, measured the same way `draw_text` draws.
+pub fn measure_text(text: impl AsRef<str>, font: Option<&Font>, font_size: u16, font_scale: f32) -> TextDimensions {
+    let (px, k) = text_px(font_size as f32 * font_scale);
+    macroquad::text::measure_text(text.as_ref(), font, px, k)
+}
 
 /// Virtual canvas size; everything is laid out in these coordinates and the
 /// camera letterboxes it to the real window.
@@ -1190,10 +1240,10 @@ mod tests {
         let mut seen = Vec::new();
         for e in &c.encounters {
             let g = character_sprite(&e.id);
-            assert!(!std::ptr::eq(g, &HOODED), "{} uses the generic hooded sprite", e.id);
-            assert!(!seen.iter().any(|s| std::ptr::eq(*s, g)), "{} shares a sprite", e.id);
+            assert!(g != &HOODED, "{} uses the generic hooded sprite", e.id);
+            assert!(!seen.iter().any(|s| *s == g), "{} shares a sprite", e.id);
             seen.push(g);
         }
-        assert!(std::ptr::eq(character_sprite("someone_new"), &HOODED));
+        assert!(character_sprite("someone_new") == &HOODED);
     }
 }

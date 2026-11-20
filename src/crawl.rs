@@ -17,9 +17,38 @@ pub const TILE: f32 = 40.0;
 const VIEW_RADIUS: i32 = 8;
 const PLAYER_RADIUS: f32 = 13.0;
 const PLAYER_SPEED: f32 = 235.0;
-const SWING_TIME: f32 = 0.16;
-const SWING_RANGE: f32 = 64.0;
-const SWING_ARC: f32 = 1.2; // half-angle, radians
+// ---- the foam-dart blaster (twin-stick, Enter the Gungeon style, school friendly)
+/// How long the muzzle puff shows after a shot.
+const MUZZLE_TIME: f32 = 0.08;
+const DART_SPEED: f32 = 640.0;
+const DART_RADIUS: f32 = 5.0;
+/// How far a dart flies before it flops to the floor.
+const DART_RANGE: f32 = 7.0 * TILE;
+/// Dart damage as a share of `Power::damage` (one swing's worth).
+const DART_DAMAGE: f32 = 0.6;
+/// Time between darts as a share of `Power::cooldown` (one swing's).
+const DART_RATE: f32 = 0.55;
+/// Random spread per dart, radians.
+const DART_SPREAD: f32 = 0.05;
+// ---- the dodge roll
+const DODGE_TIME: f32 = 0.32;
+/// Can't be hit for this long from the start of a roll.
+const DODGE_IFRAMES: f32 = 0.26;
+/// Roll speed as a multiple of walking speed.
+const DODGE_SPEED: f32 = 2.1;
+/// Wait after a roll ends before the next one.
+const DODGE_CD: f32 = 0.45;
+// ---- slower, gentler enemies
+/// Floor monsters' speed on floor 1 (share of their listed speed); it grows a
+/// little each floor (`Tier::enemy_speed_scale`).
+const ENEMY_SPEED_BASE: f32 = 0.78;
+const ENEMY_SPEED_PER_LEVEL: f32 = 0.015;
+/// Wardens walk and charge at this share of their listed speed.
+const BOSS_SPEED_SCALE: f32 = 0.85;
+/// Every enemy shot flies at this share of its listed speed (same range).
+const ENEMY_SHOT_SPEED: f32 = 0.85;
+/// Monsters per floor, one entry per difficulty level (floor 1 to 10).
+const ENEMY_COUNT: [usize; 10] = [4, 5, 5, 6, 6, 7, 7, 8, 8, 9];
 const INVULN: f32 = 1.4;
 /// Warden health on floor 1, and how much each step of `Tier::depth` adds.
 /// Tuned with `warden_difficulty` (tests below) on the original 4-floor run so
@@ -38,9 +67,13 @@ fn tally(src: usize) {
     });
 }
 const WARDEN_HP_PER_FLOOR: f32 = 32.0;
-/// The deepest `Tier::depth`: the last floor plays like floor 4 of the original
-/// 4-floor run, the hardest fight the balance was tuned for.
-pub const MAX_DEPTH: f32 = 3.0;
+/// The deepest `Tier::depth`: ten difficulty levels, 0 (floor 1) to 9 (floor 10).
+pub const MAX_DEPTH: f32 = 9.0;
+/// Where the last floor sits on the original 4-floor tuning (0 = its floor 1,
+/// 3 = its floor 4). Scaled back from 3.0 so the whole run is gentler.
+const CURVE_TOP: f32 = 2.25;
+/// Warden health is scaled back by this much on every floor.
+const WARDEN_EASE: f32 = 0.85;
 const PICKUP_RANGE: f32 = 26.0;
 const UNREACHED: u16 = u16::MAX;
 const STEP: f32 = 1.0 / 120.0;
@@ -54,11 +87,12 @@ const ARENA_H: i32 = 15;
 
 /// Where a floor sits on the difficulty curve.
 ///
-/// The original 4-floor run was tuned floor by floor (floor index 0..=3). A
-/// longer run doesn't add harder floors past that; it stretches the same curve:
-/// `depth` goes from 0.0 on floor 1 to `MAX_DEPTH` (3.0, the old floor 4) on
-/// the last floor, and everything that used to grow per floor (monster count
-/// and health, rooms, warden health) now grows per unit of depth.
+/// Ten difficulty levels, one step per floor: `depth` goes from 0.0 on floor 1
+/// to `MAX_DEPTH` (9.0) on floor 10, and every floor is a little harder than
+/// the one before (monster count, speed and health, warden health, the monster
+/// mix). The numbers still come from the original 4-floor tuning, read through
+/// `curve()`: floor 10 plays like that run's floor 3.25 (`CURVE_TOP`), not its
+/// floor 4, so the whole run is gentler.
 ///
 /// Knowledge also grows per floor (at least +1 per lesson), and each point
 /// makes your swing hit harder, so over 10 floors you'd outgrow the stretched
@@ -70,7 +104,7 @@ const ARENA_H: i32 = 15;
 pub struct Tier {
     /// 0-based floor index
     pub floor: u32,
-    /// 0.0 ..= MAX_DEPTH
+    /// 0.0 ..= MAX_DEPTH (the difficulty level minus one)
     pub depth: f32,
     /// adaptive pacing on top of the curve (`Pace::NORMAL` unless the UI applies one)
     pub pace: Pace,
@@ -132,6 +166,21 @@ impl Tier {
         (self.enemy_count() as i64 + i64::from(self.pace.monster_count_delta)).max(3) as usize
     }
 
+    /// Difficulty level, 1 (floor 1) to 10 (floor 10).
+    pub fn level(self) -> u32 {
+        self.depth.round() as u32 + 1
+    }
+
+    /// Where this floor sits on the original 4-floor tuning (0.0 ..= CURVE_TOP).
+    pub fn curve(self) -> f32 {
+        self.depth / MAX_DEPTH * CURVE_TOP
+    }
+
+    /// Floor monsters' speed, as a share of their listed speed.
+    pub fn enemy_speed_scale(self) -> f32 {
+        ENEMY_SPEED_BASE + ENEMY_SPEED_PER_LEVEL * self.depth
+    }
+
     /// Swing damage at `k` Knowledge (the float form of `Power::damage`).
     fn swing(k: f32) -> f32 {
         10.0 + 1.5 * k.clamp(0.0, 20.0)
@@ -139,31 +188,31 @@ impl Tier {
 
     /// See the type docs: 1.0 on a 4-floor run, above 1 on deeper floors of a longer one.
     pub fn knowledge_scale(self) -> f32 {
-        Tier::swing(self.floor as f32 + 1.0) / Tier::swing(self.depth + 1.0)
+        Tier::swing(self.floor as f32 + 1.0) / Tier::swing(self.curve() + 1.0)
     }
 
     /// Health of a warden with toughness 1.0.
     pub fn warden_hp(self) -> f32 {
-        (WARDEN_HP + WARDEN_HP_PER_FLOOR * self.depth) * self.knowledge_scale()
+        (WARDEN_HP + WARDEN_HP_PER_FLOOR * self.curve()) * WARDEN_EASE * self.knowledge_scale()
     }
 
     pub fn enemy_hp_scale(self) -> f32 {
-        (1.0 + 0.12 * self.depth) * self.knowledge_scale()
+        (0.9 + 0.12 * self.curve()) * self.knowledge_scale()
     }
 
-    /// Monsters on the floor (5 on floor 1, 11 on the last).
+    /// Monsters on the floor (4 on floor 1, 9 on floor 10).
     pub fn enemy_count(self) -> usize {
-        5 + (2.0 * self.depth).round() as usize
+        ENEMY_COUNT[(self.level() as usize - 1).min(ENEMY_COUNT.len() - 1)]
     }
 
     /// Rooms the generator aims for.
     fn rooms(self) -> usize {
-        (7 + self.depth.round() as usize).min(11)
+        (7 + self.curve().round() as usize).min(11)
     }
 
-    /// Map size in tiles: deeper floors are a little bigger (44x32 up to 50x35).
+    /// Map size in tiles: deeper floors are a little bigger (44x32 up to 49x34).
     pub fn map_size(self) -> (i32, i32) {
-        (FLOOR_W + (2.0 * self.depth).round() as i32, FLOOR_H + self.depth.round() as i32)
+        (FLOOR_W + (2.0 * self.curve()).round() as i32, FLOOR_H + self.curve().round() as i32)
     }
 }
 
@@ -667,22 +716,23 @@ impl EnemyKind {
 }
 
 /// What the monsters on a floor at `depth` are drawn from: percent weights per
-/// kind (same order as `EnemyKind::ALL`). Depths 0, 1 and 2+ are the original
-/// floors 1, 2 and 3-4 mixes (bats are owls now); the new kinds take a share of
-/// the old ones' slots deeper down, so the mix gets more varied, not harder.
+/// kind (same order as `EnemyKind::ALL`), one row per difficulty level, so
+/// each floor brings in a little more of the tougher kinds.
 pub fn enemy_mix(depth: f32) -> [u32; 7] {
-    //        meat owl night brute patrol deadzone shuttle
-    if depth < 0.5 {
-        [55, 45, 0, 0, 0, 0, 0]
-    } else if depth < 1.25 {
-        [35, 35, 0, 0, 30, 0, 0]
-    } else if depth < 2.0 {
-        [30, 20, 15, 0, 25, 10, 0]
-    } else if depth < 2.25 {
-        [20, 25, 0, 17, 20, 18, 0]
-    } else {
-        [17, 15, 10, 13, 17, 16, 12]
-    }
+    const MIX: [[u32; 7]; 10] = [
+        //meat owl night brute patrol deadzone shuttle
+        [60, 40, 0, 0, 0, 0, 0],
+        [50, 40, 0, 0, 10, 0, 0],
+        [42, 35, 0, 0, 23, 0, 0],
+        [35, 30, 0, 0, 25, 10, 0],
+        [30, 25, 10, 0, 25, 10, 0],
+        [27, 22, 12, 5, 22, 12, 0],
+        [24, 20, 12, 10, 20, 14, 0],
+        [21, 18, 12, 12, 18, 15, 4],
+        [19, 16, 11, 13, 17, 16, 8],
+        [17, 15, 10, 13, 17, 16, 12],
+    ];
+    MIX[(depth.max(0.0).round() as usize).min(MIX.len() - 1)]
 }
 
 fn roll_enemy(depth: f32) -> EnemyKind {
@@ -724,7 +774,7 @@ impl Enemy {
             kind,
             pos,
             hp: hp * tier.enemy_hp_scale(),
-            speed: speed * tier.pace.monster_speed_pct as f32 / 100.0,
+            speed: speed * tier.enemy_speed_scale() * tier.pace.monster_speed_pct as f32 / 100.0,
             radius,
             flash: 0.0,
             knock: Vec2::ZERO,
@@ -790,12 +840,13 @@ impl BossKind {
         }
     }
     fn speed(self) -> f32 {
-        match self {
-            BossKind::TowTyrant => 95.0,
-            BossKind::FinalsGolem => 60.0,
-            BossKind::OwlQueen => 100.0,
-            BossKind::LibraryLich => 45.0,
-        }
+        BOSS_SPEED_SCALE
+            * match self {
+                BossKind::TowTyrant => 95.0,
+                BossKind::FinalsGolem => 60.0,
+                BossKind::OwlQueen => 100.0,
+                BossKind::LibraryLich => 45.0,
+            }
     }
 }
 
@@ -845,7 +896,7 @@ pub struct Boss {
 
 impl Boss {
     fn new(kind: BossKind, pos: Vec2, tier: Tier) -> Boss {
-        // the ranged wardens are harder to reach with a sword, so they have less health
+        // the ranged wardens keep their distance and fire more, so they have less health
         let toughness = match kind {
             BossKind::TowTyrant | BossKind::FinalsGolem => 1.0,
             BossKind::OwlQueen => 0.75,
@@ -899,6 +950,20 @@ struct Projectile {
     kind: ProjKind,
 }
 
+/// Enemy shots fly at `ENEMY_SHOT_SPEED` and live longer, so they still reach as far.
+fn slow_shot(mut p: Projectile) -> Projectile {
+    p.vel *= ENEMY_SHOT_SPEED;
+    p.life /= ENEMY_SHOT_SPEED;
+    p
+}
+
+/// A foam dart from the player's blaster.
+struct Dart {
+    pos: Vec2,
+    vel: Vec2,
+    life: f32,
+}
+
 struct Pickup {
     pos: Vec2,
     phase: f32,
@@ -924,8 +989,15 @@ pub struct Player {
     pub pos: Vec2,
     pub facing: Vec2,
     attack_cd: f32,
+    /// muzzle puff timer after a shot
     swing_t: f32,
+    /// where the blaster points (aim, updated every frame)
     swing_dir: Vec2,
+    /// rolling while > 0
+    dodge_t: f32,
+    /// next roll allowed when <= 0
+    dodge_cd: f32,
+    dodge_dir: Vec2,
     pub invuln: f32,
     knock: Vec2,
     walk: f32,
@@ -946,8 +1018,11 @@ pub enum WorldEvent {
 pub struct Control {
     pub mv: Vec2,
     pub attack: bool,
-    /// aim point in world coordinates (mouse); None = swing where you're facing
+    /// aim point in world coordinates (mouse); None = aim assist (nearest
+    /// monster or warden in sight and range), else where you're facing
     pub aim: Option<Vec2>,
+    /// start a dodge roll (pressed this frame)
+    pub dodge: bool,
 }
 
 /// Player-side numbers that come from the run's resources.
@@ -955,7 +1030,7 @@ pub struct Control {
 pub struct Power {
     /// Knowledge: each point hits harder
     pub knowledge: i32,
-    /// Focus: each point swings faster
+    /// Focus: each point fires faster
     pub focus: i32,
     /// below max health (coffee only gets drunk when it would help)
     pub can_heal: bool,
@@ -992,6 +1067,7 @@ pub struct World {
     pub player: Player,
     pub enemies: Vec<Enemy>,
     projectiles: Vec<Projectile>,
+    darts: Vec<Dart>,
     pickups: Vec<Pickup>,
     particles: Vec<Particle>,
     texts: Vec<FloatText>,
@@ -1033,12 +1109,16 @@ impl World {
                 attack_cd: 0.0,
                 swing_t: 0.0,
                 swing_dir: vec2(1.0, 0.0),
+                dodge_t: 0.0,
+                dodge_cd: 0.0,
+                dodge_dir: vec2(1.0, 0.0),
                 invuln: 0.0,
                 knock: Vec2::ZERO,
                 walk: 0.0,
             },
             enemies: Vec::new(),
             projectiles: Vec::new(),
+            darts: Vec::new(),
             pickups: Vec::new(),
             particles: Vec::new(),
             texts: Vec::new(),
@@ -1230,6 +1310,7 @@ impl World {
         self.update_enemies(dt);
         self.update_boss(dt);
         self.update_projectiles(dt);
+        self.update_darts(dt, power);
         self.update_pickups(dt, power);
         for p in &mut self.particles {
             p.pos += p.vel * dt;
@@ -1245,79 +1326,139 @@ impl World {
     }
 
     fn update_player(&mut self, dt: f32, ctl: Control, power: Power) {
+        let aim = self.aim_dir(ctl);
         let p = &mut self.player;
         p.attack_cd -= dt;
         p.swing_t -= dt;
         p.invuln -= dt;
+        p.dodge_cd -= dt;
         let dir = ctl.mv.clamp_length_max(1.0);
-        if dir != Vec2::ZERO {
-            if p.swing_t <= 0.0 {
-                p.facing = dir.normalize();
-            }
-            p.walk += dt;
+        // start a roll: a burst of speed you can't be hit during
+        if ctl.dodge && p.dodge_cd <= 0.0 && p.dodge_t <= 0.0 {
+            p.dodge_t = DODGE_TIME;
+            p.dodge_cd = DODGE_TIME + DODGE_CD;
+            p.dodge_dir = if dir != Vec2::ZERO { dir.normalize() } else { p.facing };
+            p.invuln = p.invuln.max(DODGE_IFRAMES);
+            let at = p.pos;
+            self.sounds.push(Sfx::Swing);
+            self.burst(at, Color::new(0.85, 0.8, 0.7, 0.8), 8, 120.0);
         }
-        let delta = (dir * PLAYER_SPEED + p.knock) * dt;
+        let p = &mut self.player;
+        let rolling = p.dodge_t > 0.0;
+        let delta = if rolling {
+            p.dodge_t -= dt;
+            p.walk += dt * 2.0;
+            (p.dodge_dir * PLAYER_SPEED * DODGE_SPEED + p.knock) * dt
+        } else {
+            if dir != Vec2::ZERO {
+                p.walk += dt;
+            }
+            (dir * PLAYER_SPEED + p.knock) * dt
+        };
+        // you face where you aim (twin-stick); rolling faces the roll
+        p.facing = if rolling { p.dodge_dir } else { aim };
+        p.swing_dir = aim;
         p.knock *= 1.0 - 9.0 * dt;
         let mut pos = p.pos;
         move_and_collide(&self.map, &mut pos, delta, PLAYER_RADIUS);
         self.player.pos = pos;
-        if ctl.attack && self.player.attack_cd <= 0.0 {
-            let aim = ctl.aim.map_or(self.player.facing, |a| (a - self.player.pos).normalize_or(self.player.facing));
-            self.attack(aim, power);
+        if ctl.attack && !rolling && self.player.attack_cd <= 0.0 {
+            self.fire(aim, power);
         }
     }
 
-    fn attack(&mut self, aim: Vec2, power: Power) {
-        self.player.attack_cd = power.cooldown();
-        self.player.swing_t = SWING_TIME;
-        self.player.swing_dir = aim;
-        self.player.facing = aim;
-        self.sounds.push(Sfx::Swing);
-        let origin = self.player.pos;
+    /// Where the blaster points: the mouse, else aim assist (the nearest monster
+    /// or hittable warden in sight and range), else the way you're walking or facing.
+    fn aim_dir(&self, ctl: Control) -> Vec2 {
+        let p = &self.player;
+        if let Some(a) = ctl.aim {
+            return (a - p.pos).normalize_or(p.facing);
+        }
+        let reach = DART_RANGE + 20.0;
+        let boss = self.boss.iter().filter(|b| b.hittable()).map(|b| b.pos);
+        let target = self
+            .enemies
+            .iter()
+            .filter(|e| self.map.is_visible(e.pos) || self.arena)
+            .map(|e| e.pos)
+            .chain(boss)
+            .filter(|t| t.distance(p.pos) < reach && self.map.line_clear(p.pos, *t))
+            .min_by(|a, b| a.distance(p.pos).total_cmp(&b.distance(p.pos)));
+        match target {
+            Some(t) => (t - p.pos).normalize_or(p.facing),
+            None if ctl.mv != Vec2::ZERO => ctl.mv.normalize_or(p.facing),
+            None => p.facing,
+        }
+    }
+
+    /// Fire one foam dart toward `aim`.
+    fn fire(&mut self, aim: Vec2, power: Power) {
+        self.player.attack_cd = power.cooldown() * DART_RATE;
+        self.player.swing_t = MUZZLE_TIME;
+        let a = aim.y.atan2(aim.x) + gen_range(-DART_SPREAD, DART_SPREAD);
+        let dir = vec2(a.cos(), a.sin());
+        self.darts.push(Dart { pos: self.player.pos + dir * 18.0, vel: dir * DART_SPEED, life: DART_RANGE / DART_SPEED });
+        self.sounds.push(Sfx::Pew);
+    }
+
+    /// Move the darts; a dart stops at the first wall, monster or warden it touches.
+    fn update_darts(&mut self, dt: f32, power: Power) {
+        if self.darts.is_empty() {
+            return;
+        }
         let base = power.damage();
-        let in_arc = |to: Vec2, reach: f32| {
-            let dist = to.length();
-            dist <= reach && (dist < 1.0 || aim.angle_between(to / dist).abs() <= SWING_ARC)
-        };
-        let mut hits = 0;
+        let mut darts = std::mem::take(&mut self.darts);
         let mut texts = Vec::new();
-        for e in &mut self.enemies {
-            let to = e.pos - origin;
-            if !in_arc(to, SWING_RANGE + e.radius) || !self.map.line_clear(origin, e.pos) {
-                continue;
+        let mut pops = Vec::new();
+        darts.retain_mut(|d| {
+            d.pos += d.vel * dt;
+            d.life -= dt;
+            if d.life <= 0.0 || self.map.solid_at(d.pos) {
+                pops.push(d.pos);
+                return false;
             }
             let crit = gen_range(0, 100) < 12;
-            let dmg = base * gen_range(0.85, 1.15) * if crit { 2.0 } else { 1.0 };
-            e.hp -= dmg;
-            e.flash = 0.14;
-            e.aggro = true;
-            e.last_seen = 0.0;
-            e.windup = 0.0; // a hit interrupts a ranged attack
-            let kb = if e.kind == EnemyKind::FinalsBrute { 160.0 } else { 340.0 };
-            e.knock = to.normalize_or(aim) * kb;
-            hits += 1;
-            texts.push((e.pos, dmg, crit));
-        }
-        if let Some(b) = &mut self.boss {
-            let to = b.pos - origin;
-            if b.hittable() && in_arc(to, SWING_RANGE + b.radius) {
-                let crit = gen_range(0, 100) < 12;
-                let dmg = base * gen_range(0.85, 1.15) * if crit { 2.0 } else { 1.0 };
-                b.hp -= dmg;
-                b.flash = 0.12;
-                hits += 1;
-                texts.push((b.pos - vec2(0.0, 30.0), dmg, crit));
+            let dmg = base * DART_DAMAGE * gen_range(0.85, 1.15) * if crit { 2.0 } else { 1.0 };
+            let push = d.vel.normalize_or_zero();
+            if let Some(e) = self.enemies.iter_mut().find(|e| e.pos.distance(d.pos) < e.radius + DART_RADIUS) {
+                e.hp -= dmg;
+                e.flash = 0.12;
+                e.aggro = true;
+                e.last_seen = 0.0;
+                e.windup = 0.0; // a hit interrupts a ranged attack
+                e.knock = push * if e.kind == EnemyKind::FinalsBrute { 60.0 } else { 140.0 };
+                texts.push((e.pos, dmg, crit));
+                return false;
             }
+            if let Some(b) = &mut self.boss {
+                if b.hittable() && b.pos.distance(d.pos) < b.radius + DART_RADIUS {
+                    b.hp -= dmg;
+                    b.flash = 0.1;
+                    texts.push((b.pos - vec2(0.0, 30.0), dmg, crit));
+                    return false;
+                }
+            }
+            true
+        });
+        self.darts = darts;
+        for at in pops {
+            self.burst(at, Color::from_rgba(255, 140, 40, 255), 3, 70.0);
         }
+        let hit = !texts.is_empty();
         for (pos, dmg, crit) in texts {
             let txt = if crit { format!("{}!", dmg as i32) } else { format!("{}", dmg as i32) };
             self.float_text(pos - vec2(0.0, 18.0), txt, if crit { KSU_GOLD } else { WHITE });
-            self.burst(pos, Color::new(1.0, 1.0, 1.0, 0.9), 6, 160.0);
+            self.burst(pos, Color::from_rgba(255, 160, 60, 230), 5, 140.0);
         }
-        if hits > 0 {
-            self.shake = self.shake.max(0.15);
+        if hit {
+            self.shake = self.shake.max(0.06);
             self.sounds.push(Sfx::Hit);
         }
+        self.resolve_deaths();
+    }
+
+    /// Remove beaten monsters and wardens (bursts, drops, events).
+    fn resolve_deaths(&mut self) {
         let mut i = 0;
         while i < self.enemies.len() {
             if self.enemies[i].hp <= 0.0 {
@@ -1341,6 +1482,7 @@ impl World {
                 self.sounds.push(Sfx::LevelUp);
                 self.events.push(WorldEvent::BossDown(b.kind));
                 self.projectiles.clear();
+                self.darts.clear();
                 self.enemies.clear(); // its summons go with it
                 if !self.boss_queue.is_empty() {
                     // a coffee between wardens keeps it fair
@@ -1487,7 +1629,7 @@ impl World {
         }
         if !shots.is_empty() {
             self.sounds.push(Sfx::Shoot);
-            self.projectiles.extend(shots);
+            self.projectiles.extend(shots.into_iter().map(slow_shot));
         }
         if let Some(d) = contact {
             if self.player.invuln <= 0.0 {
@@ -1573,7 +1715,7 @@ impl World {
                 }
             }
             (BossKind::TowTyrant, BossState::Act) => {
-                vel = b.dir * 650.0;
+                vel = b.dir * 650.0 * BOSS_SPEED_SCALE;
                 if b.t <= 0.0 {
                     if rage {
                         fan(&mut shots, b.pos, dir_p, 5, 0.28, 300.0, ProjKind::Hook);
@@ -1717,7 +1859,7 @@ impl World {
         let bpos = b.pos;
         if !shots.is_empty() {
             self.sounds.push(Sfx::Shoot);
-            self.projectiles.extend(shots);
+            self.projectiles.extend(shots.into_iter().map(slow_shot));
         }
         if shook > 0.0 {
             self.shake = self.shake.max(shook);
@@ -1791,7 +1933,8 @@ impl World {
     // ------------------------------------------------------------ automation
 
     /// Hands-free control for CC_AUTO play-tests and screenshots: walk to
-    /// `target` along a BFS path, swing at anything close, chase the warden.
+    /// `target` along a BFS path, shoot anything in range, circle the warden at
+    /// blaster range.
     pub fn auto_control(&mut self, target: Option<Vec2>) -> Control {
         let ppos = self.player.pos;
         let near_enemy = self
@@ -1805,8 +1948,16 @@ impl World {
             let to = b.pos - ppos;
             let d = to.length();
             let perp = vec2(-to.y, to.x).normalize_or_zero();
-            ctl.mv = if d > 80.0 { to.normalize_or_zero() } else { perp * 0.8 - to.normalize_or_zero() * 0.2 };
-            ctl.attack = d < SWING_RANGE + b.radius + 8.0;
+            // keep at blaster range and circle
+            let dir = to.normalize_or_zero();
+            ctl.mv = if d > 5.5 * TILE {
+                dir
+            } else if d < 3.0 * TILE {
+                (-dir + perp * 0.5).normalize_or_zero()
+            } else {
+                perp * 0.9
+            };
+            ctl.attack = d < DART_RANGE - 10.0 && self.map.line_clear(ppos, b.pos);
             ctl.aim = Some(b.pos);
             // dodge what a player would: the Phish Lord's red line, and bolts about to land
             if b.kind == BossKind::TowTyrant && b.state != BossState::Walk {
@@ -1837,7 +1988,7 @@ impl World {
                 ctl.mv = s;
             }
             if let Some(e) = near_enemy {
-                if e.distance(ppos) < 90.0 {
+                if e.distance(ppos) < 3.0 * TILE {
                     ctl.aim = Some(e);
                     ctl.attack = true;
                 }
@@ -1845,8 +1996,10 @@ impl World {
             return ctl;
         }
         if let Some(e) = near_enemy {
-            if e.distance(ppos) < 2.2 * TILE {
-                ctl.mv = (e - ppos).normalize_or_zero() * 0.4;
+            let d = e.distance(ppos);
+            if d < 5.0 * TILE {
+                // back off from anything close, otherwise stand and shoot
+                ctl.mv = if d < 1.6 * TILE { (ppos - e).normalize_or_zero() * 0.6 } else { Vec2::ZERO };
                 ctl.attack = true;
                 ctl.aim = Some(e);
                 return ctl;
@@ -1985,26 +2138,38 @@ impl World {
         let p = pl.pos + off;
         glow(p.x, p.y, 120.0, Color::new(1.0, 0.7, 0.3, 1.0), 1.3);
         draw_ellipse(p.x, p.y + 20.0, 16.0, 5.0, 0.0, Color::new(0.0, 0.0, 0.0, 0.35));
-        let blink = pl.invuln > 0.0 && !self.god && (t * 18.0).sin() > 0.0;
-        if !blink {
+        let blink = pl.invuln > 0.0 && pl.dodge_t <= 0.0 && !self.god && (t * 18.0).sin() > 0.0;
+        if pl.dodge_t > 0.0 {
+            // mid-roll: a quick hop with a dust trail
+            let f = 1.0 - pl.dodge_t / DODGE_TIME;
+            let hop = (f * std::f32::consts::PI).sin() * 10.0;
+            draw_circle(p.x - pl.dodge_dir.x * 14.0, p.y + 16.0, 6.0 * (1.0 - f), Color::new(0.85, 0.8, 0.7, 0.4));
+            draw_sprite_centered(&STUDENT, p.x, p.y - 6.0 - hop, 2.75, pl.dodge_dir.x < 0.0, Color::new(1.0, 1.0, 1.0, 0.75));
+        } else if !blink {
             let step = if pl.walk > 0.0 { ((pl.walk * 12.0).sin() * 2.0).round() } else { 0.0 };
             draw_sprite_centered(&STUDENT, p.x, p.y - 6.0 + step, 2.75, pl.facing.x < 0.0, WHITE);
         }
-        if pl.swing_t > 0.0 {
-            let f = 1.0 - pl.swing_t / SWING_TIME;
-            let base = pl.swing_dir.y.atan2(pl.swing_dir.x);
-            let col = Color::new(1.0, 0.95, 0.8, 0.55 * (1.0 - f * 0.6));
-            for k in 0..8 {
-                let a = base - SWING_ARC + k as f32 / 8.0 * SWING_ARC * 2.0;
-                let a2 = base - SWING_ARC + (k + 1) as f32 / 8.0 * SWING_ARC * 2.0;
-                let (r1, r2) = (20.0, SWING_RANGE * (0.6 + 0.4 * f));
-                draw_triangle(
-                    p + vec2(a.cos(), a.sin()) * r1,
-                    p + vec2(a.cos(), a.sin()) * r2,
-                    p + vec2(a2.cos(), a2.sin()) * r2,
-                    col,
-                );
+        // the foam-dart blaster: an orange toy with a blue barrel, pointing where you aim
+        if pl.dodge_t <= 0.0 {
+            let d = pl.swing_dir;
+            let n = vec2(-d.y, d.x);
+            let grip = p + vec2(0.0, 2.0) + d * 10.0;
+            let muzzle = grip + d * 18.0;
+            draw_line(grip.x, grip.y, muzzle.x, muzzle.y, 7.0, Color::from_rgba(255, 140, 40, 255));
+            let tip = muzzle + d * 5.0;
+            draw_line(muzzle.x, muzzle.y, tip.x, tip.y, 5.0, Color::from_rgba(70, 140, 255, 255));
+            let h = grip + n * 4.0 * if d.x < 0.0 { -1.0 } else { 1.0 };
+            draw_line(grip.x, grip.y, h.x + d.x * 2.0, h.y + 5.0, 4.0, Color::from_rgba(230, 230, 235, 255));
+            if pl.swing_t > 0.0 {
+                draw_circle(tip.x, tip.y, 5.0 * (pl.swing_t / MUZZLE_TIME) + 2.0, Color::new(1.0, 0.95, 0.8, 0.7));
             }
+        }
+        for dart in &self.darts {
+            let q = dart.pos + off;
+            let v = dart.vel.normalize_or_zero();
+            let tail = q - v * 9.0;
+            draw_line(tail.x, tail.y, q.x, q.y, 4.0, Color::from_rgba(255, 140, 40, 255));
+            draw_circle(q.x, q.y, 3.0, Color::from_rgba(70, 140, 255, 255));
         }
         for pr in &self.projectiles {
             let q = pr.pos + off;
@@ -2224,17 +2389,52 @@ mod tests {
     }
 
     #[test]
-    fn swing_kills_a_monster_in_front() {
+    fn darts_kill_a_monster_in_front() {
         let _rng = rng_lock();
         macroquad::rand::srand(9);
         let mut w = World::arena(tier(0), &[]);
         let p = w.player.pos;
-        w.enemies.push(Enemy::new(EnemyKind::SpamOwl, p + vec2(40.0, 0.0), tier(0)));
+        w.enemies.push(Enemy::new(EnemyKind::SpamOwl, p + vec2(120.0, 0.0), tier(0)));
         for _ in 0..60 {
-            w.update(1.0 / 60.0, Control { mv: Vec2::ZERO, attack: true, aim: Some(p + vec2(100.0, 0.0)) }, power());
+            w.update(1.0 / 60.0, Control { mv: Vec2::ZERO, attack: true, aim: Some(p + vec2(200.0, 0.0)), dodge: false }, power());
         }
         assert!(w.enemies.is_empty());
         assert!(w.events.contains(&WorldEvent::EnemyKilled));
+    }
+
+    /// Aim assist: with no mouse aim, darts find the nearest monster in sight.
+    #[test]
+    fn aim_assist_finds_the_nearest_monster() {
+        let _rng = rng_lock();
+        macroquad::rand::srand(4);
+        let mut w = World::arena(tier(0), &[]);
+        let p = w.player.pos;
+        w.enemies.push(Enemy::new(EnemyKind::MysteryMeat, p + vec2(0.0, 100.0), tier(0)));
+        for _ in 0..90 {
+            w.update(1.0 / 60.0, Control { attack: true, ..Control::default() }, power());
+        }
+        assert!(w.enemies.is_empty(), "the dart should have found the slime below");
+    }
+
+    /// A dodge roll moves you fast and a shot can't land at its start.
+    #[test]
+    fn dodge_roll_is_fast_and_safe() {
+        let _rng = rng_lock();
+        macroquad::rand::srand(6);
+        let mut w = World::arena(tier(0), &[]);
+        let start = w.player.pos;
+        w.projectiles.push(Projectile { pos: start, vel: vec2(1.0, 0.0), radius: 8.0, life: 1.0, kind: ProjKind::Orb });
+        w.update(1.0 / 60.0, Control { mv: vec2(0.0, 1.0), dodge: true, ..Control::default() }, power());
+        assert!(!w.events.contains(&WorldEvent::PlayerHit), "rolling through a shot");
+        for _ in 0..18 {
+            w.update(1.0 / 60.0, Control { mv: vec2(0.0, 1.0), ..Control::default() }, power());
+        }
+        let rolled = w.player.pos.distance(start);
+        assert!(rolled > PLAYER_SPEED * 0.3 * 1.4, "rolled only {rolled}");
+        // no second roll until the cooldown is over
+        let before = w.player.dodge_cd;
+        w.update(1.0 / 60.0, Control { dodge: true, ..Control::default() }, power());
+        assert!(w.player.dodge_t <= 0.0 && before > 0.0);
     }
 
     #[test]
@@ -2299,10 +2499,11 @@ mod tests {
     /// The fight from full health (the arena refills it) is beatable but not free.
     /// A sharp bot (perfect aim, dodges telegraphs and bolts as they appear) takes
     /// a median of at most 4 hits over both wardens and nearly always survives; the
-    /// same bot reacting 0.25 s late still gets through sometimes but takes real hits.
+    /// same bot reacting 0.25 s late survives at least 8 times in 20 on every floor.
     #[test]
     fn two_wardens_are_beatable_but_not_trivial() {
         let _rng = rng_lock();
+        let mut slow_medians = Vec::new();
         for f in 0..10u32 {
             for (lag, label) in [(0usize, "sharp"), (15, "slow")] {
                 let mut hits = Vec::new();
@@ -2318,11 +2519,13 @@ mod tests {
                     assert!(m <= 4, "floor {f} {label}: median {m} hits");
                     assert!(wins >= 17, "floor {f} {label}: only {wins}/20 survived");
                 } else {
-                    assert!(m >= 2, "floor {f} {label}: median {m} hits, too easy");
-                    assert!(wins >= 3, "floor {f} {label}: only {wins}/20 survived");
+                    assert!(wins >= 8, "floor {f} {label}: only {wins}/20 survived");
+                    slow_medians.push(m);
                 }
             }
         }
+        // gentler, not free: the late bot still gets hit somewhere on floors 6-10
+        assert!(slow_medians[5..].iter().any(|m| *m >= 1), "slow bot never got hit late in the run: {slow_medians:?}");
     }
 
     /// Prints the numbers used to tune WARDEN_HP:
@@ -2462,33 +2665,34 @@ mod tests {
     }
 
     #[test]
-    fn the_ten_floor_curve_stretches_the_four_floor_one() {
+    fn ten_floors_are_ten_difficulty_levels() {
         let _rng = rng_lock();
-        // a 4-floor run is exactly the original tuning
-        for f in 0..4 {
-            let t = Tier::of(f, 4);
-            assert_eq!(t.depth, f as f32);
-            assert!((t.knowledge_scale() - 1.0).abs() < 1e-6);
-            assert_eq!(t.enemy_count(), 5 + 2 * f as usize);
-            assert!((t.warden_hp() - (WARDEN_HP + WARDEN_HP_PER_FLOOR * f as f32)).abs() < 1e-3);
-        }
-        // 10 floors: first = old floor 1, last = old floor 4, never beyond
+        assert_eq!((0..10).map(|f| tier(f).level()).collect::<Vec<_>>(), (1..=10).collect::<Vec<_>>());
         assert_eq!(tier(0).depth, 0.0);
         assert_eq!(tier(9).depth, MAX_DEPTH);
         assert_eq!(Tier::of(42, 10), tier(9));
+        // every floor is a step harder than the one before
         let mut prev = tier(0);
         for f in 1..10 {
             let t = tier(f);
-            assert!(t.depth > prev.depth && t.warden_hp() > prev.warden_hp());
-            assert!(t.enemy_count() >= prev.enemy_count());
+            assert!(t.depth > prev.depth, "floor {f}");
+            assert!(t.warden_hp() > prev.warden_hp(), "floor {f}: warden health");
+            assert!(t.enemy_speed_scale() > prev.enemy_speed_scale(), "floor {f}: monster speed");
+            assert!(t.enemy_count() >= prev.enemy_count(), "floor {f}: monster count");
+            assert!(t.curve() > prev.curve());
             prev = t;
         }
-        assert_eq!((tier(0).enemy_count(), tier(9).enemy_count()), (5, 11));
-        assert_eq!((tier(0).map_size(), tier(9).map_size()), ((44, 32), (50, 35)));
-        // same swings per warden as the matching 4-floor floor for the least-knowledgeable player
-        let swings = |t: Tier| t.warden_hp() / Tier::swing(t.floor as f32 + 1.0);
-        assert!((swings(tier(9)) - swings(Tier::of(3, 4))).abs() < 1e-3);
-        assert!((swings(tier(0)) - swings(Tier::of(0, 4))).abs() < 1e-3);
+        assert_eq!((tier(0).enemy_count(), tier(9).enemy_count()), (4, 9));
+        // monsters are slower than their listed speed, even on floor 10
+        assert!(tier(0).enemy_speed_scale() < 0.8 && tier(9).enemy_speed_scale() < 0.95);
+        // scaled back: floor 10 is gentler than the old curve's last floor
+        assert!(tier(9).curve() < 3.0);
+        let old_top = (WARDEN_HP + WARDEN_HP_PER_FLOOR * 3.0) * Tier::swing(10.0) / Tier::swing(4.0);
+        assert!(tier(9).warden_hp() < old_top * 0.85, "{} vs old {old_top}", tier(9).warden_hp());
+        // the monster mix changes on every floor
+        for f in 1..10 {
+            assert_ne!(enemy_mix(tier(f).depth), enemy_mix(tier(f - 1).depth), "floor {f}");
+        }
     }
 
     #[test]
