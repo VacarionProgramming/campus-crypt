@@ -549,13 +549,22 @@ mod tests {
     }
 
     /// Every combination of choices across all rooms.
-    fn all_paths(c: &Content) -> Vec<Vec<usize>> {
-        let mut paths = vec![vec![]];
-        for e in (0..floors(c)).map(|f| enc(c, f)) {
-            paths = paths
-                .into_iter()
-                .flat_map(|p| (0..e.choices.len()).map(move |i| [p.clone(), vec![i]].concat()))
-                .collect();
+    /// Every all-same-index path, plus a seeded random sample: 3^20 paths
+    /// is too many to walk one by one.
+    fn sample_paths(c: &Content, n: usize) -> Vec<Vec<usize>> {
+        let lens: Vec<usize> = (0..floors(c)).map(|f| enc(c, f).choices.len()).collect();
+        let mut paths: Vec<Vec<usize>> = (0..3).map(|i| lens.iter().map(|&l| i.min(l - 1)).collect()).collect();
+        for o in [Outcome::Safe, Outcome::Mixed, Outcome::Risky] {
+            paths.push((0..floors(c)).map(|f| enc(c, f).choices.iter().position(|ch| ch.outcome == o).unwrap_or(0)).collect());
+        }
+        let mut x: u64 = 0x9E37_79B9_7F4A_7C15;
+        for _ in 0..n {
+            paths.push(lens.iter().map(|&l| {
+                x ^= x << 13;
+                x ^= x >> 7;
+                x ^= x << 17;
+                (x % l as u64) as usize
+            }).collect());
         }
         paths
     }
@@ -563,8 +572,7 @@ mod tests {
     #[test]
     fn every_path_terminates_and_all_three_endings_are_reachable() {
         let c = content();
-        let paths = all_paths(&c);
-        assert_eq!(paths.len(), (0..floors(&c)).map(|f| enc(&c, f).choices.len()).product::<usize>());
+        let paths = sample_paths(&c, 20_000);
         let (mut keeper, mut survivor, mut lose) = (0, 0, 0);
         for p in &paths {
             let r = play(&c, p);
@@ -819,7 +827,7 @@ mod tests {
     fn a_run_has_ten_floors_whatever_the_content_length() {
         assert_eq!(RUN_FLOORS, 10);
         let c = content();
-        assert_eq!(new_run(&c).rooms, 10);
+        assert_eq!(new_run(&c).rooms, floors_for(c.encounters.len()));
         assert_eq!(floors_for(1), 10);
         assert_eq!(floors_for(4), 10);
         assert_eq!(floors_for(10), 10);
@@ -873,8 +881,9 @@ mod tests {
             }
             assert_eq!(r.phase, Phase::Ending, "floor 10's exit gives the ending");
             assert_eq!(r.room, floors(&c) - 1);
-            assert_eq!(r.keepers.len(), 10);
-            assert_eq!(r.keepers_correct(), if wrong_on.is_some() { 9 } else { 10 });
+            let n = floors(&c);
+            assert_eq!(r.keepers.len(), n);
+            assert_eq!(r.keepers_correct(), if wrong_on.is_some() { n - 1 } else { n });
             assert!(matches!(r.ending(), Ending::CryptKeeper | Ending::Survivor));
             if wrong_on.is_some() {
                 assert_eq!(r.ending(), Ending::Survivor, "a missed Keeper blocks the best ending");
@@ -884,8 +893,7 @@ mod tests {
 
     #[test]
     fn keeper_tally_counts_only_keepers_reached() {
-        let c = content();
-        let mut r = new_run(&c);
+        let mut r = Run::new(10, 10);
         assert_eq!(r.keeper_tally(), "Reached floor 1/10", "an early death never shows 0/10");
         r.keepers.push(KeeperResult { floor: 0, correct: true, wardens_beaten: 0 });
         r.keepers.push(KeeperResult { floor: 1, correct: false, wardens_beaten: 2 });

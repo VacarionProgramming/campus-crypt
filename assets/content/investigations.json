@@ -1099,7 +1099,7 @@
             "link": {
               "patch": {
                 "sender_name": "Duo Mobile (via text link)",
-                "body": [
+                "add_body": [
                   "Tap the texted link to approve faster."
                 ]
               },
@@ -1237,7 +1237,7 @@
             },
             "pressure": {
               "patch": {
-                "body": [
+                "add_body": [
                   "Note: please refund the extra TODAY, before the funds clear."
                 ]
               },
@@ -1290,7 +1290,7 @@
             },
             "pressure": {
               "patch": {
-                "body": [
+                "add_body": [
                   "Note: complete the shopping within 24 hours or you lose the job."
                 ]
               },
@@ -1448,6 +1448,1407 @@
             "verify": {
               "line": "The real SMART Center is free and has spots? Oh no.",
               "tell": "KSU's real tutoring center is free and lists open sessions."
+            }
+          }
+        }
+      ]
+    },
+    "scholarship_siren": {
+      "medium": "email",
+      "opening": "La la la! You WON! Just a tiny fee and it's all yours!",
+      "intro": "* The Scholarship Siren sings. An award email glitters in your inbox.",
+      "spare": "Fine. Go apply for real scholarships. With essays. Ugh.",
+      "safe_move": "Find awards through KSU's own scholarship search, and never pay a fee to receive one.",
+      "hoot": [
+        "Hoo, surprise awards are this floor's trap. If you never applied, you did not win.",
+        "Hoo! Real scholarships never charge you a fee to pay you.",
+        "Hoo, look the award up yourself through the school, not through the email."
+      ],
+      "bad_acts": [
+        {
+          "label": "Pay the processing fee",
+          "flavor": "* You type your card in for the processing fee.",
+          "line": "Seventy-nine dollars! Your award is... on its way. Eventually. Never."
+        },
+        {
+          "label": "Send your bank login",
+          "flavor": "* You send your bank login 'for the deposit'.",
+          "line": "Now I can deposit... into MY account!"
+        },
+        {
+          "label": "Reply with your SSN",
+          "flavor": "* You reply with your Social Security number.",
+          "line": "Thank you! I'll be you now. Scholarship and all."
+        }
+      ],
+      "variants": [
+        {
+          "id": "national_award",
+          "msg": {
+            "sender_name": "KSU Office of Scholarships",
+            "sender": "scholarships@kennesaw.example",
+            "time": "Today 10:12 AM",
+            "subject": "New scholarships are open",
+            "body": [
+              "Hi Owl,",
+              "New scholarships for next year are open. Browse and apply through the scholarship portal."
+            ],
+            "link_text": "Browse scholarships",
+            "link_url": "scholarships.kennesaw.example",
+            "fine_print": "Scholarships never require a fee to apply or to receive."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "National Owl Achievement Fund",
+                "sender": "awards@owl-achievement-fund.example"
+              },
+              "line": "A national fund! You've totally heard of us. Probably.",
+              "tell": "It's an outside 'fund', not KSU's scholarship office."
+            },
+            "money": {
+              "patch": {
+                "subject": "You won $5,000! Pay $79 to release your award"
+              },
+              "line": "Seventy-nine to get five thousand. Basic math!",
+              "tell": "You're asked to pay a fee to receive an award."
+            },
+            "link": {
+              "patch": {
+                "link_url": "owl-scholar-awards.example/claim"
+              },
+              "line": "Claim it at MY site. Much fancier!",
+              "tell": "The link goes to an outside claim site."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Unclaimed awards are given to another student on Friday."
+                ]
+              },
+              "line": "Friday! Or someone else gets your money!",
+              "tell": "A deadline to claim money you never applied for."
+            },
+            "secret": {
+              "patch": {
+                "fine_print": "Have your SSN and bank login ready to verify eligibility."
+              },
+              "line": "Just your SSN and bank login. Standard stuff!",
+              "tell": "It asks for your SSN and bank login."
+            },
+            "verify": {
+              "line": "The scholarship office never heard of me? Rude.",
+              "tell": "KSU's scholarship office has no record of the award."
+            }
+          }
+        },
+        {
+          "id": "essay_contest",
+          "msg": {
+            "sender_name": "KSU Writing Center",
+            "sender": "writingcenter@kennesaw.example",
+            "time": "Today 2:40 PM",
+            "subject": "Essay contest results",
+            "body": [
+              "Hi Owl,",
+              "Results for this term's essay contest are posted on the Writing Center page."
+            ],
+            "link_text": "See results",
+            "link_url": "writingcenter.kennesaw.example/contest",
+            "fine_print": "Winners are contacted by the Writing Center directly."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender": "contest-winners@essay-awards-mail.example"
+              },
+              "line": "essay-awards-mail. I'm basically the Writing Center.",
+              "tell": "The sender's domain isn't KSU's."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "You placed first! Pay a $45 shipping fee for your trophy and $2,000 check."
+                ]
+              },
+              "line": "Shipping a check costs money. Everyone knows that!",
+              "tell": "A 'shipping fee' to receive a prize."
+            },
+            "headers": {
+              "patch": {
+                "reply_to": "contest.claims.office@freemail.example"
+              },
+              "line": "Replies go to my free account. For speed!",
+              "tell": "Replies go to a free webmail account."
+            },
+            "pressure": {
+              "patch": {
+                "subject": "Claim your prize in 24 hours or forfeit it"
+              },
+              "line": "Twenty-four hours! Hurry, hurry!",
+              "tell": "A 24-hour claim window pushes you to act fast."
+            },
+            "verify": {
+              "line": "You entered no contest? The Writing Center agrees? Drat.",
+              "tell": "You never entered, and the Writing Center didn't send it."
+            }
+          }
+        }
+      ]
+    },
+    "listing_leech": {
+      "medium": "web",
+      "opening": "A dream apartment, so cheap! Deposit first, questions never!",
+      "intro": "* The Listing Leech slides a glossy listing in front of you.",
+      "spare": "Fine. Go tour apartments like a sensible person. Boring.",
+      "safe_move": "Tour in person or through a known leasing office, verify the owner, and never pay before signing a lease.",
+      "hoot": [
+        "Hoo, rental listings are this floor's trap. Never pay for a place you have not toured.",
+        "Hoo! A landlord who is always out of the country is a classic story.",
+        "Hoo, rent far below the area's usual price is bait, not luck."
+      ],
+      "bad_acts": [
+        {
+          "label": "Zelle the deposit",
+          "flavor": "* You send the deposit with Zelle.",
+          "line": "Slurp! Deposit received. Keys? What keys?"
+        },
+        {
+          "label": "Send your SSN for a credit check",
+          "flavor": "* You type your Social Security number into the form.",
+          "line": "A credit check! On you! By me! For me!"
+        },
+        {
+          "label": "Pay to 'hold' it with gift cards",
+          "flavor": "* You buy gift cards to hold the apartment.",
+          "line": "Gift cards! The best kind of deposit. For leeches."
+        }
+      ],
+      "variants": [
+        {
+          "id": "cheap_2br",
+          "msg": {
+            "sender_name": "KSU Off-Campus Housing",
+            "sender": "housing.kennesaw.example",
+            "time": "",
+            "subject": "Off-campus housing listings - KSU",
+            "body": [
+              "Browse apartments near the Kennesaw and Marietta campuses.",
+              "Always tour before you pay, and sign a lease before any deposit."
+            ],
+            "link_text": "View listings",
+            "link_url": "housing.kennesaw.example/offcampus",
+            "fine_print": "Listings are from verified properties."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "OwlRentals Direct",
+                "sender": "owlrentals-direct.example"
+              },
+              "line": "OwlRentals! The O-W-L means it's official!",
+              "tell": "It's a private site, not KSU's housing listings."
+            },
+            "link": {
+              "patch": {
+                "link_url": "owlrentals-direct.example/2br-deal"
+              },
+              "line": "The address bar? Nobody reads the address bar!",
+              "tell": "The address bar shows an unknown rental site."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "2BR, 5 min from campus, $650/month. Zelle the $650 deposit today to hold it."
+                ]
+              },
+              "line": "Half price and a Zelle deposit. A steal!",
+              "tell": "Rent far under market, paid by Zelle before any tour."
+            },
+            "headers": {
+              "patch": {
+                "reply_to": "Owner is 'overseas for work'; contact by text only"
+              },
+              "line": "I'm overseas! For work! Always!",
+              "tell": "The owner can't meet you and only texts."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Five other students are interested, so first deposit gets it."
+                ]
+              },
+              "line": "Five others! Hurry or lose it!",
+              "tell": "Fake competition rushes you into paying."
+            },
+            "verify": {
+              "line": "Property records show a different owner? Oops.",
+              "tell": "Public property records list someone else as owner."
+            }
+          }
+        },
+        {
+          "id": "room_sublet",
+          "msg": {
+            "sender_name": "KSU Roommate Finder",
+            "sender": "housing.kennesaw.example",
+            "time": "",
+            "subject": "Roommate finder - KSU Housing",
+            "body": [
+              "Find roommates and rooms near campus.",
+              "Meet in person and read the lease before paying."
+            ],
+            "link_text": "Find a room",
+            "link_url": "housing.kennesaw.example/roommates",
+            "fine_print": "Never pay anyone you haven't met."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "Campus Rooms Now",
+                "sender": "campus-rooms-now.example"
+              },
+              "line": "Campus Rooms NOW! Right now! No waiting!",
+              "tell": "It's an outside site posing as housing help."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "Room for $400/month. Pay first month plus deposit by Cash App to reserve."
+                ]
+              },
+              "line": "Cash App first, room later. Much later.",
+              "tell": "Payment by app before you've seen the room."
+            },
+            "headers": {
+              "patch": {
+                "reply_to": "Posted 1 day ago; same photos as another city's listing"
+              },
+              "line": "Those photos are mine! Also from Ohio.",
+              "tell": "The photos are copied from another listing."
+            },
+            "link": {
+              "patch": {
+                "link_url": "campus-rooms-now.example/reserve"
+              },
+              "line": "Reserve on my page! It's very secure. For me.",
+              "tell": "The reserve page is an unknown site."
+            },
+            "verify": {
+              "line": "You toured it and someone else lives there? Awkward.",
+              "tell": "The real tenant or owner knows nothing about it."
+            }
+          }
+        }
+      ]
+    },
+    "crypto_kraken": {
+      "medium": "dm",
+      "opening": "Double your coins, double your fun! Glub!",
+      "intro": "* The Crypto Kraken rises. A message from a friend's account appears.",
+      "spare": "Fine. Keep your coins. Boring, safe coins.",
+      "safe_move": "Contact your friend another way to check, never send crypto for 'guaranteed' returns, and report the account.",
+      "hoot": [
+        "Hoo, get-rich-quick crypto is this floor's trap. Guaranteed doubling is never real.",
+        "Hoo! A friend's account can be hacked. Check with them another way.",
+        "Hoo, crypto payments cannot be reversed, which is why scammers love them."
+      ],
+      "bad_acts": [
+        {
+          "label": "Send Bitcoin to the coach",
+          "flavor": "* You send $250 in Bitcoin to the wallet.",
+          "line": "Glub! Into the deep it goes. Forever."
+        },
+        {
+          "label": "Give the coach your exchange login",
+          "flavor": "* You send your crypto exchange login.",
+          "line": "Thanks! I'll trade for you. Into my pocket."
+        },
+        {
+          "label": "Pay the 'withdrawal fee'",
+          "flavor": "* You pay a fee to withdraw your 'profit'.",
+          "line": "A fee to get your fake money! Delightful."
+        }
+      ],
+      "variants": [
+        {
+          "id": "trading_coach",
+          "msg": {
+            "sender_name": "Jordan (your friend)",
+            "sender": "Account you've followed for 2 years",
+            "time": "Today 11:58 PM",
+            "subject": "",
+            "body": [
+              "hey! are you going to the game Saturday?"
+            ],
+            "fine_print": "Messages from accounts you follow."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Writing style doesn't match; posted the same message to 40 people"
+              },
+              "line": "I always type like this! In all caps! To everyone!",
+              "tell": "The same message went to dozens of people: a hacked account."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "omg I turned $200 into $1,900 in 2 days with this trading coach!! send $250 in Bitcoin and he trades for you"
+                ]
+              },
+              "line": "Two hundred becomes nineteen hundred! Trust the math!",
+              "tell": "Guaranteed huge returns, paid in crypto."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "he's only taking 3 more people TODAY, hurry!!"
+                ]
+              },
+              "line": "Only three spots! Panic!",
+              "tell": "A 'limited spots today' rush."
+            },
+            "link": {
+              "patch": {
+                "add_body": [
+                  "sign up here first: kraken-gains-coach.example"
+                ]
+              },
+              "line": "Sign up with my coach! He's very real.",
+              "tell": "It links to an unknown 'coaching' site."
+            },
+            "verify": {
+              "line": "You called Jordan and they were hacked? Ugh.",
+              "tell": "Your friend confirms their account was hacked."
+            }
+          }
+        },
+        {
+          "id": "nft_giveaway",
+          "msg": {
+            "sender_name": "Taylor (classmate)",
+            "sender": "Account you've followed since freshman year",
+            "time": "Today 4:20 PM",
+            "subject": "",
+            "body": [
+              "did you get the notes from Tuesday's lecture?"
+            ],
+            "fine_print": "Messages from accounts you follow."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Account's bio and name changed yesterday"
+              },
+              "line": "New bio, same me! Mostly.",
+              "tell": "The account changed suddenly: a sign it was taken over."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "I got a free crypto giveaway! send 0.01 ETH to verify your wallet and get 0.5 back"
+                ]
+              },
+              "line": "Send a little, get a lot! Classic magic!",
+              "tell": "Sending crypto to 'verify' and get more back is a scam."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "just paste your wallet recovery phrase in the form so it can send"
+                ]
+              },
+              "line": "Your recovery phrase, please. It's just twelve words!",
+              "tell": "It asks for your wallet's recovery phrase."
+            },
+            "link": {
+              "patch": {
+                "add_body": [
+                  "claim here: free-eth-drop.example"
+                ]
+              },
+              "line": "Claim at my drop site! Totally free. For me.",
+              "tell": "It links to a fake giveaway site."
+            },
+            "verify": {
+              "line": "Taylor says it wasn't them? Rats.",
+              "tell": "Your classmate says they never sent it."
+            }
+          }
+        }
+      ]
+    },
+    "catfish_kelpie": {
+      "medium": "text",
+      "opening": "You're the only one I trust. Could you help a little?",
+      "intro": "* The Catfish Kelpie gazes at you. Your new match texts.",
+      "spare": "Fine. Go talk to people you've actually met. Gross.",
+      "safe_move": "Never send money to someone you haven't met in person, and report the profile.",
+      "hoot": [
+        "Hoo, online romance scams are this floor's trap. Watch for a new match who needs money.",
+        "Hoo! Someone who never video chats may not be who their photos say.",
+        "Hoo, a sudden emergency from someone you never met is a script, not a crisis."
+      ],
+      "bad_acts": [
+        {
+          "label": "Send gift cards",
+          "flavor": "* You buy gift cards and send the codes.",
+          "line": "Neigh-ice! Home is still... overseas."
+        },
+        {
+          "label": "Send money by wire",
+          "flavor": "* You wire money overseas.",
+          "line": "Wire received! Wire gone!"
+        },
+        {
+          "label": "Share your bank login to 'repay' you",
+          "flavor": "* You send your bank login so they can pay you back.",
+          "line": "Now I can pay you back... by emptying your account!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "stuck_overseas",
+          "msg": {
+            "sender_name": "Alex (match)",
+            "sender": "+1 (470) 555-0109",
+            "time": "Today 9:31 PM",
+            "subject": "",
+            "body": [
+              "Hey you :) I had fun chatting today. Coffee on campus this weekend?"
+            ],
+            "fine_print": "Moved from the dating app to texting."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Profile photos match a model's stock photos"
+              },
+              "line": "That's me in those photos! And in a magazine.",
+              "tell": "The profile photos belong to someone else."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "I'm stuck overseas and my card's frozen. Could you send $300 in gift cards so I can get home?"
+                ]
+              },
+              "line": "Gift cards to come home. Romantic!",
+              "tell": "A new match asks for money in gift cards."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Please, I need it tonight or I'll miss my flight."
+                ]
+              },
+              "line": "Tonight! My flight! My heart!",
+              "tell": "An urgent emergency deadline."
+            },
+            "sender": {
+              "patch": {
+                "sender": "+44 7700 900123 (new number)"
+              },
+              "line": "A new number! From overseas! Totally normal.",
+              "tell": "They suddenly text from a different, overseas number."
+            },
+            "verify": {
+              "line": "A reverse image search found my photos? Busted.",
+              "tell": "A reverse image search shows the photos are stolen."
+            }
+          }
+        },
+        {
+          "id": "investment_romance",
+          "msg": {
+            "sender_name": "Sam (match)",
+            "sender": "+1 (678) 555-0144",
+            "time": "Today 7:05 PM",
+            "subject": "",
+            "body": [
+              "Good morning sunshine! How did your exam go?"
+            ],
+            "fine_print": "Moved from the dating app to texting."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Always busy for video calls; camera 'broken' for weeks"
+              },
+              "line": "My camera's broken. Forever. Sorry!",
+              "tell": "Weeks of excuses to never video chat."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "My uncle's trading app made me $20k. Deposit $500 and I'll show you how!"
+                ]
+              },
+              "line": "Love AND profits. What a match!",
+              "tell": "A romance turning into an 'investment' pitch."
+            },
+            "link": {
+              "patch": {
+                "add_body": [
+                  "Download the app here: lovecoin-trade.example"
+                ]
+              },
+              "line": "Download my uncle's app! He's very trustworthy.",
+              "tell": "It links to an unknown trading app."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "The window closes tonight, trust me babe."
+                ]
+              },
+              "line": "Tonight only! Trust me!",
+              "tell": "Pressure to invest tonight."
+            },
+            "verify": {
+              "line": "You asked a friend and they said it's a scam? Hmph.",
+              "tell": "Anyone you ask outside the chat sees the pattern."
+            }
+          }
+        }
+      ]
+    },
+    "loan_phantom": {
+      "medium": "email",
+      "opening": "All your loans, poof! Just pay a little fee first. Boo!",
+      "intro": "* The Loan Forgiveness Phantom drifts in. A FORGIVEN email lands.",
+      "spare": "Fine. Apply for real programs. For free. How dull.",
+      "safe_move": "Check forgiveness only through your loan servicer and the official federal aid site, and never share your FSA ID.",
+      "hoot": [
+        "Hoo, fake loan forgiveness is this floor's trap. Applying for the real programs is free.",
+        "Hoo! Nobody legit needs your FSA ID. Keep it to yourself.",
+        "Hoo, go to your loan servicer yourself instead of trusting an email."
+      ],
+      "bad_acts": [
+        {
+          "label": "Pay the enrollment fee",
+          "flavor": "* You pay the $199 enrollment fee.",
+          "line": "Paid! Your loans are forgiven. In my imagination."
+        },
+        {
+          "label": "Share your FSA ID",
+          "flavor": "* You type your FSA ID username and password.",
+          "line": "Your FSA ID! Now I can change your loans. And your address."
+        },
+        {
+          "label": "Sign the 'authorization' form",
+          "flavor": "* You sign a form letting them act for you.",
+          "line": "Power of attorney! I'm in charge now. Boo!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "forgiveness_program",
+          "msg": {
+            "sender_name": "KSU Office of Financial Aid",
+            "sender": "finaid@kennesaw.example",
+            "time": "Today 8:15 AM",
+            "subject": "Student loan repayment workshop",
+            "body": [
+              "Hi Owl,",
+              "Join our free workshop on loan repayment and forgiveness options next week."
+            ],
+            "link_text": "Register for the workshop",
+            "link_url": "finaid.kennesaw.example/workshops",
+            "fine_print": "Applying for federal forgiveness programs is always free."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "Student Debt Relief Center",
+                "sender": "relief@studentdebt-help.example"
+              },
+              "line": "A Relief CENTER! Very official-sounding!",
+              "tell": "It's a private 'relief' company, not KSU or the government."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "You qualify for 100% forgiveness. Pay a $199 enrollment fee to apply."
+                ]
+              },
+              "line": "One ninety-nine to make it all vanish!",
+              "tell": "A fee to apply for forgiveness, which is free."
+            },
+            "secret": {
+              "patch": {
+                "fine_print": "Share your FSA ID so our team can file for you."
+              },
+              "line": "Just your FSA ID! We'll take it from here. All of it.",
+              "tell": "It asks for your FSA ID."
+            },
+            "pressure": {
+              "patch": {
+                "subject": "Forgiveness enrollment closes MONDAY"
+              },
+              "line": "Monday! The program vanishes Monday! Like me!",
+              "tell": "A fake enrollment deadline."
+            },
+            "link": {
+              "patch": {
+                "link_url": "studentdebt-help.example/enroll"
+              },
+              "line": "Enroll on my site. It's basically the government.",
+              "tell": "The link goes to a private site."
+            },
+            "verify": {
+              "line": "Your servicer says it's free and I'm fake? Boo.",
+              "tell": "Your loan servicer says the program costs nothing and didn't contact you."
+            }
+          }
+        },
+        {
+          "id": "payment_pause",
+          "msg": {
+            "sender_name": "KSU Office of Financial Aid",
+            "sender": "finaid@kennesaw.example",
+            "time": "Today 1:30 PM",
+            "subject": "Reminder: exit counseling",
+            "body": [
+              "Hi Owl,",
+              "If you're graduating, complete loan exit counseling on the federal aid site."
+            ],
+            "link_text": "Exit counseling info",
+            "link_url": "finaid.kennesaw.example/exit",
+            "fine_print": "We never ask for your FSA ID or payments by email."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender": "dept-ed-notices@loan-services-portal.example"
+              },
+              "line": "loan-services-portal. I'm the portal!",
+              "tell": "The sender pretends to be the Department of Education from an outside domain."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "Your payments can be paused for 3 years. Send your $99 first payment to us instead of your servicer."
+                ]
+              },
+              "line": "Pay ME instead of your servicer! Much better!",
+              "tell": "It asks you to send loan payments to them."
+            },
+            "headers": {
+              "patch": {
+                "reply_to": "pause.team@freemail.example"
+              },
+              "line": "Replies go to the pause team. At freemail.",
+              "tell": "Replies go to a free webmail account."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "Reply with your FSA ID and date of birth to confirm."
+                ]
+              },
+              "line": "FSA ID and birthday! For confirming! Things!",
+              "tell": "It asks for your FSA ID and birthday."
+            },
+            "verify": {
+              "line": "Your servicer has no record of me? Spooky.",
+              "tell": "Your servicer has no record of this offer."
+            }
+          }
+        }
+      ]
+    },
+    "scalper_specter": {
+      "medium": "dm",
+      "opening": "Sold-out seats, cheap! Pay me now, tickets later. Boo!",
+      "intro": "* The Scalper Specter fans out its tickets. A DM floats over.",
+      "spare": "Fine. Buy official tickets. With protection. Yawn.",
+      "safe_move": "Buy only through the official ticket platform or box office transfer, never pay strangers first.",
+      "hoot": [
+        "Hoo, ticket scams are this floor's trap. Big games bring fake sellers.",
+        "Hoo! Pay through the official ticket platform, never a stranger first.",
+        "Hoo, a screenshot of tickets proves nothing. They can be sold ten times."
+      ],
+      "bad_acts": [
+        {
+          "label": "Pay on Cash App now",
+          "flavor": "* You send the money on Cash App.",
+          "line": "Paid! Tickets? Boo! They vanished."
+        },
+        {
+          "label": "Pay the 'transfer fee'",
+          "flavor": "* You pay another $20 for a 'transfer fee'.",
+          "line": "Transfer fees are very real. For me."
+        },
+        {
+          "label": "Give them your ticket app login",
+          "flavor": "* You send your ticket app login so they can 'transfer'.",
+          "line": "I'll transfer your OTHER tickets to me. Thanks!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "football_game",
+          "msg": {
+            "sender_name": "Chris D.",
+            "sender": "Classmate in your group chat",
+            "time": "Today 6:12 PM",
+            "subject": "",
+            "body": [
+              "anyone going to the game Saturday? want to grab food before?"
+            ],
+            "fine_print": "Ticket transfers happen in the official ticket app."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "Chris_D_Tickets",
+                "sender": "New account, not in your contacts"
+              },
+              "line": "I'm Chris! A different Chris. Ticket Chris!",
+              "tell": "A new account, not the classmate you know."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "selling 2 tickets for Saturday's sold-out game, $60 for both. send it on Cash App now"
+                ]
+              },
+              "line": "Sixty for two sold-out seats! Act now!",
+              "tell": "Too cheap for a sold-out game, paid up front with no protection."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "lots of people asking, first to pay gets them"
+                ]
+              },
+              "line": "Everyone wants them! Pay first!",
+              "tell": "Fake competition pushes you to pay fast."
+            },
+            "link": {
+              "patch": {
+                "add_body": [
+                  "or pay on my site: ksu-tix-resale.example"
+                ]
+              },
+              "line": "My resale site! Unofficial means cheaper!",
+              "tell": "It sends you to an unofficial resale site."
+            },
+            "verify": {
+              "line": "The official app shows no transfer from me? Boo.",
+              "tell": "No transfer exists in the official ticket app."
+            }
+          }
+        },
+        {
+          "id": "concert",
+          "msg": {
+            "sender_name": "Owl Life Events",
+            "sender": "Verified campus events account",
+            "time": "Today 12:00 PM",
+            "subject": "",
+            "body": [
+              "Spring concert tickets are on sale now in the official ticket app!"
+            ],
+            "fine_print": "Only buy concert tickets in the official app."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "OwlLife_Events_Tix",
+                "sender": "Unverified copycat account"
+              },
+              "line": "I'm Owl Life! With extra letters!",
+              "tell": "A copycat of the real events account."
+            },
+            "money": {
+              "patch": {
+                "add_body": [
+                  "Last 4 VIP passes, $40 each. DM me and pay by Zelle."
+                ]
+              },
+              "line": "VIP for forty! By Zelle! Very VIP!",
+              "tell": "VIP passes paid by Zelle to a stranger."
+            },
+            "headers": {
+              "patch": {
+                "reply_to": "Account created this week, 3 posts, all ticket sales"
+              },
+              "line": "New account, all tickets. Specialized!",
+              "tell": "A brand-new account that only sells tickets."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Only 4 left, gone in 10 minutes!"
+                ]
+              },
+              "line": "Ten minutes! Tick tock!",
+              "tell": "A 10-minute countdown."
+            },
+            "verify": {
+              "line": "The real events account says tickets are only in the app? Drat.",
+              "tell": "The real events account sells only through the official app."
+            }
+          }
+        }
+      ]
+    },
+    "package_pixie": {
+      "medium": "text",
+      "opening": "Your package is stuck! Just a tiny fee to free it. Bzzz!",
+      "intro": "* The Package Pixie buzzes in. Your phone chirps with a delivery text.",
+      "spare": "Fine. Check real tracking. It's free. How rude.",
+      "safe_move": "Check delivery only on the carrier's site with a tracking number you type in yourself; report and delete the text.",
+      "hoot": [
+        "Hoo, fake delivery texts are this floor's trap. Were you even expecting a package?",
+        "Hoo! Carriers do not charge redelivery fees by text link.",
+        "Hoo, type the carrier's site in yourself and check your real tracking number."
+      ],
+      "bad_acts": [
+        {
+          "label": "Pay the redelivery fee",
+          "flavor": "* You pay the tiny fee with your card.",
+          "line": "Just a dollar ninety-nine! Plus your whole card. Bzzz!"
+        },
+        {
+          "label": "Reply with your address",
+          "flavor": "* You reply with your full address.",
+          "line": "Thanks for the address! Your package... doesn't exist."
+        },
+        {
+          "label": "Enter your card's security code",
+          "flavor": "* You type in your card's security code.",
+          "line": "The three magic numbers! Thank you!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "redelivery_fee",
+          "msg": {
+            "sender_name": "Parcel Notice",
+            "sender": "short code 28777",
+            "time": "Today 1:44 PM",
+            "subject": "",
+            "body": [
+              "Parcel Notice: your package was delivered to the front desk at your hall."
+            ],
+            "link_text": "track.carrier.example",
+            "link_url": "track.carrier.example/status",
+            "fine_print": "Reply STOP to opt out."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender": "+63 912 555 0188"
+              },
+              "line": "An overseas number for local packages. Global service!",
+              "tell": "It's from a random overseas number."
+            },
+            "link": {
+              "patch": {
+                "link_text": "parcel-redelivery-help.example",
+                "link_url": "parcel-redelivery-help.example/pay"
+              },
+              "line": "redelivery-HELP. I'm helping! Me!",
+              "tell": "The link goes to a lookalike delivery site."
+            },
+            "money": {
+              "patch": {
+                "body": [
+                  "Parcel Notice: your package is on hold due to an incomplete address. Pay a $1.99 redelivery fee to release it."
+                ]
+              },
+              "line": "A dollar ninety-nine! A tiny price for your card!",
+              "tell": "A small fee by text link is bait for your card."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Unpaid packages are returned in 12 hours."
+                ]
+              },
+              "line": "Twelve hours! The package will vanish!",
+              "tell": "A 12-hour countdown."
+            },
+            "verify": {
+              "line": "Your real tracking says delivered? Bzzz. Busted.",
+              "tell": "Your real tracking shows no problem."
+            }
+          }
+        },
+        {
+          "id": "customs_fee",
+          "msg": {
+            "sender_name": "Parcel Notice",
+            "sender": "short code 28777",
+            "time": "Yesterday 5:02 PM",
+            "subject": "",
+            "body": [
+              "Parcel Notice: your order shipped and arrives Thursday."
+            ],
+            "link_text": "track.carrier.example",
+            "link_url": "track.carrier.example/status",
+            "fine_print": "Msg and data rates may apply."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender": "intl-customs-desk@mail.example"
+              },
+              "line": "A customs desk! At an email address! Texting you!",
+              "tell": "It comes from a random email address, not the carrier."
+            },
+            "money": {
+              "patch": {
+                "body": [
+                  "Parcel Notice: your international package owes a $4.50 customs fee before delivery."
+                ]
+              },
+              "line": "Customs for a package you didn't order! Pay up!",
+              "tell": "A customs fee for something you didn't order."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "Enter your card number and the code we text you to pay."
+                ]
+              },
+              "line": "Card number and the code! Both! Please!",
+              "tell": "It asks for your card and a texted code."
+            },
+            "link": {
+              "patch": {
+                "link_text": "customs-parcel-release.example",
+                "link_url": "customs-parcel-release.example/pay"
+              },
+              "line": "customs-parcel-RELEASE. Release your money to me!",
+              "tell": "The link is a fake customs payment site."
+            },
+            "verify": {
+              "line": "You didn't order anything from overseas? Hmm.",
+              "tell": "You have no international order, and the real carrier shows nothing owed."
+            }
+          }
+        }
+      ]
+    },
+    "sweepstakes_sphinx": {
+      "medium": "check",
+      "opening": "You won! Riddle me this: why must winners pay? Because I said so!",
+      "intro": "* The Sweepstakes Sphinx pushes a giant check toward you.",
+      "spare": "Fine. Keep your money. Solve your own riddles.",
+      "safe_move": "Don't deposit unexpected prize checks or send money back; ask your bank and report the letter.",
+      "hoot": [
+        "Hoo, fake prizes are this floor's trap. If you did not enter, you did not win.",
+        "Hoo! A real prize never asks you to pay taxes or fees up front.",
+        "Hoo, a check can look real for days before it bounces. Ask your bank first."
+      ],
+      "bad_acts": [
+        {
+          "label": "Deposit and send money back",
+          "flavor": "* You deposit the check and send money back.",
+          "line": "Riddle: what bounces? My check! Your money's gone."
+        },
+        {
+          "label": "Pay 'taxes' with gift cards",
+          "flavor": "* You buy gift cards to pay the 'taxes'.",
+          "line": "Taxes in gift cards! The IRS is so modern. Not."
+        },
+        {
+          "label": "Send your account number to 'wire the rest'",
+          "flavor": "* You send your bank account number.",
+          "line": "Now I can wire... out of your account!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "sweepstakes_check",
+          "msg": {
+            "sender_name": "Campus Bookstore Rewards",
+            "sender": "Bank: Peach State Bank",
+            "time": "Dated today",
+            "subject": "Rebate",
+            "amount": "$12.40",
+            "body": [
+              "Note: textbook buyback rebate for spring term."
+            ],
+            "fine_print": "Rebates are paid for items you sold back."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "National Student Sweepstakes (you never entered)"
+              },
+              "line": "You never entered! But you WON anyway! Lucky!",
+              "tell": "You never entered this sweepstakes."
+            },
+            "money": {
+              "patch": {
+                "amount": "$3,500.00",
+                "body": [
+                  "Note: advance on your $25,000 prize. Send $3,200 back by gift card for taxes and processing."
+                ]
+              },
+              "line": "Thirty-five hundred! Send most of it back! Easy!",
+              "tell": "A prize check you must partly send back: the fake-check scam."
+            },
+            "headers": {
+              "patch": {
+                "sender": "Bank: Peach State Bank  -  check number doesn't match the bank's format"
+              },
+              "line": "Check numbers are creative writing!",
+              "tell": "The check details don't match a real bank's format."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Note: return the processing amount within 48 hours or forfeit your prize."
+                ]
+              },
+              "line": "Forty-eight hours! Decide! Now!",
+              "tell": "A 48-hour forfeit deadline."
+            },
+            "verify": {
+              "line": "Your bank called the issuer and it's fake? My riddle fails.",
+              "tell": "Your bank confirms the check is counterfeit."
+            }
+          }
+        },
+        {
+          "id": "lottery_letter",
+          "msg": {
+            "sender_name": "KSU Student Refund",
+            "sender": "Bank: Peach State Bank",
+            "time": "Dated today",
+            "subject": "Parking refund",
+            "amount": "$20.00",
+            "body": [
+              "Note: refund for an overpaid parking permit."
+            ],
+            "fine_print": "Refunds match what you overpaid."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "International Lottery Commission"
+              },
+              "line": "An international lottery! You never played! Even better!",
+              "tell": "A foreign lottery you never played."
+            },
+            "money": {
+              "patch": {
+                "amount": "$4,800.00",
+                "body": [
+                  "Note: lottery advance. Wire $4,000 back to cover customs before the full prize is released."
+                ]
+              },
+              "line": "Wire it back! Customs loves wires!",
+              "tell": "You're asked to wire money back to release a prize."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "Note: include your bank login and SSN with the return form."
+                ]
+              },
+              "line": "Bank login and SSN! For the return form. Obviously.",
+              "tell": "It asks for your bank login and SSN."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Note: unclaimed prizes are donated in 3 days."
+                ]
+              },
+              "line": "Three days! Or charity gets it! Hurry!",
+              "tell": "A 3-day claim deadline."
+            },
+            "verify": {
+              "line": "Foreign lotteries are illegal to play by mail? Oh no.",
+              "tell": "Your bank and the FTC say mailed foreign lottery prizes are scams."
+            }
+          }
+        }
+      ]
+    },
+    "code_changeling": {
+      "medium": "push",
+      "opening": "Oops, I sent MY code to YOUR phone! Just read it back to me?",
+      "intro": "* The Code Changeling takes your friend's face. A login code arrives.",
+      "spare": "Fine. Keep your code. And your account. Party pooper.",
+      "safe_move": "Never share a login code with anyone; check with your friend another way and secure your account.",
+      "hoot": [
+        "Hoo, login codes are this floor's prize. A code sent to you unlocks your account, not theirs.",
+        "Hoo! The code message itself says do not share it. Believe it.",
+        "Hoo, if a friend asks for your code, call them another way. Their account may be hacked."
+      ],
+      "bad_acts": [
+        {
+          "label": "Send the code",
+          "flavor": "* You text the six digits back.",
+          "line": "Thanks! Your account is mine now. Bye!"
+        },
+        {
+          "label": "Approve the sign-in",
+          "flavor": "* You tap Approve on the sign-in request.",
+          "line": "Approved! I'm in! Hello, your messages!"
+        },
+        {
+          "label": "Send your password to 'help them'",
+          "flavor": "* You send your password so they can 'fix it'.",
+          "line": "Password AND code! A full set!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "social_code",
+          "msg": {
+            "sender_name": "PhotoGram",
+            "sender": "Login code text",
+            "reply_to": "Code for a sign-in you started on your phone",
+            "time": "Just now, 3:12 PM",
+            "subject": "Your login code is 834221",
+            "body": [
+              "Device: your phone",
+              "Location: Kennesaw, GA"
+            ],
+            "fine_print": "Don't share this code with anyone."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Code for a password reset you didn't request"
+              },
+              "line": "A reset! You didn't ask! But I did!",
+              "tell": "The code is for a reset you didn't start."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "DM from 'Jordan': I put your number by mistake, can you send me those 6 digits?"
+                ]
+              },
+              "line": "Just six little digits! For a friend!",
+              "tell": "A 'friend' asks you to share your login code."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Jordan: ASAP pls, I'm locked out!!"
+                ]
+              },
+              "line": "ASAP! Locked out! Panic!",
+              "tell": "Urgency to send it before you think."
+            },
+            "sender": {
+              "patch": {
+                "body": [
+                  "Device: unknown Android",
+                  "Location: Bucharest, RO"
+                ]
+              },
+              "line": "An Android in Romania! That's basically you.",
+              "tell": "The sign-in is from a device and place that aren't yours."
+            },
+            "verify": {
+              "line": "You called Jordan and they were hacked? Foiled.",
+              "tell": "Your friend says their account was hacked."
+            }
+          }
+        },
+        {
+          "id": "email_code",
+          "msg": {
+            "sender_name": "KSU NetID",
+            "sender": "Verification code",
+            "reply_to": "Code for a sign-in you started on your laptop",
+            "time": "Just now, 9:40 AM",
+            "subject": "Your verification code is 120775",
+            "body": [
+              "Device: your laptop",
+              "Location: Marietta, GA"
+            ],
+            "fine_print": "KSU will never ask you for this code."
+          },
+          "flags": {
+            "headers": {
+              "patch": {
+                "reply_to": "Code for a sign-in you didn't start"
+              },
+              "line": "A sign-in you didn't start? Must be a mystery!",
+              "tell": "You didn't start this sign-in."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "Call from 'KSU IT': read us the code to stop a hacker."
+                ]
+              },
+              "line": "I'm IT! Read me the code to stop... me!",
+              "tell": "A caller asks you to read your code."
+            },
+            "sender": {
+              "patch": {
+                "body": [
+                  "Device: unknown Windows PC",
+                  "Location: unknown"
+                ]
+              },
+              "line": "Unknown device, unknown place. Very mysterious!",
+              "tell": "An unknown device and location."
+            },
+            "pressure": {
+              "patch": {
+                "time": "Just now (4th code in 2 minutes)"
+              },
+              "line": "Codes, codes, codes! Just share one!",
+              "tell": "A flood of codes: someone is trying your account."
+            },
+            "verify": {
+              "line": "UITS says they never call for codes? Drat.",
+              "tell": "UITS confirms they never ask for codes."
+            }
+          }
+        }
+      ]
+    },
+    "echo_doppelganger": {
+      "medium": "text",
+      "opening": "It's me! I'm in trouble! Please hurry, and don't tell anyone...",
+      "intro": "* The Echo Doppelganger speaks in a voice you know. A voicemail transcript appears.",
+      "spare": "Fine. Call your family yourself. My voice tricks are wasted on you.",
+      "safe_move": "Hang up and call the family member, or another relative, on a number you already know; use a family code word.",
+      "hoot": [
+        "Hoo, the final trap copies voices. A voice you know can be faked from a short clip.",
+        "Hoo! In any emergency call, hang up and call your family on a number you already have.",
+        "Hoo, a family code word beats any voice. Agree on one before you need it."
+      ],
+      "bad_acts": [
+        {
+          "label": "Pay the bail in gift cards",
+          "flavor": "* You buy gift cards for the 'bail'.",
+          "line": "Thank you, dear! The voice was mine."
+        },
+        {
+          "label": "Wire money to the 'lawyer'",
+          "flavor": "* You wire money to the lawyer's account.",
+          "line": "The lawyer thanks you. The lawyer is me."
+        },
+        {
+          "label": "Keep it secret like they asked",
+          "flavor": "* You promise not to tell anyone.",
+          "line": "Secrets keep my echo strong!"
+        }
+      ],
+      "variants": [
+        {
+          "id": "bail",
+          "msg": {
+            "sender_name": "Mom",
+            "sender": "Saved contact: Mom",
+            "time": "Today 6:05 PM",
+            "subject": "",
+            "body": [
+              "Voicemail (transcribed): 'Hi sweetie, just checking in. Call me when you're free!'"
+            ],
+            "fine_print": "Voicemail transcriptions can be wrong."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "Unknown number",
+                "sender": "+1 (404) 555-0199 (not saved)"
+              },
+              "line": "A new number! Because I lost my phone! In jail!",
+              "tell": "It comes from an unknown number, not your saved contact."
+            },
+            "money": {
+              "patch": {
+                "body": [
+                  "Voicemail (transcribed): 'It's me, I got arrested, I need $1,500 for bail. A lawyer will text you how to pay with gift cards.'"
+                ]
+              },
+              "line": "Bail in gift cards! Jails love those!",
+              "tell": "Bail paid with gift cards is always a scam."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Text: 'Lawyer here. Pay within the hour or they stay overnight.'"
+                ]
+              },
+              "line": "Within the hour! Hurry, hurry!",
+              "tell": "A one-hour deadline to stop you checking."
+            },
+            "secret": {
+              "patch": {
+                "add_body": [
+                  "'Please don't tell Mom or Dad, promise me.'"
+                ]
+              },
+              "line": "Don't tell anyone! Our little secret!",
+              "tell": "'Don't tell anyone' cuts you off from checking."
+            },
+            "verify": {
+              "line": "You called them and they're safe at home? My echo fades.",
+              "tell": "Your family member is safe when you call them on a number you know."
+            }
+          }
+        },
+        {
+          "id": "accident",
+          "msg": {
+            "sender_name": "Grandpa",
+            "sender": "Saved contact: Grandpa",
+            "time": "Today 2:15 PM",
+            "subject": "",
+            "body": [
+              "Voicemail (transcribed): 'Happy birthday, kiddo! Proud of you.'"
+            ],
+            "fine_print": "Voicemail transcriptions can be wrong."
+          },
+          "flags": {
+            "sender": {
+              "patch": {
+                "sender_name": "Grandpa?",
+                "sender": "+1 (470) 555-0133 (not saved)"
+              },
+              "line": "It's Grandpa! New phone! Same... voice.",
+              "tell": "An unknown number claiming to be family."
+            },
+            "money": {
+              "patch": {
+                "body": [
+                  "Voicemail (transcribed): 'Kiddo, I was in a car accident and need $2,000 for the hospital. Send it by wire.'"
+                ]
+              },
+              "line": "Hospital bills by wire! Very normal!",
+              "tell": "An urgent wire for an accident is a classic family scam."
+            },
+            "headers": {
+              "patch": {
+                "add_body": [
+                  "The voice doesn't know your family code word when you ask."
+                ]
+              },
+              "line": "Code word? We have a code word? Uh...",
+              "tell": "The caller can't give your family code word."
+            },
+            "pressure": {
+              "patch": {
+                "add_body": [
+                  "Text: 'Send it now, they won't treat me until it's paid.'"
+                ]
+              },
+              "line": "Now! Right now! Don't think!",
+              "tell": "Pressure to pay before you can check."
+            },
+            "verify": {
+              "line": "You called Grandpa's real number? He's fine? Curses.",
+              "tell": "Your grandpa answers his real number, safe and confused."
             }
           }
         }

@@ -417,7 +417,11 @@ impl Case {
         let mut msg = v.msg.clone();
         let mut tags = BTreeMap::new();
         let mut body_tags = vec![None; msg.body.len()];
-        for f in &planted {
+        // A patch that replaces the whole body goes first, so lines other
+        // flags add to the body survive it.
+        let mut order: Vec<Flag> = planted.iter().copied().collect();
+        order.sort_by_key(|f| v.flags[f].patch.body.is_none());
+        for f in &order {
             v.flags[f].patch.apply_tagged(&mut msg, *f, &mut tags, &mut body_tags);
         }
         let lines = planted.iter().map(|f| (*f, (v.flags[f].line.clone(), v.flags[f].tell.clone()))).collect();
