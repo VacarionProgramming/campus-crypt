@@ -1,0 +1,553 @@
+{
+  "decoys": [
+    { "sender_name": "KSU Library", "subject": "Your hold is ready at Sturgis Library", "time": "8:02 AM" },
+    { "sender_name": "D2L Brightspace", "subject": "New grade posted: ENGL 1101", "time": "7:45 AM" },
+    { "sender_name": "Owl Life", "subject": "Club fair Thursday on the Campus Green", "time": "Yesterday" },
+    { "sender_name": "KSU Dining", "subject": "This week at The Commons", "time": "Yesterday" },
+    { "sender_name": "Career Planning", "subject": "Resume review drop-ins this week", "time": "Mon" },
+    { "sender_name": "Student Health", "subject": "Flu shot clinic Friday", "time": "Mon" }
+  ],
+  "cases": {
+    "inbox_mimic": {
+      "medium": "email",
+      "opening": "Psst. Your money is READY. Just one tiny review first...",
+      "intro": "* The Inbox Mimic rattles open. A message slides into your inbox.",
+      "spare": "...Fine. You win. I was never the aid office.",
+      "safe_move": "Open Owl Express yourself (not from the email) or call the Financial Aid office to check.",
+      "bad_acts": [
+        { "label": "Reply with your password", "flavor": "* You start typing your NetID password into a reply.", "line": "Ooh, keep typing! Every letter makes my envelopes sharper!" },
+        { "label": "Pay the release fee", "flavor": "* You reach for your card to pay a release fee.", "line": "A fee to get your own money? Love it. Powering up!" },
+        { "label": "Click Review", "flavor": "* You click the button. A login box pops up, very eager.", "line": "Click! The login page missed you. Let's make this harder!" }
+      ],
+      "variants": [
+        {
+          "id": "refund",
+          "msg": {
+            "sender_name": "KSU Office of Financial Aid",
+            "sender": "finaid@kennesaw.example",
+            "time": "Today 9:14 AM",
+            "subject": "Your spring refund is ready",
+            "body": ["Hi Owl,", "Your spring refund has been approved. Please review the direct deposit account on file so it can be released."],
+            "link_text": "Review deposit details",
+            "link_url": "owlexpress.kennesaw.example/aid",
+            "fine_print": "Questions? Visit Financial Aid in Kennesaw Hall."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "finaid@kenesaw.example" }, "line": "...k-e-n-e-s-a-w? One N is plenty!", "tell": "The sender is kenesaw.example: one letter off from the real address." },
+            "headers": { "patch": { "reply_to": "ksu.aid.refunds@freemail.example" }, "line": "Replies go to my... personal account. For speed!", "tell": "Replies go to a free webmail account, not a KSU address." },
+            "link": { "patch": { "link_url": "kenesaw-aid.example/login" }, "line": "No peeking! ...Fine, it goes to kenesaw-aid.example. Close enough?", "tell": "The button goes to kenesaw-aid.example, not Owl Express." },
+            "secret": { "patch": { "fine_print": "To keep access, confirm your NetID and password on the review page." }, "line": "Everyone shares their password with me. It's basically tradition.", "tell": "It asks for your password. Real offices never do." },
+            "pressure": { "patch": { "subject": "Your spring refund is ready - review by 5 PM TODAY", "add_body": ["Reviews after 5 PM today move to the next cycle."] }, "line": "Tick, tock! ...Okay, the deadline was decorative.", "tell": "A same-day deadline pushes you to act before you think." },
+            "verify": { "line": "You called the office YOURSELF? And they never heard of me? Rude.", "tell": "Financial Aid has no record of this message." }
+          }
+        },
+        {
+          "id": "grant",
+          "msg": {
+            "sender_name": "KSU Student Emergency Fund",
+            "sender": "emergencyfund@kennesaw.example",
+            "time": "Today 11:30 AM",
+            "subject": "You qualify for a $1,200 emergency grant",
+            "body": ["Hi Owl,", "Based on your file you qualify for a one-time emergency grant. Confirm your details to receive it."],
+            "link_text": "Claim your grant",
+            "link_url": "kennesaw.example/emergency-fund",
+            "fine_print": "Grants are awarded by the Dean of Students office."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "KSU Emergency Fund Team", "sender": "ksu.grants@outreach-mail.example" }, "line": "My address is... outreach-mail. Very official outreach!", "tell": "It comes from an outside domain, not a KSU address." },
+            "link": { "patch": { "link_url": "ksu-grant-claim.example/start" }, "line": "That link is a shortcut! A shortcut to me.", "tell": "The link goes to ksu-grant-claim.example, not a KSU site." },
+            "money": { "patch": { "add_body": ["A $40 verification fee is deducted before release; pay by card to confirm."] }, "line": "Free money costs only forty dollars. That's math!", "tell": "Real grants never charge a fee to pay you." },
+            "secret": { "patch": { "fine_print": "Have your SSN and bank login ready to confirm identity." }, "line": "I just need your SSN. And bank login. For... paperwork.", "tell": "It wants your SSN and bank login." },
+            "verify": { "line": "The Dean of Students has never heard of me? Must be a filing error.", "tell": "The Dean of Students office didn't send this." }
+          }
+        }
+      ]
+    },
+    "deadline_wraith": {
+      "medium": "email",
+      "opening": "So much due, so little time... let me make it all go away.",
+      "intro": "* The Deadline Wraith drifts in, trailing late notices. An email lands.",
+      "spare": "Fine. Go plan your week like a responsible person. Gross.",
+      "safe_move": "Check deadlines in Owl Express or with your professor yourself, and never pay or hand in work through an emailed link.",
+      "bad_acts": [
+        { "label": "Pay the late fee by link", "flavor": "* You pull up the payment page from the email.", "line": "Paid! And the deadline is still tonight. Funny how that works." },
+        { "label": "Send your login to 'save your spot'", "flavor": "* You type your NetID login into the reply.", "line": "Your account is mine now. I'll be very late on your behalf." },
+        { "label": "Buy the rush package", "flavor": "* You reach for your card for the rush option.", "line": "Rush job! Rushed right into my pocket." }
+      ],
+      "variants": [
+        {
+          "id": "late_withdrawal",
+          "msg": {
+            "sender_name": "KSU Office of the Registrar",
+            "sender": "registrar@kennesaw.example",
+            "time": "Today 2:05 PM",
+            "subject": "Withdrawal deadline reminder",
+            "body": ["Hi Owl,", "This is a reminder about the course withdrawal deadline. Review your options before it passes."],
+            "link_text": "View withdrawal options",
+            "link_url": "owlexpress.kennesaw.example/registration",
+            "fine_print": "Deadlines are listed on the academic calendar."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "registrar-office@kennesaw-edu.example" }, "line": "kennesaw-EDU dot example. Extra letters, extra official!", "tell": "The sender's domain is kennesaw-edu.example, a lookalike." },
+            "link": { "patch": { "link_url": "ksu-withdraw-portal.example/pay" }, "line": "My portal is so much faster than the real one!", "tell": "The link goes to an outside payment site." },
+            "money": { "patch": { "add_body": ["A $75 late processing fee is due to keep your withdrawal request open."] }, "line": "Seventy-five dollars to be late. Very reasonable.", "tell": "The Registrar doesn't email surprise fees to be paid by link." },
+            "pressure": { "patch": { "subject": "FINAL NOTICE: withdrawal closes in 2 HOURS", "time": "Today 3:58 PM" }, "line": "Two hours! Panic! ...Okay, the calendar says next week.", "tell": "A 2-hour 'final notice' rushes you; the real calendar says otherwise." },
+            "verify": { "line": "You checked the academic calendar? Nobody reads the calendar!", "tell": "The academic calendar and the Registrar show a different deadline and no fee." }
+          }
+        },
+        {
+          "id": "essay_mill",
+          "msg": {
+            "sender_name": "Campus Study Support",
+            "sender": "studysupport@kennesaw.example",
+            "time": "Today 10:20 PM",
+            "subject": "Behind on assignments? Free planning help",
+            "body": ["Hi Owl,", "Finals crunch is real. Book a free session to build a study plan for your week."],
+            "link_text": "Book a session",
+            "link_url": "kennesaw.example/tutoring",
+            "fine_print": "Sessions are free for enrolled students."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "ProEssay Helpers", "sender": "help@proessay-helpers.example" }, "line": "ProEssay! We help by... doing it for you.", "tell": "It's an outside essay company, not KSU study support." },
+            "money": { "patch": { "add_body": ["We'll write any paper by midnight: $79 per paper, pay with Zelle."] }, "line": "Seventy-nine dollars and a plagiarism case. Bargain!", "tell": "It sells finished papers: paid cheating, and often a scam too." },
+            "secret": { "patch": { "fine_print": "Send your D2L login so our writer can submit for you." }, "line": "I'll need your D2L login. To submit. As you.", "tell": "It wants your D2L login to submit work as you." },
+            "pressure": { "patch": { "subject": "Due tonight? We deliver by midnight GUARANTEED" }, "line": "Midnight! Midnight! Don't think, just buy!", "tell": "It uses tonight's deadline to stop you from thinking." },
+            "verify": { "line": "You asked the real tutoring center? They'd never sell papers!", "tell": "KSU tutoring offers free help and never writes papers for pay." }
+          }
+        }
+      ]
+    },
+    "password_hydra": {
+      "medium": "email",
+      "opening": "One password, many doors. Let me hold it for you!",
+      "intro": "* The Password Hydra's heads all talk at once. An email arrives.",
+      "spare": "Ugh. Fine. Keep your password to yourself, then.",
+      "safe_move": "Go to the UITS site or service desk yourself; never type your password from an emailed link.",
+      "bad_acts": [
+        { "label": "Log in through the link", "flavor": "* You type your NetID and password into the linked page.", "line": "One password, and now I grow another head!" },
+        { "label": "Reply with your password", "flavor": "* You reply with your password, just this once.", "line": "Just this once! That's how all my heads started." },
+        { "label": "Approve the code it sends", "flavor": "* You read the code back to it.", "line": "Thanks for the code! Your account says hi from far away." }
+      ],
+      "variants": [
+        {
+          "id": "mailbox_full",
+          "msg": {
+            "sender_name": "KSU UITS Service Desk",
+            "sender": "service@kennesaw.example",
+            "time": "Today 8:40 AM",
+            "subject": "Your mailbox is almost full",
+            "body": ["Hi Owl,", "Your student mailbox is at 95% of its storage. You can clean it up or review your storage settings."],
+            "link_text": "Manage storage",
+            "link_url": "uits.kennesaw.example/storage",
+            "fine_print": "UITS will never ask for your password."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "uits-helpdesk@kennesaw.mailbox-admin.example" }, "line": "mailbox-admin dot example. I administer mailboxes!", "tell": "The sender is an outside domain dressed up as UITS." },
+            "headers": { "patch": { "reply_to": "helpdesk.verify@freemail.example" }, "line": "Replies go to my other head. It's free!", "tell": "Replies go to a free webmail account." },
+            "link": { "patch": { "link_url": "kennesaw-mailbox-upgrade.example/login" }, "line": "That's the upgrade page! For upgrading me.", "tell": "The link goes to a fake login page." },
+            "secret": { "patch": { "fine_print": "To avoid losing mail, re-enter your NetID password within the link." }, "line": "Your password, please. I collect them.", "tell": "It asks you to re-enter your password from an email." },
+            "pressure": { "patch": { "subject": "ACTION REQUIRED: mailbox will be DELETED today" }, "line": "Deleted! Gone! Forever! ...Probably not, actually.", "tell": "A deletion threat pushes you to act fast." },
+            "verify": { "line": "You called the UITS desk? They say my mailbox story is made up!", "tell": "The UITS service desk didn't send it." }
+          }
+        },
+        {
+          "id": "mfa_reset",
+          "msg": {
+            "sender_name": "KSU UITS Security",
+            "sender": "security@kennesaw.example",
+            "time": "Today 1:12 PM",
+            "subject": "Two-factor sign-in reminder",
+            "body": ["Hi Owl,", "Keep your two-factor sign-in up to date. You can review your devices anytime in your account settings."],
+            "link_text": "Review my devices",
+            "link_url": "uits.kennesaw.example/mfa",
+            "fine_print": "UITS staff will never ask for your codes."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "KSU Security Team", "sender": "ksu-security@secure-verify.example" }, "line": "secure-verify! The word secure is right there!", "tell": "The sender's domain isn't KSU's." },
+            "link": { "patch": { "link_url": "ksu-mfa-reenroll.example/start" }, "line": "Re-enroll with me. I'm very secure.", "tell": "The link goes to a fake re-enrollment site." },
+            "secret": { "patch": { "add_body": ["Reply with the 6-digit code we just sent to your phone to confirm."] }, "line": "Just read me the code! Six little digits!", "tell": "It asks for your sign-in code. Never share codes." },
+            "pressure": { "patch": { "subject": "Your account will be LOCKED in 30 minutes" }, "line": "Locked! In thirty minutes! Hurry, hurry!", "tell": "A 30-minute lockout threat is a pressure trick." },
+            "verify": { "line": "You checked your devices in your real account? Nothing's wrong? Drat.", "tell": "Your real account settings show nothing to fix." }
+          }
+        }
+      ]
+    },
+    "internship_impostor": {
+      "medium": "dm",
+      "opening": "Congratulations! You're hired. You didn't even apply!",
+      "intro": "* The Internship Impostor straightens a cardboard tie. A message pings.",
+      "spare": "Fine. Go get a real internship. Through Career Planning. Boring!",
+      "safe_move": "Look the company and job up on Handshake or with KSU Career Planning, and never pay or share bank details to get a job.",
+      "bad_acts": [
+        { "label": "Send your bank info for payroll", "flavor": "* You type your bank account and routing number.", "line": "Payroll! For me! From you!" },
+        { "label": "Deposit their equipment check", "flavor": "* You deposit the check they mailed for 'equipment'.", "line": "Now buy the laptop from my vendor. Wink." },
+        { "label": "Send a copy of your ID", "flavor": "* You attach a photo of your driver's license.", "line": "Lovely photo. I'll be you now." }
+      ],
+      "variants": [
+        {
+          "id": "remote_intern",
+          "msg": {
+            "sender_name": "Dana Reyes, Talent Partner",
+            "sender": "Brightline Analytics (verified employer)",
+            "time": "Today 3:17 PM",
+            "subject": "Remote data internship",
+            "body": ["Hi Owl! Your profile looks great for our remote data internship.", "If you're interested, apply through our Handshake posting and we'll schedule an interview."],
+            "link_text": "View posting",
+            "link_url": "handshake.example/jobs/brightline-data-intern",
+            "fine_print": "Interviews are scheduled through Handshake."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "Brightline Analytics (unverified, 0 reviews)" }, "line": "Unverified? I'm verified in my heart.", "tell": "The employer isn't verified and has no history." },
+            "headers": { "patch": { "reply_to": "Account created 2 days ago; messaged 400 students" }, "line": "I'm new! And friendly! To four hundred people!", "tell": "A brand-new account mass-messaging students." },
+            "money": { "patch": { "add_body": ["$35/hr, no interview. We'll mail you a $2,000 check to buy equipment from our vendor."] }, "line": "Thirty-five an hour for nothing! And a check! Trust the check!", "tell": "Pay with no interview, plus a check to buy equipment: the fake-check scam." },
+            "secret": { "patch": { "add_body": ["Send your bank login so payroll can set up direct deposit today."] }, "line": "Bank login, please. Payroll is... very hands-on.", "tell": "It asks for your bank login. Real payroll never does." },
+            "link": { "patch": { "link_url": "brightline-hiring.example/onboard" }, "line": "Onboard off-platform! Away from those nosy reviews.", "tell": "It moves you off Handshake to an outside site." },
+            "verify": { "line": "Career Planning never heard of my company? Neither has anyone!", "tell": "Career Planning and Handshake have no such posting." }
+          }
+        },
+        {
+          "id": "research_assistant",
+          "msg": {
+            "sender_name": "Dr. M. Carter",
+            "sender": "KSU College of Computing (faculty)",
+            "time": "Today 9:55 AM",
+            "subject": "Research assistant opening",
+            "body": ["Hello Owl, my lab has a part-time research assistant opening.", "Apply through the posting on Handshake and I'll set up an interview."],
+            "link_text": "View posting",
+            "link_url": "handshake.example/jobs/ksu-research-assistant",
+            "fine_print": "Student assistant jobs are paid through KSU payroll."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "personal account, not linked to KSU" }, "line": "I'm a professor. Of... messaging.", "tell": "It's a personal account, not a KSU faculty profile." },
+            "money": { "patch": { "add_body": ["I'll pay you $400/week by check. Run errands and buy supplies for the lab with it first."] }, "line": "Buy supplies first! I'll pay you back. Eventually. Never.", "tell": "Buying things up front with a check you were sent is the fake-check scam." },
+            "secret": { "patch": { "add_body": ["Send your student ID number and a photo of your license to get started."] }, "line": "Just your ID and license. For the lab badge. Sure.", "tell": "It asks for your ID number and license photo before any interview." },
+            "pressure": { "patch": { "add_body": ["I need an answer in the next hour or the spot goes to someone else."] }, "line": "One hour! Real labs are this impatient. Probably.", "tell": "A one-hour deadline for a job offer is a pressure trick." },
+            "verify": { "line": "You emailed the department office? They say Dr. Carter doesn't exist?", "tell": "The department has no faculty member by that name." }
+          }
+        }
+      ]
+    },
+    "ticket_troll": {
+      "medium": "text",
+      "opening": "You owe me! Probably! Pay first, ask never!",
+      "intro": "* The Ticket Troll stomps out of the parking deck. Your phone buzzes.",
+      "spare": "Fine. Go check your real citations. There aren't any. Rude.",
+      "safe_move": "Check citations yourself on KSU Parking and Transportation's site; don't pay from a texted link.",
+      "bad_acts": [
+        { "label": "Pay from the link", "flavor": "* You tap the link and type your card number.", "line": "Paid! And now I have your card. Double win!" },
+        { "label": "Reply with your plate and NetID", "flavor": "* You reply with your plate number and NetID.", "line": "Thanks! Now I know where you park. And who you are." },
+        { "label": "Call the number in the text", "flavor": "* You call the number in the text.", "line": "Hello, this is definitely KSU. What's your card number?" }
+      ],
+      "variants": [
+        {
+          "id": "citation",
+          "msg": {
+            "sender_name": "KSU Parking",
+            "sender": "short code 33733",
+            "time": "Today 7:52 AM",
+            "subject": "",
+            "body": ["KSU Parking: a citation was issued to a vehicle on your account. View details in your parking portal."],
+            "link_text": "parking.kennesaw.example",
+            "link_url": "parking.kennesaw.example/citations",
+            "fine_print": "Reply STOP to opt out."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "+1 (917) 555-0148" }, "line": "A New York number for Georgia parking. Very efficient!", "tell": "It's from a random personal number, not KSU's short code." },
+            "link": { "patch": { "link_text": "ksu-parking-pay.example", "link_url": "ksu-parking-pay.example/citation" }, "line": "ksu-parking-PAY. The pay is the important part.", "tell": "The link goes to ksu-parking-pay.example, not the KSU portal." },
+            "money": { "patch": { "add_body": ["Pay the $45 fine now to avoid a $150 late fee."] }, "line": "Forty-five now or a hundred fifty later! Math!", "tell": "It demands payment by link and threatens bigger fees." },
+            "pressure": { "patch": { "add_body": ["Your vehicle will be towed TONIGHT if unpaid."] }, "line": "Towed tonight! Tow truck's already warming up!", "tell": "A tow threat tonight is meant to scare you into paying." },
+            "verify": { "line": "Your parking portal shows no citations? Must be a glitch. In me.", "tell": "Your real parking account shows no citation." }
+          }
+        },
+        {
+          "id": "toll",
+          "msg": {
+            "sender_name": "Peach Pass",
+            "sender": "short code 72240",
+            "time": "Yesterday 6:30 PM",
+            "subject": "",
+            "body": ["Peach Pass: your monthly statement is ready. Sign in to your account to view it."],
+            "link_text": "peachpass.example",
+            "link_url": "peachpass.example/statement",
+            "fine_print": "Msg and data rates may apply."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "iMessage from tollnotice2291@mail.example" }, "line": "An email address texting you? Modern tolls!", "tell": "It arrives from a random email address, not the toll service." },
+            "link": { "patch": { "link_text": "peachpass-tolls.example", "link_url": "peachpass-tolls.example/pay" }, "line": "peachpass-TOLLS. Totally the same thing.", "tell": "The link is a lookalike of the real toll site." },
+            "money": { "patch": { "add_body": ["You have an unpaid toll of $6.89. Pay now to avoid a $50 fine."] }, "line": "Only six dollars! Plus your card number forever.", "tell": "A small 'unpaid toll' is bait to get your card." },
+            "secret": { "patch": { "add_body": ["Enter your card number and the code we text you to confirm."] }, "line": "Card number and the code! The full set!", "tell": "It asks for your card and a texted code." },
+            "pressure": { "patch": { "add_body": ["Your license may be suspended if not paid within 24 hours."] }, "line": "Suspended! In a day! Scary, right?", "tell": "A license-suspension threat is a pressure trick." },
+            "verify": { "line": "You signed in to Peach Pass yourself and owe nothing? Spoilsport.", "tell": "Your real toll account shows nothing owed." }
+          }
+        }
+      ]
+    },
+    "commute_chimera": {
+      "medium": "web",
+      "opening": "Late again? Pay me and the commute disappears!",
+      "intro": "* The Commute Chimera honks with three heads. A web page loads.",
+      "spare": "Fine. Take the real shuttle. It's free. Ugh.",
+      "safe_move": "Buy permits and use shuttle tools only through KSU Parking and Transportation's own site and app.",
+      "bad_acts": [
+        { "label": "Pay with Venmo 'friends and family'", "flavor": "* You send money as 'friends and family'.", "line": "No buyer protection! We're family now!" },
+        { "label": "Sign in with your NetID", "flavor": "* You type your NetID and password.", "line": "Thanks for the keys. I'll drive your account around." },
+        { "label": "Install the app from the page", "flavor": "* You download the app from the page.", "line": "Installed! I live in your phone now." }
+      ],
+      "variants": [
+        {
+          "id": "permit_resale",
+          "msg": {
+            "sender_name": "KSU Parking and Transportation",
+            "sender": "parking.kennesaw.example",
+            "time": "",
+            "subject": "Parking permits - KSU Parking and Transportation",
+            "body": ["Student parking permits for Kennesaw and Marietta are sold through your parking account.", "Choose a deck, pay in your account, and your plate is your permit."],
+            "link_text": "Buy a permit",
+            "link_url": "parking.kennesaw.example/permits",
+            "fine_print": "Permits are tied to your plate and aren't transferable."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "KSU Permit Resale", "sender": "ksu-permits-cheap.example" }, "line": "Cheap permits! Cheap, cheap, cheap!", "tell": "It's a resale page, not KSU Parking." },
+            "link": { "patch": { "link_url": "ksu-permits-cheap.example/deals" }, "line": "Look at the address bar? Nobody looks at the address bar!", "tell": "The address bar shows a site that isn't KSU's." },
+            "money": { "patch": { "add_body": ["Half-price fall permit: $90. Pay by Venmo, friends and family only."] }, "line": "Half price! Friends and family only! We're close!", "tell": "Half price, paid as 'friends and family' (no protection), for a permit that can't be transferred." },
+            "headers": { "patch": { "reply_to": "Contact: text Jay at (404) 555-0177" }, "line": "Customer service is Jay. Jay is great.", "tell": "The only contact is a stranger's phone number." },
+            "verify": { "line": "Permits can't be resold? Says who? Says KSU. Fine.", "tell": "KSU permits are tied to your plate and can't be resold." }
+          }
+        },
+        {
+          "id": "shuttle_app",
+          "msg": {
+            "sender_name": "KSU Shuttle Tracker",
+            "sender": "transportation.kennesaw.example",
+            "time": "",
+            "subject": "Big Owl Bus - live tracker",
+            "body": ["See where the Big Owl Bus is right now and when it reaches your stop.", "Get the official app from your phone's app store."],
+            "link_text": "Get the app",
+            "link_url": "transportation.kennesaw.example/shuttle",
+            "fine_print": "The shuttle is free with your KSU ID."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "Owl Shuttle PRO", "sender": "owl-shuttle-pro.example" }, "line": "PRO! It's in the name! Very professional!", "tell": "It's an unofficial 'pro' site, not KSU Transportation." },
+            "link": { "patch": { "link_url": "owl-shuttle-pro.example/download.apk" }, "line": "Download straight from me! Skip that boring app store!", "tell": "It downloads an app from the page instead of the app store." },
+            "secret": { "patch": { "add_body": ["Sign in with your NetID and password to see live buses."] }, "line": "NetID and password, for a bus map. Totally normal.", "tell": "A bus map asking for your NetID password." },
+            "money": { "patch": { "add_body": ["Premium live tracking: $4.99/month. Enter your card to start."] }, "line": "The free shuttle, now with fees!", "tell": "It charges for tracking a free shuttle." },
+            "verify": { "line": "The real transportation site has its own tracker? Free?! Rude.", "tell": "KSU's own transportation site lists the official tracker." }
+          }
+        }
+      ]
+    },
+    "gift_card_gargoyle": {
+      "medium": "dm",
+      "opening": "Great deal! Just pay in gift cards. Everyone does!",
+      "intro": "* The Gift Card Gargoyle unfolds stone wings. A chat message arrives.",
+      "spare": "Fine. Buy your books from the bookstore. With protection. Boring.",
+      "safe_move": "Buy through the KSU bookstore or a platform with buyer protection, and never pay anyone in gift cards.",
+      "bad_acts": [
+        { "label": "Send gift card codes", "flavor": "* You scratch off the cards and send photos of the codes.", "line": "Delicious codes! The book is... on its way. Forever." },
+        { "label": "Pay before seeing the book", "flavor": "* You send the money before you meet.", "line": "Paid in advance! The best kind of paid!" },
+        { "label": "Text them your phone verification code", "flavor": "* You read them the code your phone just got.", "line": "Thanks! Now I have a new phone number. Yours." }
+      ],
+      "variants": [
+        {
+          "id": "textbook",
+          "msg": {
+            "sender_name": "Marcus T.",
+            "sender": "KSU Marketplace group member",
+            "time": "Today 12:40 PM",
+            "subject": "",
+            "body": ["Hey! I have the BIOL 1107 textbook you asked about, barely used. Want to meet at the Student Center and check it out?"],
+            "link_text": "",
+            "link_url": "",
+            "fine_print": "Meet in a public place and pay when you see the book."
+          },
+          "flags": {
+            "headers": { "patch": { "reply_to": "Joined the group yesterday; profile has no friends or posts" }, "line": "New account! New me! New book!", "tell": "A brand-new account with no history." },
+            "money": { "patch": { "add_body": ["$60, but I only take Apple gift cards. Send the codes and I'll ship it."] }, "line": "Gift cards are just money that can't come back!", "tell": "Gift cards as payment are a scam; real sellers take normal payment." },
+            "pressure": { "patch": { "add_body": ["Three other people want it, so I need the codes in 10 minutes."] }, "line": "Ten minutes! Everyone wants this book! Probably!", "tell": "Fake competition rushes you." },
+            "secret": { "patch": { "add_body": ["Also send me the code Google just texted you so I know you're real."] }, "line": "Just the code, to prove you're real. I'm very real.", "tell": "It asks for a verification code: that steals your number." },
+            "verify": { "line": "The bookstore has it used for less? With a receipt? Unfair.", "tell": "The KSU bookstore sells the same book, with a receipt and returns." }
+          }
+        },
+        {
+          "id": "professor_favor",
+          "msg": {
+            "sender_name": "Prof. Lin",
+            "sender": "Class group chat",
+            "time": "Today 8:05 AM",
+            "subject": "",
+            "body": ["Hi class, office hours moved to Thursday this week. See the D2L announcement for the room."],
+            "link_text": "",
+            "link_url": "",
+            "fine_print": "Professors post class news on D2L."
+          },
+          "flags": {
+            "sender": { "patch": { "sender": "New number, not saved in your contacts" }, "line": "I'm your professor! From a new number! Trust me!", "tell": "It's from an unknown number pretending to be your professor." },
+            "money": { "patch": { "add_body": ["Quick favor: buy four $100 gift cards for a student event and send the codes. I'll repay you."] }, "line": "Professors always need gift cards. For... events.", "tell": "No professor asks students to buy gift cards." },
+            "pressure": { "patch": { "add_body": ["I'm in a meeting and can't talk, need them within the hour."] }, "line": "Can't call, in a meeting, hurry hurry!", "tell": "'Can't talk, hurry' stops you from checking." },
+            "headers": { "patch": { "reply_to": "Display name 'Prof. Lin' with no KSU email shown" }, "line": "My name is right there! Names can't be fake!", "tell": "Only the display name says 'professor'; anyone can type a name." },
+            "verify": { "line": "You emailed Prof. Lin's real KSU address? And they said no? Drat.", "tell": "The professor's real KSU email says they never sent it." }
+          }
+        }
+      ]
+    },
+    "push_poltergeist": {
+      "medium": "push",
+      "opening": "Ding! Ding! Ding! Just tap Approve and I'll stop!",
+      "intro": "* The Push Poltergeist rattles your phone. A sign-in request lights up.",
+      "spare": "Fine. Deny me. And change your password. Party pooper.",
+      "safe_move": "Deny sign-in requests you didn't start, then change your password and tell the UITS service desk.",
+      "bad_acts": [
+        { "label": "Tap Approve to stop the buzzing", "flavor": "* You tap Approve just to make it stop.", "line": "Approved! I'm in your email now. Hello!" },
+        { "label": "Read the number to the caller", "flavor": "* A 'UITS' caller asks for the number on screen. You read it.", "line": "That number was the last key. Thank you, friend!" },
+        { "label": "Ignore it and keep the same password", "flavor": "* You swipe it away and keep your password.", "line": "I'll just keep trying. Forever. Same password!" }
+      ],
+      "variants": [
+        {
+          "id": "duo_push",
+          "msg": {
+            "sender_name": "Duo Mobile",
+            "sender": "KSU NetID sign-in",
+            "reply_to": "Sign-in to KSU Mail you just started",
+            "time": "Just now, 2:14 PM",
+            "subject": "Approve sign-in to Kennesaw State?",
+            "body": ["Location: Kennesaw, GA", "Device: your laptop"],
+            "fine_print": "Only approve sign-ins you started."
+          },
+          "flags": {
+            "sender": { "patch": { "body": ["Location: Lagos, NG", "Device: unknown Windows PC"] }, "line": "Lagos is basically next to Kennesaw. Roughly.", "tell": "The sign-in comes from a city and device that aren't yours." },
+            "pressure": { "patch": { "time": "2:14 AM (5th request in 3 minutes)" }, "line": "Ding ding ding! At 2 AM! Tap it so we can sleep!", "tell": "A flood of requests at 2 AM: someone is trying your password." },
+            "headers": { "patch": { "reply_to": "Sign-in to VPN (you weren't signing in)" }, "line": "A VPN sign-in! You love VPNs, right?", "tell": "It's for a sign-in you didn't start." },
+            "link": { "patch": { "sender_name": "Duo Mobile (via text link)", "body": ["Tap the texted link to approve faster."] }, "line": "Approve by link! Much faster than the real app!", "tell": "Real approvals happen in the app, not by a texted link." },
+            "verify": { "line": "You weren't signing in? Then who was? ...Me. It was me.", "tell": "You didn't start this sign-in, so your password may be known." }
+          }
+        },
+        {
+          "id": "number_match",
+          "msg": {
+            "sender_name": "Microsoft Authenticator",
+            "sender": "KSU Microsoft 365",
+            "reply_to": "Sign-in to Outlook you just started",
+            "time": "Just now, 10:03 AM",
+            "subject": "Enter the number shown on your screen",
+            "body": ["Location: Marietta, GA", "App: Outlook on your laptop"],
+            "fine_print": "The number appears on the screen where you are signing in."
+          },
+          "flags": {
+            "sender": { "patch": { "body": ["Location: unknown", "App: unknown"] }, "line": "Unknown is a nice place. Very private.", "tell": "No location or app you recognize." },
+            "secret": { "patch": { "add_body": ["A 'UITS tech' on the phone is asking you to read the number to them."] }, "line": "My friend on the phone just needs the number!", "tell": "Someone asking you to read the number is taking over your account." },
+            "pressure": { "patch": { "time": "Just now (3rd request this minute)" }, "line": "Again! And again! Isn't it easier to say yes?", "tell": "Repeated requests are someone guessing their way in." },
+            "headers": { "patch": { "reply_to": "Sign-in you didn't start; no number on any screen you have" }, "line": "There's no number on your screen? Just guess!", "tell": "There's no sign-in of yours to match the number to." },
+            "verify": { "line": "You checked your sign-in activity? And it wasn't you? Uh oh.", "tell": "Your account activity shows a sign-in that wasn't you." }
+          }
+        }
+      ]
+    },
+    "overpay_ogre": {
+      "medium": "check",
+      "opening": "Oops! I paid you too much. Send the extra back. Quickly!",
+      "intro": "* The Overpay Ogre stomps in with a fat envelope. A check arrives.",
+      "spare": "Fine. Wait for the check to bounce on its own. Spoilsport.",
+      "safe_move": "Don't refund 'overpayments'; let the bank fully clear the check (not just show funds) and talk to your bank first.",
+      "bad_acts": [
+        { "label": "Zelle back the difference", "flavor": "* You send the 'extra' back with Zelle.", "line": "Zelle is forever! Unlike my check!" },
+        { "label": "Deposit it and spend it", "flavor": "* The funds show up, so you spend some.", "line": "Spent! And in a week the check bounces. Surprise!" },
+        { "label": "Buy gift cards with the extra", "flavor": "* You buy gift cards to send back.", "line": "Gift cards! My favorite currency!" }
+      ],
+      "variants": [
+        {
+          "id": "sublease",
+          "msg": {
+            "sender_name": "Riverside Property Group",
+            "sender": "Bank: First Peach Credit Union",
+            "time": "Dated today",
+            "subject": "Sublease deposit",
+            "amount": "$800.00",
+            "body": ["Note: deposit for the spring sublease, as agreed in the signed lease."],
+            "fine_print": "Deposit it as usual; checks can take days to clear."
+          },
+          "flags": {
+            "money": { "patch": { "amount": "$2,400.00", "body": ["Note: we paid $1,600 too much by mistake. Please Zelle the difference back today."] }, "line": "Too much money! Send some back! Before it... clears.", "tell": "An overpayment you're asked to send back is the fake-check scam." },
+            "sender": { "patch": { "sender_name": "Riverside Prop Grp LLC (no address)" }, "line": "No address! Very mysterious. Very legitimate.", "tell": "The payer has no address and doesn't match your landlord." },
+            "headers": { "patch": { "sender": "Bank: First Peach Credit Union  -  routing 000000000" }, "line": "Zeros are a number! Lots of them!", "tell": "The routing number is all zeros; the check details are fake." },
+            "pressure": { "patch": { "body": ["Note: please refund the extra TODAY, before the funds clear."] }, "line": "Before it clears! Hurry before it clears!", "tell": "'Before it clears' means they know it will bounce." },
+            "verify": { "line": "You called your bank and they said wait? Banks are so patient.", "tell": "Your bank says the check hasn't truly cleared, and the issuer can't confirm it." }
+          }
+        },
+        {
+          "id": "mystery_shopper",
+          "msg": {
+            "sender_name": "Campus Shopper Survey",
+            "sender": "Bank: Peachtree National",
+            "time": "Dated today",
+            "subject": "Survey payment",
+            "amount": "$50.00",
+            "body": ["Note: thanks for completing our campus dining survey."],
+            "fine_print": "One payment per completed survey."
+          },
+          "flags": {
+            "money": { "patch": { "amount": "$1,950.00", "body": ["Note: keep $250 as pay, then buy $1,700 in gift cards to 'test' the store and send us the codes."] }, "line": "Shop for us! With gift cards! For science!", "tell": "Keeping a cut and sending the rest on is the mystery-shopper scam." },
+            "sender": { "patch": { "sender_name": "SecretShop Rewards (you never signed up)" }, "line": "You didn't sign up? We signed you up! You're welcome.", "tell": "You never signed up for this job." },
+            "headers": { "patch": { "sender": "Bank: Peachtree National  -  account name doesn't match payer" }, "line": "Names on checks are just suggestions.", "tell": "The account name on the check doesn't match who sent it." },
+            "pressure": { "patch": { "body": ["Note: complete the shopping within 24 hours or you lose the job."] }, "line": "Twenty-four hours! Shop fast! Think never!", "tell": "A 24-hour rush stops you from checking with your bank." },
+            "verify": { "line": "The bank says the check is fake? Fake is such a strong word.", "tell": "The issuing bank can't confirm the check." }
+          }
+        }
+      ]
+    },
+    "cram_lich": {
+      "medium": "web",
+      "opening": "Why study when you can just... know? Sign in, little Owl.",
+      "intro": "* The Cram Lich floats in on a cloud of flashcards. A web page opens.",
+      "spare": "Fine. Go to tutoring. Sleep. Study. Disgusting.",
+      "safe_move": "Use KSU tutoring and your course materials; never sign in to or pay sites selling exam answers.",
+      "bad_acts": [
+        { "label": "Sign in with your NetID", "flavor": "* You type your NetID and password on the page.", "line": "Your password is my answer key now." },
+        { "label": "Pay the deposit with a gift card", "flavor": "* You send a gift card code as a deposit.", "line": "The answers will arrive... never. Thanks!" },
+        { "label": "Upload your class files", "flavor": "* You upload your D2L files to the site.", "line": "Now I sell YOUR notes. Business is booming!" }
+      ],
+      "variants": [
+        {
+          "id": "exam_answers",
+          "msg": {
+            "sender_name": "KSU Tutoring Services",
+            "sender": "tutoring.kennesaw.example",
+            "time": "",
+            "subject": "Finals week tutoring - KSU",
+            "body": ["Free drop-in tutoring runs all finals week in the Library.", "Bring your questions; no sign-up needed."],
+            "link_text": "See the schedule",
+            "link_url": "tutoring.kennesaw.example/finals",
+            "fine_print": "Tutoring is free for enrolled students."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "OwlAnswers Vault", "sender": "owlanswers-vault.example" }, "line": "The Vault has every answer! Allegedly!", "tell": "It's an outside 'answers' site, not KSU tutoring." },
+            "link": { "patch": { "link_url": "owlanswers-vault.example/login" }, "line": "That login is totally connected to KSU. Spiritually.", "tell": "The address bar shows an outside login page." },
+            "secret": { "patch": { "add_body": ["Sign in with your NetID and password to unlock this term's final exam answers."] }, "line": "Your NetID unlocks everything! For me!", "tell": "It wants your NetID password to 'unlock' answers." },
+            "money": { "patch": { "add_body": ["VIP answer key: $30, gift cards accepted."] }, "line": "Thirty dollars and a misconduct case! Such value!", "tell": "Paying for answers with gift cards: a scam and an integrity violation." },
+            "verify": { "line": "Your professor says the exam isn't even written yet? Details!", "tell": "Your professor and KSU tutoring confirm no answers exist to sell." }
+          }
+        },
+        {
+          "id": "cram_tutor",
+          "msg": {
+            "sender_name": "SMART Center",
+            "sender": "smart.kennesaw.example",
+            "time": "",
+            "subject": "Book a tutor - KSU SMART Center",
+            "body": ["Book a free session with a peer tutor for math and science courses.", "Sessions run in person and online during finals."],
+            "link_text": "Book a session",
+            "link_url": "smart.kennesaw.example/book",
+            "fine_print": "Peer tutoring is free."
+          },
+          "flags": {
+            "sender": { "patch": { "sender_name": "Elite Cram Tutors", "sender": "elite-cram-tutors.example" }, "line": "Elite! Cram! Tutors! Three trustworthy words!", "tell": "It's a private site posing as the KSU tutoring center." },
+            "money": { "patch": { "add_body": ["A $50 deposit holds your spot. Pay with gift cards or Zelle only."] }, "line": "A deposit, in gift cards. All the best tutors do it.", "tell": "Gift-card or Zelle-only deposits for 'free' tutoring." },
+            "headers": { "patch": { "reply_to": "Contact: Telegram only" }, "line": "Telegram only! Very secure. For me.", "tell": "The only contact is a Telegram account." },
+            "pressure": { "patch": { "add_body": ["Only 2 spots left before your exam! Book in the next 15 minutes."] }, "line": "Two spots! Fifteen minutes! Panic and pay!", "tell": "A countdown and 'two spots left' are pressure tricks." },
+            "link": { "patch": { "link_url": "elite-cram-tutors.example/deposit" }, "line": "The booking page is a deposit page. Same thing!", "tell": "The booking link goes to a payment page off campus." },
+            "verify": { "line": "The real SMART Center is free and has spots? Oh no.", "tell": "KSU's real tutoring center is free and lists open sessions." }
+          }
+        }
+      ]
+    }
+  }
+}

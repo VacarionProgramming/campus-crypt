@@ -8,15 +8,12 @@
 //! generic unsafe moves. The Keeper's lines are scripted only (no AI), so they
 //! always agree with the verdict.
 //!
-//! Floor 1 (the Inbox Mimic) is the battle-box prototype instead: the Keeper
-//! "attacks" with a message preview from the encounter's `keeper_box` block,
-//! and the three answers float in the box (keeper_box.rs). Every other floor
-//! keeps the quiz above.
+//! v0.4: a floor whose trap has an investigation case (investigations.json)
+//! plays the investigation fight instead (keeper_fight.rs, investigate.rs);
+//! the quiz above is the fallback for content without one.
 
-use crate::content::{Content, Keeper, KeeperBox};
-
-/// The floor (0-based) that plays the battle box instead of the quiz.
-pub const BOX_FLOOR: usize = 0;
+use crate::content::{Content, Keeper};
+use crate::investigate::{Case, Cases};
 
 pub const KEEPER_NAME: &str = "The Floor Keeper";
 
@@ -53,18 +50,8 @@ pub struct Quiz {
     pub warning: Option<String>,
     /// mixes `seed` (so caches keyed on the quiz can't go stale across quizzes)
     pub id: u32,
-    /// the battle box's message preview (floor 1 only; None = the plain quiz)
-    pub mail: Option<Mail>,
-}
-
-/// The message the Keeper "attacks" with in the battle box.
-#[derive(Clone, Debug)]
-pub struct Mail {
-    pub from: String,
-    pub subject: String,
-    pub snippet: String,
-    pub fine_print: String,
-    pub link: String,
+    /// this floor's investigation (None = the plain quiz)
+    pub case: Option<Case>,
 }
 
 impl Quiz {
@@ -135,45 +122,28 @@ pub fn build(content: &Content, floor: usize, picked: Option<usize>, seed: u32) 
         correct,
         warning: ch.warning_signs.first().cloned(),
         id,
-        mail: None,
+        case: None,
     }
 }
 
-/// The battle-box round for `floor`, if it has one: only `BOX_FLOOR`, and only
-/// when its encounter has a usable `keeper_box` block. Every other floor (and
-/// a content file without the block) gets the plain quiz from `build`.
-pub fn box_round(content: &Content, floor: usize) -> Option<&KeeperBox> {
-    if floor != BOX_FLOOR {
-        return None;
-    }
-    let list = &content.encounters;
-    let b = list[crate::state::encounter_for_floor(floor, list.len())].keeper_box.as_ref()?;
-    let usable = filled(&b.keeper.answer).is_some() && filled(&b.snippet).is_some() && b.keeper.wrong.iter().filter(|w| filled(w).is_some()).count() >= 2;
-    usable.then_some(b)
-}
-
-/// The quiz for `floor`: the battle-box round on `BOX_FLOOR`, else `build`.
-/// The code (this function and the content file) decides the right answer.
-pub fn build_for_floor(content: &Content, floor: usize, picked: Option<usize>, seed: u32) -> Quiz {
-    let Some(b) = box_round(content, floor) else {
-        return build(content, floor, picked, seed);
-    };
+/// The Keeper round for `floor`: this run's investigation of the floor's trap
+/// when it has a case, else the quiz from `build`. Code decides what is fake
+/// and which red flags are planted (investigate.rs), never an AI.
+pub fn build_for_floor(content: &Content, cases: &Cases, floor: usize, picked: Option<usize>, seed: u32) -> Quiz {
     let list = &content.encounters;
     let e = &list[crate::state::encounter_for_floor(floor, list.len())];
-    let k = &b.keeper;
-    let answer = k.answer.trim().to_string();
-    let mut options: Vec<String> = k.wrong.iter().filter_map(|w| filled(w)).take(2).map(str::to_string).collect();
     let id = mix(seed, floor as u32 + 1);
-    let correct = (id % 3) as usize;
-    options.insert(correct.min(options.len()), answer);
+    let Some(case) = cases.cases.get(&e.id).and_then(|inv| Case::build(inv, &cases.decoys, &e.id, &e.name, id)) else {
+        return build(content, floor, picked, seed);
+    };
     Quiz {
-        situation: format!("{} slipped one more message into your inbox.", e.name),
-        question: filled(&k.question).unwrap_or(GENERIC_QUESTION).to_string(),
-        options,
-        correct,
-        warning: filled(&b.warning).map(str::to_string),
+        situation: format!("{} sent you a {}.", e.name, case.medium.noun()),
+        question: "What is the safer next move?".to_string(),
+        options: vec![case.safe_move.clone()],
+        correct: 0,
+        warning: case.planted.first().map(|f| case.tell(*f).to_string()),
         id,
-        mail: Some(Mail { from: b.from.clone(), subject: b.subject.clone(), snippet: b.snippet.clone(), fine_print: b.fine_print.clone(), link: b.link.clone() }),
+        case: Some(case),
     }
 }
 
@@ -324,53 +294,26 @@ mod tests {
     }
 
     #[test]
-    fn only_floor_one_plays_the_box_and_the_rest_keep_the_quiz() {
+    fn floors_with_a_case_investigate_and_the_rest_keep_the_quiz() {
         let c = shipped();
+        let cases = crate::investigate::load();
         let n = c.encounters.len();
-        assert!(box_round(&c, 0).is_some(), "floor 1 has a battle-box round");
-        for floor in 1..crate::state::floors_for(n) {
-            assert!(box_round(&c, floor).is_none(), "floor {} must keep the quiz", floor + 1);
-            for ci in 0..c.encounters[crate::state::encounter_for_floor(floor, n)].choices.len() {
-                let q = build_for_floor(&c, floor, Some(ci), 77);
-                let p = build(&c, floor, Some(ci), 77);
-                assert!(q.mail.is_none());
-                assert_eq!((q.question, q.options, q.correct), (p.question, p.options, p.correct));
+        for floor in 0..crate::state::floors_for(n) {
+            let e = &c.encounters[crate::state::encounter_for_floor(floor, n)];
+            let q = build_for_floor(&c, &cases, floor, Some(0), 77);
+            assert_eq!(q.case.is_some(), cases.cases.contains_key(&e.id), "floor {}", floor + 1);
+            if let Some(k) = &q.case {
+                assert_eq!(k.id, e.id);
+                assert!(q.warning.is_some());
             }
         }
-        // the same encounter reused on a later floor (short content files) still quizzes
-        let mut short = c.clone();
-        short.encounters.truncate(4);
-        assert!(box_round(&short, 0).is_some() && box_round(&short, 4).is_none());
-        // no block, or an unusable one: floor 1 falls back to the plain quiz
-        let mut none = c.clone();
-        none.encounters[0].keeper_box = None;
-        assert!(build_for_floor(&none, 0, Some(1), 5).mail.is_none());
-        let mut bad = c;
-        bad.encounters[0].keeper_box.as_mut().unwrap().keeper.wrong.truncate(1);
-        assert!(box_round(&bad, 0).is_none());
-    }
-
-    #[test]
-    fn box_round_has_short_balanced_subtle_options() {
-        let c = shipped();
-        let b = box_round(&c, 0).unwrap();
-        let k = &b.keeper;
-        let lens: Vec<usize> = std::iter::once(&k.answer).chain(&k.wrong).map(|o| o.chars().count()).collect();
-        assert!(lens.iter().all(|&l| l <= crate::content::BOX_OPTION_MAX), "{lens:?}");
-        let (lo, hi) = (*lens.iter().min().unwrap(), *lens.iter().max().unwrap());
-        assert!(hi - lo <= 4, "options should be about the same length: {lens:?}");
-        assert!(lens[0] < hi, "the right answer isn't the longest");
-        // the red flags hide in the details, not in a shouty scenario
-        assert!(b.from.contains(".example") && !b.from.contains("kennesaw"), "{}", b.from);
-        assert!(b.fine_print.to_ascii_lowercase().contains("confirm your login"));
-        for s in [&b.from, &b.subject, &b.snippet, &b.fine_print] {
-            assert!(!s.contains("URGENT") && !s.contains('!') && !s.contains("password"), "{s}");
-        }
-        for seed in [0u32, 3, 9, 4242] {
-            let q = build_for_floor(&c, 0, Some(0), seed);
-            assert_eq!(q.options.len(), 3);
-            assert_eq!(q.options[q.correct], k.answer);
-            assert!(q.mail.is_some() && q.warning.is_some());
+        // no cases at all: every floor keeps the quiz
+        let none = Cases::default();
+        for floor in 0..crate::state::floors_for(n) {
+            let q = build_for_floor(&c, &none, floor, Some(1), 5);
+            let p = build(&c, floor, Some(1), 5);
+            assert!(q.case.is_none());
+            assert_eq!((q.question, q.options, q.correct), (p.question, p.options, p.correct));
         }
     }
 

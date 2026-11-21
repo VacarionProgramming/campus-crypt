@@ -28,6 +28,7 @@ mod crawl;
 mod display_live;
 mod hardware;
 mod keeper;
+mod investigate;
 mod keeper_fight;
 mod settings;
 mod music;
@@ -120,7 +121,7 @@ impl Input {
         } else {
             mv = hw.move_vec();
         }
-        let digit = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3, KeyCode::Key4, KeyCode::Key5, KeyCode::Key6, KeyCode::Key7]
+        let digit = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3, KeyCode::Key4, KeyCode::Key5, KeyCode::Key6, KeyCode::Key7, KeyCode::Key8]
             .iter()
             .position(|&k| p(k));
         Input {
@@ -559,6 +560,8 @@ struct App {
     quiz_pick: Option<usize>,
     /// floor 1's Keeper fight, while it's on (None = the plain quiz)
     fight: Option<Fight>,
+    /// every floor's investigation content (investigations.json, embedded)
+    cases: investigate::Cases,
     /// the Risk It bonus round, on a right answer's verdict screen
     risk: Option<RiskIt>,
     /// on-screen joystick and buttons (phones; hidden until the first touch)
@@ -679,6 +682,7 @@ impl App {
             quiz: None,
             quiz_pick: None,
             fight: None,
+            cases: investigate::load(),
             risk: None,
             touch: touch::TouchPad::default(),
             touch_hoot: false,
@@ -1582,7 +1586,10 @@ impl App {
                     let q = self.build_quiz();
                     // floor 1: the Inbox Mimic fight (the message comes with the quiz);
                     // its lines are scripted, so it skips the AI taunt
-                    self.fight = q.mail.is_some().then(|| Fight::new(q.id, self.reduced_motion));
+                    self.fight = q.case.clone().map(|c| Fight::new(c, q.id, self.reduced_motion));
+                    if let (true, Some(c)) = (self.auto.on, &q.case) {
+                        println!("[auto] investigation: {} ({:?}, variant {}), planted {:?}", c.name, c.medium, c.variant, c.planted);
+                    }
                     let fight = self.fight.is_some();
                     self.quiz = Some(Rc::new(q));
                     if !fight {
@@ -2505,12 +2512,12 @@ impl App {
 
     // ------------------------------------------------------------ the Floor Keeper
 
-    /// The Keeper's portrait; floor 1's fight shows the Inbox Mimic (same art and
-    /// violet glow as in the fight) so the verdict screen matches what you just fought.
-    fn keeper_portrait(&self, x: f32, y: f32, w: f32, h: f32, border: Color, mimic: bool) {
+    /// The Keeper's portrait; after an investigation it shows the trap you
+    /// fought (same art and violet glow as in the fight).
+    fn keeper_portrait(&self, x: f32, y: f32, w: f32, h: f32, border: Color, trap: Option<&str>) {
         panel(x, y, w, h, border);
-        let (sprite, glow_col) = if mimic {
-            (art::character_sprite("inbox_mimic"), Color::new(0.6, 0.4, 1.0, 1.0))
+        let (sprite, glow_col) = if let Some(id) = trap {
+            (art::character_sprite(id), Color::new(0.6, 0.4, 1.0, 1.0))
         } else {
             (&KEEPER, Color::new(1.0, 0.7, 0.3, 1.0))
         };
@@ -2533,7 +2540,7 @@ impl App {
             self.keeper_fight_round(&q, inp, dt);
             return;
         }
-        self.keeper_portrait(40.0, 76.0, 260.0, 236.0, KSU_GOLD, false);
+        self.keeper_portrait(40.0, 76.0, 260.0, 236.0, KSU_GOLD, None);
         panel(320.0, 76.0, 920.0, 236.0, KSU_GOLD);
         draw_text("THE FLOOR KEEPER BLOCKS THE STAIRS", 346.0, 112.0, 30.0, KSU_GOLD);
         draw_line(346.0, 124.0, 1210.0, 124.0, 1.0, Color::new(1.0, 0.77, 0.16, 0.4));
@@ -2598,21 +2605,20 @@ impl App {
     /// The Keeper's question about the choice made on this floor; the layout is
     /// fixed by the run seed and floor, so a replay with CC_SEED is identical.
     fn build_quiz(&self) -> Quiz {
-        keeper::build_for_floor(&self.loaded.content, self.run.room, self.run.choice_on_floor(), self.run_seed)
+        keeper::build_for_floor(&self.loaded.content, &self.cases, self.run.room, self.run.choice_on_floor(), self.run_seed)
     }
 
-    /// Floor 1: the Inbox Mimic fight (keeper_fight.rs). Turns: pick a command,
-    /// then dodge its attack in the box. The fight decides the verdict.
+    /// The floor's investigation fight (keeper_fight.rs, investigate.rs). Turns:
+    /// pick a command, then dodge its attack in the box. The fight decides the verdict.
     fn keeper_fight_round(&mut self, q: &Quiz, inp: Input, dt: f32) {
-        let Some(mail) = &q.mail else { return };
         let fi = FightInput { up: inp.up, down: inp.down, left: inp.left, right: inp.right, confirm: inp.confirm, back: inp.back, digit: inp.digit, mv: inp.mv };
         let open = self.choice_open;
         let Some(f) = self.fight.as_mut() else { return };
         let ev = keeper_fight::step(&mut self.run, f, dt, &fi, open);
-        f.draw(mail, self.t);
+        f.draw(self.t);
         let help = match f.stage {
-            FightStage::Menu => "Left/Right + Enter or E, or 1-4: pick a command",
-            FightStage::Acts => "Arrows + Enter or E, or 1-7: pick an act   -   Esc: back",
+            FightStage::Menu => "1 ACT: investigate   2 INSPECT: open it   3 SPARE   4 DELETE   (arrows + Enter, or 1-4)",
+            FightStage::Acts => "Arrows + Enter or E, or 1-8: pick a move   -   Esc: back",
             FightStage::Dodge(_) => "WASD/arrows: dodge!   Hits cost box HP, never your Health",
             _ => "Enter / E: continue",
         };
@@ -2637,18 +2643,23 @@ impl App {
             Some(FightEvent::Nav | FightEvent::Picked) => self.sfx(Sfx::Click),
             Some(FightEvent::Verdict(right)) if self.run.phase == Phase::KeeperVerdict => {
                 // the verdict screen: the safe move vs. what this fight did wrong
-                let wrong = match ending {
-                    Some(keeper_fight::Ending::DeletedUnread) => "Delete it unread, without checking a single detail",
-                    _ => "Do what the message asks: reply, pay, or click Review",
+                let case = self.fight.as_ref().map(|f| f.case.clone());
+                let wrong = match (ending, &case) {
+                    (Some(keeper_fight::Ending::DeletedUnread), _) => "Delete it without checking a single detail".to_string(),
+                    (_, Some(c)) => format!("Do what it asks: {}", c.bad.iter().map(|b| b.label.to_lowercase()).collect::<Vec<_>>().join(", or ")),
+                    _ => "Do what it asks".to_string(),
                 };
+                // the warning sign shown: the first red flag you caught, else the first planted one
+                let warning = self.fight.as_ref().and_then(|f| f.first_tell.map(|t| f.case.tell(t).to_string())).or_else(|| q.warning.clone());
+                let situation = case.as_ref().map_or_else(|| q.situation.clone(), |c| format!("You investigated {}'s {}.", c.name, c.medium.noun()));
                 let summary = Quiz {
-                    situation: "You faced the Inbox Mimic's refund message.".into(),
+                    situation,
                     question: q.question.clone(),
-                    options: vec![q.options[q.correct].clone(), wrong.into()],
+                    options: vec![q.options[q.correct].clone(), wrong],
                     correct: 0,
-                    warning: q.warning.clone(),
+                    warning,
                     id: q.id,
-                    mail: q.mail.clone(),
+                    case,
                 };
                 if self.auto.on {
                     println!("[auto] keeper fight verdict {}: {takeaway}", if right { "right" } else { "wrong" });
@@ -2656,7 +2667,7 @@ impl App {
                 self.quiz = Some(Rc::new(summary));
                 self.quiz_pick = Some(if right { 0 } else { 1 });
                 self.verdict_ready = false;
-                self.line = Some(Line::new(takeaway.to_string(), ai::LineSource::Fallback("the Mimic's takeaway")));
+                self.line = Some(Line::new(takeaway.to_string(), ai::LineSource::Fallback("the trap's takeaway")));
                 self.fight = None;
                 self.sfx(Sfx::Click);
             }
@@ -2693,19 +2704,20 @@ impl App {
             self.run.leave_verdict();
             return;
         };
-        // after the Mimic fight the verdict stays on the fight's black stage
-        let mimic = q.mail.is_some();
+        // after an investigation the verdict stays on the fight's black stage, with the trap
+        let trap = q.case.as_ref().map(|c| (c.id.clone(), c.name.clone()));
+        let mimic = trap.is_some();
         if self.risk.is_some() {
             draw_rectangle(0.0, 0.0, VW, VH, BLACK);
-            self.risk_round(&inp, dt, mimic);
+            self.risk_round(&inp, dt, trap.as_ref().map(|t| t.1.as_str()));
             return;
         }
         draw_rectangle(0.0, 0.0, VW, VH, if mimic { BLACK } else { Color::new(0.0, 0.0, 0.0, 0.62) });
         let correct = q.is_correct(pick);
         let oc = if correct { SAFE } else { RISKY };
-        self.keeper_portrait(40.0, 76.0, 200.0, 200.0, oc, mimic);
+        self.keeper_portrait(40.0, 76.0, 200.0, 200.0, oc, trap.as_ref().map(|t| t.0.as_str()));
         panel(270.0, 76.0, 970.0, 200.0, PAPER);
-        draw_text(if mimic { "The Inbox Mimic" } else { keeper::KEEPER_NAME }, 296.0, 112.0, 26.0, KSU_GOLD);
+        draw_text(trap.as_ref().map_or(keeper::KEEPER_NAME, |t| t.1.as_str()), 296.0, 112.0, 26.0, KSU_GOLD);
         match &self.line {
             None => {
                 let dots = 1 + (self.t * 3.0) as usize % 3;
@@ -2739,13 +2751,9 @@ impl App {
         let bw = measure_text(badge, None, 28, 1.0).width + 30.0;
         draw_rectangle(40.0, y - 28.0, bw, 40.0, oc);
         draw_text(badge, 55.0, y, 28.0, INK);
-        let reward = match (correct, mimic) {
-            (true, true) => "+1 Knowledge.  The Mimic snaps shut and steps aside.",
-            (true, false) => "+1 Knowledge.  The Keeper steps aside.",
-            (false, true) => "The Mimic rings for its wardens.",
-            (false, false) => "The Keeper rings for its wardens.",
-        };
-        draw_text(reward, 60.0 + bw, y, 28.0, PAPER);
+        let who = trap.as_ref().map_or(keeper::KEEPER_NAME, |t| t.1.as_str());
+        let reward = if correct { format!("+1 Knowledge.  {who} steps aside.") } else { format!("{who} rings for its wardens.") };
+        draw_text(&reward, 60.0 + bw, y, 28.0, PAPER);
 
         panel(40.0, 340.0, VW - 80.0, 300.0, SAFE);
         draw_text("THE SAFER NEXT MOVE", 64.0, 376.0, 28.0, SAFE);
@@ -2842,10 +2850,10 @@ impl App {
     }
 
     /// The Risk It round (risk_it.rs): dodge the Keeper's attacks, grab red flags.
-    fn risk_round(&mut self, inp: &Input, dt: f32, mimic: bool) {
+    fn risk_round(&mut self, inp: &Input, dt: f32, trap: Option<&str>) {
         let Some(r) = self.risk.as_mut() else { return };
         let ev = r.update(dt, inp.mv);
-        r.draw(if mimic { "The Inbox Mimic" } else { keeper::KEEPER_NAME }, self.t);
+        r.draw(trap.unwrap_or(keeper::KEEPER_NAME), self.t);
         let leave = r.can_leave() && (inp.confirm || inp.click);
         let help = if r.done() { "Enter: to the stairs" } else { "WASD/arrows: move.  Touch the red flags, dodge everything else." };
         centered(help, VW * 0.5, 676.0, 20.0, DIM);
@@ -3228,6 +3236,7 @@ impl App {
                 FightStage::Menu if f.tells() == 0 && f.bad == 0 && t > 0.8 => Some("f01_fight_menu".to_string()),
                 FightStage::Talk(_) if f.tells() > 0 && !f.spareable() && t > 0.8 => Some("f01_fight_reveal".to_string()),
                 FightStage::Dodge(d) if d.t > 2.4 => Some(format!("f01_fight_attack_{:?}", d.pattern).to_lowercase()),
+                FightStage::Inspect if t > 0.8 => Some(format!("f{floor:02}_fight_inspect")),
                 _ => None,
             }),
             (Screen::Playing, Phase::KeeperQuiz) if typed(&self.taunt) && t > 2.1 => Some(format!("f{floor:02}_keeper_taunt")),
