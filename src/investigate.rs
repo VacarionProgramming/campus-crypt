@@ -151,6 +151,28 @@ impl Flag {
         }
     }
 
+    /// Hoot's nudge toward a red flag you haven't caught yet: points at the
+    /// kind of clue, worded for the medium, never at the answer.
+    pub fn nudge(self, m: Medium) -> &'static str {
+        use Medium::*;
+        match (self, m) {
+            (Flag::Sender, Email) => "Hoo, who is this really from? Read the address letter by letter.",
+            (Flag::Sender, Text) => "Hoo, who sent this text? Look at the number itself, not the name.",
+            (Flag::Sender, Dm) => "Hoo, who is behind this profile? Look closer at who they really are.",
+            (Flag::Sender, Web) => "Hoo, whose site is this really? Read its name carefully.",
+            (Flag::Sender, Push) => "Hoo, where is this request coming from? Check the app and the place.",
+            (Flag::Sender, Check) => "Hoo, who actually wrote this check? Read the name on it.",
+            (Flag::Headers, Email) => "Hoo, if you hit reply, where would it really go?",
+            (Flag::Headers, _) => "Hoo, look past the obvious parts. The small details underneath can disagree.",
+            (Flag::Link, Web) => "Hoo, what does the address bar say? The page can copy everything but that.",
+            (Flag::Link, _) => "Hoo, where does that link really go? Look before you tap.",
+            (Flag::Secret, _) => "Hoo, read exactly what it wants you to hand over.",
+            (Flag::Money, _) => "Hoo, follow the money. Who pays whom, and how?",
+            (Flag::Pressure, _) => "Hoo, why the rush? A ticking clock is a classic trick.",
+            (Flag::Verify, _) => "Hoo, you can always go around it. Find the official contact yourself and ask.",
+        }
+    }
+
     /// Short name for the checklist.
     pub fn short(self) -> &'static str {
         match self {
@@ -296,6 +318,9 @@ pub struct Investigation {
     pub spare: String,
     /// the safer next move (verdict screen)
     pub safe_move: String,
+    /// Hoot's lines about this floor's trap (asked tips while exploring)
+    #[serde(default)]
+    pub hoot: Vec<String>,
     pub bad_acts: Vec<BadAct>,
     pub variants: Vec<Variant>,
 }
@@ -503,7 +528,9 @@ impl Case {
         if self.medium == Medium::Email {
             draw_rectangle(x + 3.0, y + 3.0, w - 6.0, 30.0, Color::new(0.28, 0.22, 0.05, 1.0));
             draw_text("KSU Mail  -  Inbox", x + 16.0, y + 25.0, 20.0, KSU_GOLD);
-            let rows = self.decoys.len() + 1;
+            // the trap's message and two real-looking ones fit without crowding
+            let shown = self.decoys.len().min(2);
+            let rows = shown + 1;
             // leave the bottom line for the "INSPECT to open it" hint
             let rh = ((h - 66.0) / rows as f32).min(44.0);
             // the trap's message sits second from the top, unread
@@ -519,7 +546,7 @@ impl Case {
                 draw_text(fit(subject, 16.0, w - 52.0), x + 32.0, ry + rh - 12.0, 16.0, if unread { PAPER } else { DIM });
                 i += 1;
             };
-            let mut decoys = self.decoys.iter();
+            let mut decoys = self.decoys.iter().take(shown);
             if let Some(d) = decoys.next() {
                 draw_row(&d.sender_name, &d.subject, &d.time, false);
             }
@@ -856,6 +883,25 @@ mod tests {
         for word in all.split(|c: char| c.is_whitespace() || c == '"' || c == ',' || c == '[' || c == ']' || c == '(' || c == ')') {
             if word.contains('.') && (word.contains('@') || word.contains('/')) {
                 assert!(word.contains(".example"), "real-looking domain: {word}");
+            }
+        }
+    }
+
+    #[test]
+    fn hoot_lines_pass_the_tip_checks() {
+        use crate::ai_features::{hints, validate};
+        let c = cases();
+        for (id, inv) in &c.cases {
+            assert!(inv.hoot.len() >= 3, "{id}: three Hoot lines");
+            for l in &inv.hoot {
+                assert!(hints::starts_with_hoo(l), "{id}: {l}");
+                assert!(validate::game_line(l, crate::ai_features::tips::MAX_TIP_CHARS).is_some(), "{id}: {l}");
+            }
+        }
+        for f in FLAGS {
+            for m in [Medium::Email, Medium::Text, Medium::Dm, Medium::Web, Medium::Push, Medium::Check] {
+                let l = f.nudge(m);
+                assert!(validate::game_line(l, crate::ai_features::tips::MAX_TIP_CHARS).is_some(), "{l}");
             }
         }
     }

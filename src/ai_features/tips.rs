@@ -152,6 +152,8 @@ pub struct TipContext {
     pub floor: usize,
     pub enc: Encounter,
     pub picked: Option<Picked>,
+    /// Hoot's written lines about this floor's trap (investigations.json); empty = none
+    pub floor_tips: Vec<String>,
 }
 
 /// One tip that was shown (or is waiting to be shown).
@@ -170,6 +172,11 @@ pub fn user_message(ctx: &TipContext, owl: &str) -> String {
     let e = &ctx.enc;
     let mut s = format!("TASK: companion_tip\nowl_name: {owl}\nfloor: {}\nencounter: {}\n", ctx.floor + 1, e.name);
     match ctx.stage {
+        TipStage::Exploring if !ctx.floor_tips.is_empty() => s.push_str(&format!(
+            "situation: the student is walking this floor, whose trap is {}. Give ONE habit for spotting that kind of trap. Do not describe this floor's message or its choices.\nexample tips for this floor: {}\n",
+            e.name,
+            ctx.floor_tips.join(" | ")
+        )),
         TipStage::Exploring => s.push_str(
             "situation: the student is walking the floor and has not met its character yet. Give ONE general habit for spotting scams or handling deadline pressure. Do not guess what this floor holds.\n",
         ),
@@ -254,6 +261,8 @@ pub fn scripted_tip(ctx: &TipContext, data: &FeatureData, seed: u32, history: &[
             };
             pick_fresh(&pool, seed, salt, history)
         }
+        // exploring a floor with its own lines: those first, then the general bank
+        (TipStage::Exploring, _) if ctx.floor_tips.iter().any(|t| !history.iter().any(|h| &h.text == t)) => pick_fresh(&ctx.floor_tips, seed, salt, history),
         _ => pick_fresh(&general_pool(data), seed, salt, history),
     }
 }
@@ -427,7 +436,25 @@ mod tests {
             let c = &e.choices[0];
             Picked { label: c.label.clone(), outcome: c.outcome, warning_signs: c.warning_signs.clone(), safer_next_move: c.safer_next_move.clone() }
         });
-        TipContext { kind, stage, floor: 0, enc: e, picked }
+        TipContext { kind, stage, floor: 0, enc: e, picked, floor_tips: Vec::new() }
+    }
+
+    #[test]
+    fn exploring_tips_use_the_floors_own_lines_first() {
+        let data = FeatureData::default();
+        let mut c = ctx(TipKind::Ask, TipStage::Exploring);
+        c.floor_tips = vec!["Hoo, floor line one about this trap.".into(), "Hoo, floor line two about this trap.".into()];
+        let mut hist = Vec::new();
+        for _ in 0..2 {
+            let t = scripted_tip(&c, &data, 3, &hist);
+            assert!(c.floor_tips.contains(&t), "{t}");
+            hist.push(Tip { floor: 0, kind: TipKind::Ask, text: t, source: LineSource::Fallback("offline") });
+        }
+        // both used: back to the general bank
+        let t = scripted_tip(&c, &data, 3, &hist);
+        assert!(!c.floor_tips.contains(&t));
+        // and the AI is told the floor's trap
+        assert!(user_message(&c, "Hoot").contains("whose trap is"));
     }
 
     fn desk(caller: ChatCaller) -> TipDesk {

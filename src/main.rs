@@ -2199,7 +2199,9 @@ impl App {
 
     /// The facts a tip may use: this floor's encounter (and, after a choice, the choice).
     fn tip_context(&self, kind: tips::TipKind, stage: tips::TipStage) -> tips::TipContext {
-        tips::TipContext { kind, stage, floor: self.run.room, enc: enc_at(&self.loaded, self.run.room).clone(), picked: None }
+        let enc = enc_at(&self.loaded, self.run.room).clone();
+        let floor_tips = self.cases.cases.get(&enc.id).map(|c| c.hoot.clone()).unwrap_or_default();
+        tips::TipContext { kind, stage, floor: self.run.room, enc, picked: None, floor_tips }
     }
 
     /// Hoot's tips, once per frame: pop a waiting tip back in on the floor, collect a finished
@@ -2220,6 +2222,20 @@ impl App {
             } else {
                 // a post-floor tip, or one that finished somewhere it can't be drawn
                 self.tip_wait = Some(t);
+            }
+        }
+        // in the investigation fight, T / HOOT gets a nudge toward a red flag you haven't caught
+        let in_fight = phase == Phase::KeeperQuiz && self.fight.is_some();
+        if (is_key_pressed(KeyCode::T) || self.touch_hoot) && in_fight {
+            let on = self.ai_fx.hints.enabled;
+            if let Some(f) = self.fight.as_mut() {
+                f.hints = on;
+                if f.nudge() {
+                    self.sfx(Sfx::Click);
+                    self.hw.send_event(HwEvent::Tip);
+                } else {
+                    self.show_banner("HOOT IS NAPPING".into(), "Press H to wake Hoot up.".into(), DIM);
+                }
             }
         }
         if (is_key_pressed(KeyCode::T) || self.touch_hoot) && (on_floor || reading) && !self.pending_floor {
@@ -2431,6 +2447,7 @@ impl App {
                     floor: self.run.room,
                     enc: e.clone(),
                     picked: Some(picked),
+                    floor_tips: Vec::new(),
                 };
                 self.ai_fx.ask_tip(ctx, get_time());
             }
@@ -2613,7 +2630,9 @@ impl App {
     fn keeper_fight_round(&mut self, q: &Quiz, inp: Input, dt: f32) {
         let fi = FightInput { up: inp.up, down: inp.down, left: inp.left, right: inp.right, confirm: inp.confirm, back: inp.back, digit: inp.digit, mv: inp.mv };
         let open = self.choice_open;
+        let hints_on = self.ai_fx.hints.enabled;
         let Some(f) = self.fight.as_mut() else { return };
+        f.hints = hints_on;
         let ev = keeper_fight::step(&mut self.run, f, dt, &fi, open);
         f.draw(self.t);
         let help = match f.stage {
@@ -2639,6 +2658,10 @@ impl App {
                 }
             }
             Some(FightEvent::Tell) => self.sfx(Sfx::Coin),
+            Some(FightEvent::Hoot) => {
+                self.sfx(Sfx::Click);
+                self.hw.send_event(HwEvent::Tip);
+            }
             Some(FightEvent::PowerUp) => self.sfx(Sfx::Equip),
             Some(FightEvent::Nav | FightEvent::Picked) => self.sfx(Sfx::Click),
             Some(FightEvent::Verdict(right)) if self.run.phase == Phase::KeeperVerdict => {
@@ -3237,6 +3260,7 @@ impl App {
                 FightStage::Talk(_) if f.tells() > 0 && !f.spareable() && t > 0.8 => Some("f01_fight_reveal".to_string()),
                 FightStage::Dodge(d) if d.t > 2.4 => Some(format!("f01_fight_attack_{:?}", d.pattern).to_lowercase()),
                 FightStage::Inspect if t > 0.8 => Some(format!("f{floor:02}_fight_inspect")),
+                FightStage::Menu if f.hoot.is_some() && f.tells() == 1 && t > 0.8 => Some(format!("f{floor:02}_fight_hoot")),
                 _ => None,
             }),
             (Screen::Playing, Phase::KeeperQuiz) if typed(&self.taunt) && t > 2.1 => Some(format!("f{floor:02}_keeper_taunt")),
@@ -3341,6 +3365,10 @@ impl App {
                     // dodge on the Mimic's turns (CC_FIGHT_SEEK=1: fly into attacks instead)
                     let right = self.auto.keeper.get(self.run.room).copied().unwrap_or(true);
                     if let Some(f) = &self.fight {
+                        if matches!(f.stage, FightStage::Menu) && f.tells() == 1 && f.hoot.is_none() {
+                            // ask Hoot once, mid-investigation (screenshots, play-checks)
+                            self.touch_hoot = true;
+                        }
                         if matches!(f.stage, FightStage::Dodge(_)) {
                             inp.mv = f.auto_steer(self.auto.fight_seek);
                         } else if self.auto.timer > 1.6 {

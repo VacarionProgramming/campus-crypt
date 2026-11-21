@@ -364,6 +364,8 @@ pub enum FightEvent {
     Tell,
     /// a check that came back clean
     Clean,
+    /// Hoot chimed in (hesitation)
+    Hoot,
     PowerUp,
     Hit,
     Reset,
@@ -400,7 +402,18 @@ pub struct Fight {
     pub ending: Option<Ending>,
     /// INSPECT has been opened at least once (autopilot, screenshots)
     pub inspected: bool,
+    /// Hoot's current nudge (T / HOOT, or after hesitating on the menu)
+    pub hoot: Option<String>,
+    /// Hoot's hints are on (the H toggle); set by the caller every frame
+    pub hints: bool,
+    /// seconds on the menu without a move (hesitation)
+    idle: f32,
+    /// Hoot already chimed in on his own this fight
+    hooted: bool,
 }
+
+/// Seconds of hesitation on the command menu before Hoot nudges on his own.
+pub const HOOT_IDLE_SECS: f32 = 12.0;
 
 impl Fight {
     pub fn new(case: Case, seed: u32, reduced: bool) -> Fight {
@@ -430,7 +443,30 @@ impl Fight {
             flavor,
             ending: None,
             inspected: false,
+            hoot: None,
+            hints: true,
+            idle: 0.0,
+            hooted: false,
         }
+    }
+
+    /// Hoot points at a red flag you haven't caught yet (the kind of clue,
+    /// never the answer), rotating as you ask again. False when every flag is
+    /// caught (nothing left to nudge toward) or hints are off.
+    pub fn nudge(&mut self) -> bool {
+        if !self.hints {
+            return false;
+        }
+        let left: Vec<Flag> = self.case.planted.iter().copied().filter(|f| !self.found(*f)).collect();
+        // the non-Verify flags first: "go around it" is the backup advice
+        let pool: Vec<Flag> = if left.iter().any(|f| *f != Flag::Verify) { left.into_iter().filter(|f| *f != Flag::Verify).collect() } else { left };
+        let Some(&f) = pool.get((crate::keeper::mix(self.seed, self.turns.wrapping_add(self.tells() as u32 * 7)) as usize) % pool.len().max(1)) else {
+            self.hoot = Some("Hoo, you've caught every red flag. You can SPARE it now.".to_string());
+            return true;
+        };
+        self.hoot = Some(f.nudge(self.case.medium).to_string());
+        self.hooted = true;
+        true
     }
 
     /// red flags caught so far
@@ -476,6 +512,7 @@ impl Fight {
     }
 
     fn talk(&mut self, said: impl Into<String>, flavor: impl Into<String>, then: Then) {
+        self.idle = 0.0;
         self.said = said.into();
         self.flavor = flavor.into();
         self.stage = Stage::Talk(then);
@@ -604,6 +641,12 @@ impl Fight {
                 None
             }
             Stage::Menu => {
+                // hesitating on the menu: Hoot chimes in once, on his own
+                self.idle += dt;
+                if self.idle > HOOT_IDLE_SECS && !self.hooted && self.hints {
+                    self.nudge();
+                    return Some(FightEvent::Hoot);
+                }
                 let n = COMMANDS.len();
                 if inp.left || inp.up {
                     self.sel = (self.sel + n - 1) % n;
@@ -823,6 +866,14 @@ impl Fight {
                 }
             }
             Stage::Dodge(d) => self.draw_dodge(d, o, t),
+        }
+        // Hoot's nudge, along the bottom of the box (not while dodging)
+        if let (Some(h), false) = (&self.hoot, matches!(self.stage, Stage::Dodge(_))) {
+            let hy = o.y + BOX_H - 58.0;
+            draw_rectangle(o.x + 6.0, hy, BOX_W - 12.0, 52.0, Color::new(0.30, 0.22, 0.05, 0.95));
+            crate::art::draw_sprite(&crate::art::HOOT, o.x + 12.0, hy + 4.0, 2.75, false);
+            draw_text("Hoot", o.x + 62.0, hy + 18.0, 16.0, KSU_GOLD);
+            text_block(h, o.x + 62.0, hy + 38.0, 17.0, BOX_W - 84.0, PAPER);
         }
         // the border goes on last so the clock dial and edge hazards tuck under it
         draw_rectangle_lines(o.x - 4.0, o.y - 4.0, BOX_W + 8.0, BOX_H + 8.0, 4.0, KSU_GOLD);
@@ -1120,6 +1171,31 @@ mod tests {
         }
         let pats: std::collections::HashSet<_> = (0..4).map(|t| format!("{:?}", Fight::pattern_for(9, t))).collect();
         assert_eq!(pats.len(), 4);
+    }
+
+    #[test]
+    fn hoot_nudges_toward_uncaught_flags_and_waits_for_hesitation() {
+        let mut f = to_menu("inbox_mimic", 6);
+        // hesitate on the menu: Hoot chimes in once, by himself
+        let mut ev = None;
+        for _ in 0..((HOOT_IDLE_SECS + 1.0) * 60.0) as usize {
+            ev = f.update(DT, &FightInput::default(), true).or(ev);
+        }
+        assert_eq!(ev, Some(FightEvent::Hoot));
+        let first = f.hoot.clone().unwrap();
+        // the nudge is about a flag still to catch
+        let uncaught: Vec<&str> = f.case.planted.iter().filter(|x| !f.found(**x)).map(|x| x.nudge(f.case.medium)).collect();
+        assert!(uncaught.contains(&first.as_str()), "{first}");
+        // catch everything: Hoot says to spare
+        for flag in f.case.planted.clone() {
+            do_act(&mut f, Act::Check(flag));
+        }
+        assert!(f.nudge());
+        assert!(f.hoot.as_deref().unwrap().contains("SPARE"));
+        // hints off: no nudge
+        let mut g = to_menu("inbox_mimic", 6);
+        g.hints = false;
+        assert!(!g.nudge());
     }
 
     #[test]
