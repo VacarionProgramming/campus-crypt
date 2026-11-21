@@ -3270,6 +3270,7 @@ impl App {
                 _ => None,
             }),
             (Screen::Playing, Phase::KeeperVerdict) if self.verdict_ready && t > 1.0 => Some(format!("f{floor:02}_keeper_verdict")),
+            (Screen::Playing, Phase::BossFight) => self.arena.as_ref().and_then(|a| a.boss_shot()).map(|s| format!("f{floor:02}_{s}")),
             (Screen::Playing, Phase::Ending) if self.room_fade <= 0.0 => {
                 let ready = self.ai_fx.poll_debrief(&self.loaded.content, get_time()).is_some();
                 if !ready && !self.auto.shots_taken.iter().any(|s| s == "ending_debrief_wait") {

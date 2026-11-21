@@ -4,7 +4,7 @@
 
 ### ▶ [Play in your browser](https://vacarionprogramming.github.io/campus-crypt/)
 
-Campus Crypt is a funny pixel-art dungeon crawler for KSU students. You play a student fighting your way down through **10 floors** of a candlelit crypt under the Kennesaw and Marietta campuses. Each floor hides a trap that looks like real campus life: a fake financial-aid message, a pile-up of deadlines, a password shortcut, an internship offer that's too good to be true, a fake parking-ticket text, the Kennesaw-Marietta commute, a textbook seller who wants gift cards, sign-in approvals you didn't start, a sublease overpayment check, and finals-week cramming. Find the floor's character, choose what to do, and the game shows you the warning signs and a safer next move. Then the **Floor Keeper** at the stairs checks what you learned: answer right and the stairs open; answer wrong and you fight its **two wardens** first.
+Campus Crypt is a funny pixel-art dungeon crawler for KSU students. You play a student fighting your way down through **20 floors** of a candlelit crypt under the Kennesaw and Marietta campuses. Each floor hides a trap that looks like real campus life: a fake financial-aid message, a pile-up of deadlines, a password shortcut, an internship offer that's too good to be true, a fake parking-ticket text, the Kennesaw-Marietta commute, a textbook seller who wants gift cards, sign-in approvals you didn't start, a sublease overpayment check, and finals-week cramming. Find the floor's character, choose what to do, and the game shows you the warning signs and a safer next move. Then the **Floor Keeper** at the stairs checks what you learned: answer right and the stairs open; answer wrong and you fight its **two wardens** first.
 
 The game teaches you to spot warning signs and take a better next step. It does not claim to prevent scams or improve grades.
 
@@ -202,6 +202,23 @@ Original black-and-gold pixel art, drawn in code (`src/art.rs`). It's a playful 
 | **The Finals Week Golem** | a red ring grows | a ring of exam pages |
 | **The Night Owl Queen** | a gold glow | club-flyer sprays, summons Spam Owls |
 | **The Library Stacks Lich** | fades into the stacks | padlock bolts while solid |
+
+**Floors 11-20 (v0.4)** bring ten new wardens, each guarding two floors, ordered easiest first by the same simulation:
+
+| Warden | Tell | Attack |
+|---|---|---|
+| **The Dead Wi-Fi Wraith** | signal rings pulse | a spinning spiral of signal bars |
+| **The Group Chat Gorgon** | its gaze line tracks you, then locks | a stream of pings down the line |
+| **The All-Nighter Gargoyle** | it leaps; its shadow follows you, then sets | lands there (a contact hit) with a ring of rubble |
+| **The Vending Machine Mimic** | it rattles | bursts of soda cans |
+| **The Dining Hall Hydra** | three heads glow | a stream of aimed meatballs |
+| **The Syllabus Serpent** | weaves, leaving ink puddles | a fan of ink; the puddles hurt |
+| **The Fire Drill Banshee** | red rings mark sprinklers on and around you | each bursts into a ring of drops |
+| **The E-Scooter Specter** | a short red aim line | three dashes in a row (contact hits) |
+| **The Tuition Troll** | a gold glow | coin sacks that turn toward you for a moment |
+| **The Printer Poltergeist** | a green lane shows the gap | walls of paper; the gap never opens where you stand |
+
+With the slower test bot (0.25 s late), the median fight costs 2 hits on floor 10, 1 on floors 11-12, 2 on 13-15 and 3 on 16-20, and it survives at least 37 of 40 fights on every floor. The new wardens have more health than the first four because your Knowledge hits much harder by then.
 
 The 10 floor characters (Ry's content) each have their own sprite too, and the Floor Keeper is now a charcoal owl with a gold lantern.
 
