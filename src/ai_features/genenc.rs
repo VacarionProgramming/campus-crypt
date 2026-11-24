@@ -44,7 +44,7 @@ pub fn floor_for_slot(slot: usize) -> usize {
 
 /// Which generated slot (if any) belongs to `floor`.
 pub fn slot_for_floor(floor: usize) -> Option<usize> {
-    (floor >= 2 && (floor - 2) % 3 == 0 && (floor - 2) / 3 < GEN_SLOTS).then(|| (floor - 2) / 3)
+    (floor >= 2 && (floor - 2).is_multiple_of(3) && (floor - 2) / 3 < GEN_SLOTS).then(|| (floor - 2) / 3)
 }
 
 /// A topic the generator may write about. Code owns the themes and the flags.

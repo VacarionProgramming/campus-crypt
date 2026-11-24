@@ -419,7 +419,7 @@ impl Case {
         let mut body_tags = vec![None; msg.body.len()];
         // A patch that replaces the whole body goes first, so lines other
         // flags add to the body survive it.
-        let mut order: Vec<Flag> = planted.iter().copied().collect();
+        let mut order: Vec<Flag> = planted.to_vec();
         order.sort_by_key(|f| v.flags[f].patch.body.is_none());
         for f in &order {
             v.flags[f].patch.apply_tagged(&mut msg, *f, &mut tags, &mut body_tags);
@@ -505,7 +505,7 @@ fn fit(s: &str, size: f32, w: f32) -> String {
     let mut out = String::new();
     for c in s.chars() {
         out.push(c);
-        if measure_text(&format!("{out}..."), None, size as u16, 1.0).width > w {
+        if measure_text(format!("{out}..."), None, size as u16, 1.0).width > w {
             out.pop();
             break;
         }
@@ -757,7 +757,7 @@ impl Case {
         let m = &self.msg;
         if !m.attachment.is_empty() {
             draw_rectangle(x, y - 16.0, measure_text(&m.attachment, None, 17, 1.0).width + 40.0, 26.0, ROW);
-            draw_text(&format!("[+] {}", m.attachment), x + 10.0, y + 2.0, 17.0, PAPER);
+            draw_text(format!("[+] {}", m.attachment), x + 10.0, y + 2.0, 17.0, PAPER);
             y += 32.0;
         }
         if !m.fine_print.is_empty() {
@@ -776,7 +776,7 @@ impl Case {
         draw_rectangle_lines(x, y, w, h, 1.5, Color::new(1.0, 0.77, 0.16, 0.4));
         draw_text("YOUR FINDINGS", x + 14.0, y + 26.0, 18.0, KSU_GOLD);
         let n = found.count_ones();
-        draw_text(&format!("Red flags: {n} of {}", self.planted.len()), x + 14.0, y + 50.0, 17.0, PAPER);
+        draw_text(format!("Red flags: {n} of {}", self.planted.len()), x + 14.0, y + 50.0, 17.0, PAPER);
         let mut yy = y + 82.0;
         for f in FLAGS {
             if checked & f.bit() == 0 {

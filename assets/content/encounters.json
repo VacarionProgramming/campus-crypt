@@ -8,7 +8,7 @@
         "name": "The Inbox Mimic",
         "portrait_hint": "A grinning treasure chest with envelope teeth and a peeling fake Federal Student Aid seal."
       },
-      "scenario": "URGENT, brave Owl! Your leftover Federal Student Aid grant of $3,450 expires at midnight. Reply with your StudentAid.gov password and tap this portal to claim your treasure now!\n\n- Office of Student Treasure\naid-office@ksu-grants-secure.net",
+      "scenario": "URGENT, brave Owl! Your leftover Federal Student Aid grant of $3,450 expires at midnight. Reply with your StudentAid.gov password and tap this portal to claim your treasure now!\n\n- Office of Student Treasure\naid-office@ksu-grants-secure.example",
       "choices": [
         {
           "id": "inspect_sender",
@@ -27,7 +27,7 @@
           ],
           "safer_next_move": "Open StudentAid.gov or official KSU channels yourself instead of using a link or address from the message.",
           "keeper": {
-            "question": "You checked the sender: aid-office@ksu-grants-secure.net. What's your next move?",
+            "question": "You checked the sender: aid-office@ksu-grants-secure.example. What's your next move?",
             "answer": "Go to StudentAid.gov or KSU yourself and report the message, without using its link.",
             "wrong": [
               "Reply with your password, since the email mentions KSU so it's probably fine.",
@@ -301,7 +301,7 @@
         "name": "The Internship Impostor",
         "portrait_hint": "A too-polished recruiter in a borrowed company cloak, holding a clipboard and a shiny fake check."
       },
-      "scenario": "Congratulations! You've been selected for a remote internship at $45/hour, starting today. Send your Social Security number and bank details so we can deposit your welcome check. Deposit it, wire us the equipment fee, and you're hired!\n\n- Talent Desk, jobs@owl-interns-careers.com",
+      "scenario": "Congratulations! You've been selected for a remote internship at $45/hour, starting today. Send your Social Security number and bank details so we can deposit your welcome check. Deposit it, wire us the equipment fee, and you're hired!\n\n- Talent Desk, jobs@owl-interns-careers.example",
       "choices": [
         {
           "id": "comply",
@@ -394,7 +394,7 @@
         "name": "The Ticket Troll",
         "portrait_hint": "A stubby troll in a neon safety vest, clutching a fan of fake parking tickets and a glowing phone."
       },
-      "scenario": "CAMPUS PARKING NOTICE: Unpaid citation on your vehicle. Pay $35 within 24 hours or a $95 late fee is added and your permit is suspended. Pay now: campus-parking-pay.info/owl\n\nReply STOP to opt out.",
+      "scenario": "CAMPUS PARKING NOTICE: Unpaid citation on your vehicle. Pay $35 within 24 hours or a $95 late fee is added and your permit is suspended. Pay now: campus-parking-pay.example/owl\n\nReply STOP to opt out.",
       "choices": [
         {
           "id": "tap_pay_link",

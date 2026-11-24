@@ -473,7 +473,6 @@ pub const KEEPER: [&str; 16] = [
     "..kkkk...kkkk...",
 ];
 
-/// Warden: The Tow Truck Tyrant, a black-and-gold tow truck off the parking deck (beacon, hook, headlights).
 // ---- floor 11-20 wardens
 
 pub const VENDING_MIMIC: [&str; 16] = [
@@ -666,6 +665,7 @@ pub const SYLLABUS_SERPENT: [&str; 16] = [
     "...ppppppppppp..",
 ];
 
+/// Warden: The Tow Truck Tyrant, a black-and-gold tow truck off the parking deck (beacon, hook, headlights).
 pub const TOW_TYRANT: [&str; 16] = [
     "......rr........",
     ".....kxxk.......",
@@ -1087,7 +1087,6 @@ pub const AT_SIGN: [&str; 16] = [
     "................",
 ];
 
-/// Sprite for an encounter id (unknown ids get a generic hooded figure).
 // ---- floors 11-20 (v0.4)
 const SCHOLARSHIP_SIREN: [&str; 16] = [
     "................",
@@ -1279,6 +1278,7 @@ const ECHO_DOPPELGANGER: [&str; 16] = [
     ".....kkkkkk.....",
 ];
 
+/// Sprite for an encounter id (unknown ids get a generic hooded figure).
 pub fn character_sprite(id: &str) -> &'static [&'static str; 16] {
     match id {
         "inbox_mimic" => &MIMIC,
@@ -1746,7 +1746,7 @@ mod tests {
         for e in &c.encounters {
             let g = character_sprite(&e.id);
             assert!(g != &HOODED, "{} uses the generic hooded sprite", e.id);
-            assert!(!seen.iter().any(|s| *s == g), "{} shares a sprite", e.id);
+            assert!(!seen.contains(&g), "{} shares a sprite", e.id);
             seen.push(g);
         }
         assert!(character_sprite("someone_new") == &HOODED);

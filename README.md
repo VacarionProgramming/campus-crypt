@@ -2,7 +2,11 @@
 
 **A dungeon crawler of scams, deadlines, and split-second choices.**
 
+**Version 0.4.5.**
+
 ### ▶ [Play in your browser](https://vacarionprogramming.github.io/campus-crypt/)
+
+The browser build uses scripted lines. Live AI lines are in the desktop build, and the web client ships with no API key.
 
 Campus Crypt is a funny pixel-art dungeon crawler for KSU students. You play a student fighting your way down through **20 floors** of a candlelit crypt under the Kennesaw and Marietta campuses. Each floor hides a trap that looks like real campus life: a fake financial-aid message, a pile-up of deadlines, a password shortcut, an internship offer that's too good to be true, a fake parking-ticket text, the Kennesaw-Marietta commute, a textbook seller who wants gift cards, sign-in approvals you didn't start, a sublease overpayment check, and finals-week cramming. Find the floor's character, choose what to do, and the game shows you the warning signs and a safer next move. Then the **Floor Keeper** at the stairs checks what you learned: answer right and the stairs open; answer wrong and you fight its **two wardens** first.
 
@@ -115,15 +119,15 @@ The game uses the **Groq API (free tier)** with model `openai/gpt-oss-20b`. Get 
     cargo run --release
 
 * Without a key, the game uses the written lines. `CAMPUS_CRYPT_AI=off` also forces the written lines.
-* The free tier allows 30 requests per minute and 1,000 per day for this model. The game sends one request per floor character (10 per play-through), plus at most 16 for the AI extras, spaced at least 3 s apart: about 25 over a 10+ minute run.
+* The free tier allows 30 requests per minute and 1,000 per day for this model. The game sends one request per floor character (20 per play-through). The AI extras add at most 28 calls per run (one floor pack on each of the 20 floors, plus the run-start scam, narration and generated-encounter calls; the last call is saved for the debrief), spaced at least 3 s apart. Hoot's tips add at most 24 calls. Past either cap the written lines are used.
 * If you hit a limit (HTTP 429), the game retries once. If that fails too, it uses the written line, so the game keeps going.
-* The **web build** always uses the written lines.
+* The **web build** always uses the written lines. Live AI calls are compiled out, so no API key ships in the browser build. The title screen and the web page say so.
 * To use other providers, set `CAMPUS_CRYPT_AI_KEY`, `CAMPUS_CRYPT_AI_URL` (any OpenAI-compatible chat-completions URL), and `CAMPUS_CRYPT_AI_MODEL`. The game only sends the `reasoning_effort: low` / `include_reasoning: false` settings to gpt-oss models or Groq.
 * The system prompt is `assets/content/ai_prompt.md`. The engine sends it `encounter_id`, `character_name`, `scenario`, `choice`, and `outcome`, and tells the model to speak as that floor's character. The Floor Keeper's lines come from the AI extras (below), never from this prompt.
 * The request runs on a background thread, so the game never freezes. If no usable line arrives within 4.5 s, or the reply is empty, the game shows that choice's `fallback_reaction`.
 * Each AI line is cleaned up for the pixel font: emoji, other non-ASCII characters, markdown `*`/`_`, wrapping or unbalanced quotes, and extra whitespace are removed. Then the line is checked. It's rejected if it's under 6 words or 30 characters, doesn't end with `.` `!` or `?` (a cut-off reply), is over 160 characters, has a link, bare domain or email address, or mentions health, focus, knowledge, score, or damage. A rejected line is replaced by the written line.
 * Small print under each line says **AI-voiced line**, or that it's a written line and why ([screenshot](screenshots/07_live_ai_reaction.png)).
-* Live test of every choice (30 with the shipped content) against your key: `cargo test --release live_ai -- --ignored --nocapture`. `LIVE_SLEEP_MS=6000` sets the pause between calls (default 4500); `LIVE_ONLY=deadline_wraith/postpone,inbox_mimic/report_it` runs only those choices.
+* Live test of every choice (60 with the shipped content) against your key: `cargo test --release live_ai -- --ignored --nocapture`. `LIVE_SLEEP_MS=6000` sets the pause between calls (default 4500); `LIVE_ONLY=deadline_wraith/postpone,inbox_mimic/report_it` runs only those choices.
 
 ## AI extras
 
@@ -135,21 +139,21 @@ Six extras built on the same rule: **code decides, the AI only writes, and every
 | **Spot-the-fake** | Floors 3, 6, 9: the notice board ([board](screenshots/28_notice_board.png)). Two messages side by side; pick the fake with 1-2 / arrows / click. The fake turns red with its red-flag chips; the real one turns green with why it's safe ([screenshot](screenshots/19_spot_the_fake.png), [reveal](screenshots/20_spot_reveal.png)). | Which card is fake, the order, the safe message, the flags. | Nothing new: the fake uses scripted scam slots 3+ so it never repeats a phone message. With today's 9 scam templates all three boards appear; a round would only be skipped if every template had already been shown this run. |
 | **Keeper banter** | The quiz opens with the Keeper's taunt; after you answer, its verdict line ([taunt](screenshots/22_keeper_taunt.png), [verdict](screenshots/23_keeper_banter.png)). | The verdict (`Quiz::is_correct`). The backend checks the AI line agrees with it (`banter::verdict_consistent`); on any mismatch you get the written `keeper::line`. | The taunt and the right / wrong line. |
 | **Owl companion hints** | On the encounter screen, after you sit on the choices without input (12 s; 8-20 s by skill tier), Hoot pops in at the bottom with one nudge, once per floor, until you choose ([screenshot](screenshots/21_owl_hint.png)). **H** toggles Hoot anywhere; the HUD help shows its state. | When (hesitation, once per floor, toggle). A hint must not name a choice, say pick/choose, or echo a safe move. | The hint. |
-| **Hoot's tips (ask anytime + after each floor)** | **T** asks Hoot for a tip on a floor or while reading a scenario; a short "for next time" tip is also written while you read each lesson and pops in when you are back on the floor. **L** opens the tip log for the run. The matrix on the Elegoo board shows the owl whenever Hoot speaks (`E:TIP`). | When (T, or after a lesson), what Hoot may say per situation: walking the floor = one general habit (the AI is not told what the floor holds); reading a scenario = the same rules as the hesitation hint (no choice names, no giveaways); after a floor = one habit for next time. Live calls are capped at 12 a run with a 6 s cooldown between asked tips, past that the scripted bank answers at once. | The tip. Offline, rejected by the filters, timed out or over budget, Hoot reads a scripted tip from the built-in bank (`ai_features/tips.rs`) plus the red-flag tips in `ai_features.json`; the log tags each tip "AI-written" or "scripted". |
+| **Hoot's tips (ask anytime + after each floor)** | **T** asks Hoot for a tip on a floor or while reading a scenario; a short "for next time" tip is also written while you read each lesson and pops in when you are back on the floor. **L** opens the tip log for the run. The matrix on the Elegoo board shows the owl whenever Hoot speaks (`E:TIP`). | When (T, or after a lesson), what Hoot may say per situation: walking the floor = one general habit (the AI is not told what the floor holds); reading a scenario = the same rules as the hesitation hint (no choice names, no giveaways); after a floor = one habit for next time. Live calls are capped at 24 a run (a post-floor tip on every floor but the last, plus a few asks) with a 6 s cooldown between asked tips, past that the scripted bank answers at once. | The tip. Offline, rejected by the filters, timed out or over budget, Hoot reads a scripted tip from the built-in bank (`ai_features/tips.rs`) plus the red-flag tips in `ai_features.json`; the log tags each tip "AI-written" or "scripted". |
 | **AI-written encounters** | Floors 2, 5 and 8 can play a brand-new encounter written by the AI (tagged "AI-WRITTEN" on the scenario card): scene, scenario, three choices, each choice's safe / risky / mixed label, two warning signs and a safer next move. | Code picks the theme and the two red flags the scenario must show, then verifies the reply: every text passes the game's filters, the scenario contains cue words for both flags, and each choice's words must agree with its label (a SAFE choice must read as verify / ask / report / decline, a RISKY one as click / pay / send / share). Health, focus and knowledge changes come from code by outcome, never from the AI. | The encounter. Offline, late, or failing any check, the scripted encounter for that floor plays instead (`ai_features/genenc.rs`). The Floor Keeper asks the generic question for these floors. |
 | **Adaptive difficulty narration** | On the floor banner, under the floor title, when the crypt's pace changes ([screenshot](screenshots/24_tier_narration.png)). | The skill tier (Gentle / Standard / Sharp / Expert, from your choices, Keeper answers and health, one step per floor at most) and what it changes (see "Difficulty"). | The one narration line. |
 | **Post-run debrief** | The ending screen opens on "Hoot's study guide": 3-5 lines from your mistake log (risky or mixed choices, wrong Keeper answers, missed fakes, trusted scams). "Hoot is writing your study guide..." shows while it waits (8.5 s at most); every line wraps inside the panel, and if the guide is too tall the text steps down from 24 px (never cut off) ([screenshot](screenshots/25_debrief.png), [waiting](screenshots/26_debrief_writing.png)). | The mistake log. An AI line that names a floor or character not in the log is rejected. | The study guide; otherwise it's templated from the same log. |
 
-Budget: one background worker, one call at a time, at least 3 s apart, 4.5 s timeout each, at most 16 per run (the last one is saved for the debrief). A new run drops the old run's queued calls. Live check of the prompts: `LIVE_SLEEP_MS=4000 cargo test --release live_ai_features -- --ignored --nocapture`.
+Budget: one background worker, one call at a time, at least 3 s apart, 4.5 s timeout each, at most 28 per run (the last one is saved for the debrief, so all 20 floors still get a live floor pack). A new run drops the old run's queued calls. When the cap is hit, that floor's Keeper lines and hints fall back to the written ones. Live check of the prompts: `LIVE_SLEEP_MS=4000 cargo test --release live_ai_features -- --ignored --nocapture`.
 
 ## Content
 
 The content author edits the files in `assets/content/`:
 
-* `encounters.json` holds the floors' encounters, in order (one floor each). A run has 10 floors; with fewer than 10 encounters the game reuses them in order, so it still runs (and tests pass) while content is being written, and with more than 10 it gives each its own floor. The schema is in `src/content.rs`. Each choice has an `outcome` (`safe` / `risky` / `mixed`), integer `effects`, a `fallback_reaction`, `warning_signs`, a `safer_next_move`, and a `keeper` question (below).
+* `encounters.json` holds the floors' encounters, in order (one floor each). The shipped run has **20 floors**, one per encounter. `state::RUN_FLOORS` (10) is only the minimum: with fewer than 10 encounters the game reuses them in order, so it still runs (and tests pass) while content is being written, and with more than 10 it gives each its own floor. The schema is in `src/content.rs`. Each choice has an `outcome` (`safe` / `risky` / `mixed`), integer `effects`, a `fallback_reaction`, `warning_signs`, a `safer_next_move`, and a `keeper` question (below). Scam and look-alike domains in the content JSON use `.example` (or `.test` / `.invalid`). Real official referrals such as StudentAid.gov, kennesaw.edu and ReportFraud.ftc.gov stay as they are.
 * `ai_prompt.md` is the AI system prompt.
 
-Both files are built into the binary, so the web build works. Native builds also read them again at launch, so you can test content edits without recompiling. To use a different folder, set `CAMPUS_CRYPT_CONTENT=/path`. The game prints length-limit warnings in the console and notes them on the title screen. Sprites are chosen by encounter id (`inbox_mimic`, `deadline_wraith`, `password_hydra`, `internship_impostor`, `ticket_troll`, `commute_chimera`, `gift_card_gargoyle`, `push_poltergeist`, `overpay_ogre`, `cram_lich`). An unknown id gets a generic hooded figure, so you can add floors without touching the engine.
+Both files are built into the binary, so the web build works. Native builds also read them again at launch, so you can test content edits without recompiling. To use a different folder, set `CAMPUS_CRYPT_CONTENT=/path`. The game prints length-limit warnings in the console and notes them on the title screen. Sprites are chosen by encounter id (`inbox_mimic`, `deadline_wraith`, `password_hydra`, `internship_impostor`, `ticket_troll`, `commute_chimera`, `gift_card_gargoyle`, `push_poltergeist`, `overpay_ogre`, `cram_lich`, then `scholarship_siren`, `listing_leech`, `crypto_kraken`, `catfish_kelpie`, `loan_phantom`, `scalper_specter`, `package_pixie`, `sweepstakes_sphinx`, `code_changeling`, `echo_doppelganger`). An unknown id gets a generic hooded figure, so you can add floors without touching the engine.
 
 ### Floor Keeper questions
 
@@ -220,7 +224,11 @@ Original black-and-gold pixel art, drawn in code (`src/art.rs`). It's a playful 
 
 With the slower test bot (0.25 s late), the median fight costs 2 hits on floor 10, 1 on floors 11-12, 2 on 13-15 and 3 on 16-20, and it survives at least 37 of 40 fights on every floor. The new wardens have more health than the first four because your Knowledge hits much harder by then.
 
-The 10 floor characters (Ry's content) each have their own sprite too, and the Floor Keeper is now a charcoal owl with a gold lantern.
+The 20 floor characters each have their own sprite, and the Floor Keeper is a charcoal owl with a gold lantern.
+
+| Floor 11, the Scholarship Siren | The same floor's investigation | Floor 16, the Scalper Specter |
+|---|---|---|
+| ![](screenshots/30_f11_scholarship.png) | ![](screenshots/31_f11_scholarship_tell.png) | ![](screenshots/32_f16_scalper.png) |
 
 ## Difficulty
 
@@ -268,6 +276,7 @@ One looping track per screen and floor, all original compositions by Dey (CC0; n
 
 * `assets/audio/title_march.ogg` on the title screen.
 * `assets/audio/floor_01.ogg` ... `floor_10.ogg` on floors 1-10 (the warden arena keeps its floor's track).
+* Floors 11-20 reuse the later, louder tracks so the back half rises instead of restarting on floor 1: files 6, 7, 8, 8, 9, 9, 10, 10, 10, 10. Floor 11 opens on `floor_06.ogg`; floor 20 stays on `floor_10.ogg`.
 
 How it works (`src/music.rs`):
 

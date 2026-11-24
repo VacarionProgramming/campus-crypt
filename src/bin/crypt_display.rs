@@ -8,8 +8,15 @@
 //!
 //! While the game runs it owns the port: use hardware/tools/live.sh, which hands the
 //! lines to the game instead (src/display_live.rs).
+//!
+//! Native only (it talks to a serial port). The wasm build of the workspace
+//! still needs a `main`, so that target gets an empty one.
 
+#![cfg_attr(target_arch = "wasm32", allow(dead_code))]
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::io::{Read, Write};
+#[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
 
 fn candidates() -> Vec<String> {
@@ -29,11 +36,13 @@ fn candidates() -> Vec<String> {
     out
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 struct Board {
     port: Box<dyn serialport::SerialPort>,
     buf: Vec<u8>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Board {
     /// Open the port (which resets the Mega) and wait for HELLO:CRYPT.
     fn open(path: &str) -> Result<Board, String> {
@@ -103,6 +112,7 @@ fn json_str(s: &str) -> String {
     o
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let port_arg = args.iter().position(|a| a == "--port").and_then(|i| args.get(i + 1)).cloned();
@@ -155,3 +165,8 @@ fn main() {
         }
     }
 }
+
+/// The web build does not ship this tool. `cargo build --target wasm32-unknown-unknown`
+/// still compiles every bin, and serialport is native-only.
+#[cfg(target_arch = "wasm32")]
+fn main() {}

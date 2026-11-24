@@ -1,8 +1,9 @@
 //! Music: one looping track per screen and floor, loaded lazily.
 //!
 //! * `Track::Title` (`assets/audio/title_march.ogg`) on the title screen.
-//! * `Track::Floor(n)` (`assets/audio/floor_01.ogg` .. `floor_10.ogg`) on floor n,
-//!   in its warden arena too. Floors past 10 wrap around.
+//! * `Track::Floor(n)` (`assets/audio/floor_01.ogg` .. `floor_10.ogg`) on floors
+//!   1-10, in the warden arena too. Floors 11-20 reuse the later, louder tracks
+//!   so the back half rises instead of opening on floor 1's theme.
 //!
 //! Nothing loads at start-up. main.rs asks for the track it wants now plus the
 //! one it'll want next (the title prefetches floor 1, floor n prefetches n+1),
@@ -37,8 +38,11 @@ use std::sync::{Arc, Mutex};
 /// sliders; native override: `CAMPUS_CRYPT_MUSIC_VOLUME`.
 pub const DEFAULT_VOLUME: f32 = 0.75;
 pub const CROSSFADE_SECS: f32 = 1.0;
-/// Floors with their own track; floor 11 would reuse floor 1's.
+/// Floors with their own file (`floor_01.ogg` .. `floor_10.ogg`).
 pub const FLOOR_TRACKS: usize = 10;
+/// Track numbers (1-based files) for floors 11-20. Opens on floor 6's theme,
+/// the start of the louder half, and climbs to floor 10, holding that peak.
+const BACK_HALF: [u8; 10] = [6, 7, 8, 8, 9, 9, 10, 10, 10, 10];
 /// Folder the tracks live in (relative to the working directory or the
 /// executable natively, to the page on the web: `web/assets/audio/`).
 pub const DIR: &str = "assets/audio";
@@ -52,8 +56,15 @@ pub enum Track {
 
 impl Track {
     /// The track for 0-based floor `floor`.
+    /// Floors 0-9 use files 1-10. Floors 10-19 (floors 11-20) use `BACK_HALF`,
+    /// and anything past that repeats the back-half rise.
     pub fn for_floor(floor: usize) -> Track {
-        Track::Floor((floor % FLOOR_TRACKS) as u8 + 1)
+        let n = if floor < FLOOR_TRACKS {
+            (floor + 1) as u8
+        } else {
+            BACK_HALF[(floor - FLOOR_TRACKS) % BACK_HALF.len()]
+        };
+        Track::Floor(n)
     }
 
     pub fn file_name(self) -> String {
@@ -378,7 +389,19 @@ mod tests {
         assert_eq!(Track::Title.file_name(), "title_march.ogg");
         assert_eq!(Track::for_floor(0), Track::Floor(1));
         assert_eq!(Track::for_floor(9).file_name(), "floor_10.ogg");
-        assert_eq!(Track::for_floor(10), Track::Floor(1), "floor 11 would wrap to floor 1's track");
+        assert_eq!(Track::for_floor(10), Track::Floor(6), "floor 11 opens on a later theme, not floor 1");
+        assert_ne!(Track::for_floor(10), Track::for_floor(0));
+        let back: Vec<u8> = (10..20)
+            .map(|f| match Track::for_floor(f) {
+                Track::Floor(n) => n,
+                Track::Title => 0,
+            })
+            .collect();
+        assert_eq!(back, vec![6, 7, 8, 8, 9, 9, 10, 10, 10, 10]);
+        assert!(back.windows(2).all(|w| w[1] >= w[0]), "the back half rises: {back:?}");
+        assert!(back.iter().all(|&n| (6..=10).contains(&n)));
+        assert_eq!(Track::for_floor(19), Track::Floor(10));
+        assert_eq!(Track::for_floor(20), Track::Floor(6), "past the shipped run, the rise repeats");
     }
 
     #[test]

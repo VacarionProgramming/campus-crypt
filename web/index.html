@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#08060c">
   <title>Campus Crypt</title>
+  <meta name="description" content="Campus Crypt teaches students to spot scams. Live AI lines are in the desktop build; this web version uses scripted lines.">
   <style>
     html, body, canvas { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
       position: absolute; background: #08060c; z-index: 0; }
@@ -24,11 +25,15 @@
       #rotate b { color: #FFC529; font: 800 28px ui-monospace, Menlo, monospace; letter-spacing: .06em; }
       #rotate span { font-size: 56px; }
     }
+    #ai-note { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 6px 16px;
+      background: rgba(8, 6, 12, 0.88); color: #EDE6D1; text-align: center; pointer-events: none;
+      font: 600 14px/1.35 system-ui, -apple-system, sans-serif; }
   </style>
 </head>
 <body>
   <canvas id="glcanvas" tabindex="1"></canvas>
-  <div id="rotate"><b>CAMPUS CRYPT</b><span aria-hidden="true">↻</span>Turn your phone sideways to play.<br>Joystick on the left, buttons on the right.</div>
+  <div id="rotate"><b>CAMPUS CRYPT</b><span aria-hidden="true">↻</span>Turn your phone sideways to play.<br>Joystick on the left, buttons on the right.<br>Live AI lines are in the desktop build. This page uses scripted lines.</div>
+  <p id="ai-note">Live AI lines are in the desktop build. This web version uses scripted lines.</p>
   <!-- miniquad loader + quad-snd web audio plugin (copied from their crates) -->
   <script src="gl.js"></script>
   <script src="audio.js"></script>

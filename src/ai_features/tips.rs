@@ -13,9 +13,10 @@
 //! * Reviewed (floor finished): one habit for next time, written from the choice made.
 //!
 //! Budget: tips use their own small queue, separate from the per-run feature budget.
-//! At most `MAX_AI_TIPS_PER_RUN` calls per run, and an asked tip needs
-//! `ASK_COOLDOWN_SECS` between live calls (Groq free tier). Past either limit the
-//! scripted bank answers instantly.
+//! At most `MAX_AI_TIPS_PER_RUN` calls per run (sized for a 20-floor run: one
+//! post-floor tip on every floor but the last, plus a few asked tips), and an
+//! asked tip needs `ASK_COOLDOWN_SECS` between live calls (Groq free tier).
+//! Past either limit the scripted bank answers instantly.
 
 use super::banter::MAX_BANTER_CHARS;
 use super::data::FeatureData;
@@ -32,7 +33,9 @@ pub const MAX_TIP_CHARS: usize = MAX_BANTER_CHARS;
 /// Minimum time between two live (AI) calls for asked tips.
 pub const ASK_COOLDOWN_SECS: f64 = 6.0;
 /// Live tip calls per run; after that the scripted bank answers.
-pub const MAX_AI_TIPS_PER_RUN: u32 = 12;
+/// A 20-floor run writes one post-floor tip on every floor but the last (19).
+/// The extra calls cover a handful of asked tips (T).
+pub const MAX_AI_TIPS_PER_RUN: u32 = 24;
 /// Tips kept in the log (oldest dropped).
 pub const MAX_LOG: usize = 40;
 /// (gpt-oss / Groq, where reasoning shares the budget; other providers).
@@ -379,7 +382,7 @@ impl TipDesk {
     pub fn poll(&mut self, data: &FeatureData, now: f64) -> Option<Tip> {
         let p = self.pending.take()?;
         let step = match &p.wait {
-            Wait::Now(w) => Step::Why(*w),
+            Wait::Now(w) => Step::Why(w),
             Wait::Call(rx) => match rx.try_recv() {
                 Ok(Ok(raw)) => match validate_tip(&raw, &p.ctx) {
                     Some(t) => Step::Text(t),
@@ -687,6 +690,9 @@ mod tests {
         t.ask(ctx(TipKind::Ask, TipStage::Exploring), now + 100.0);
         let capped = t.poll(&d, now + 100.0).expect("scripted");
         assert_eq!(capped.source, LineSource::Fallback("tip budget used"));
+        // one post-floor tip per floor except the last still fits, so floors
+        // 1-19 are not forced onto the scripted bank by the cap alone
+        const { assert!(MAX_AI_TIPS_PER_RUN >= 19); }
     }
 
     #[test]

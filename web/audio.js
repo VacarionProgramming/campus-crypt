@@ -7,58 +7,49 @@ let playbacks = [];
 let sound_key_next = 1;
 let playback_key_next = 1;
 
-function audio_init() {
+// Mobile Safari leaves AudioContext suspended until resume() runs inside a
+// user gesture. These listeners are installed at load, in the capture phase,
+// so the first tap or key counts even when it arrives before audio_init and
+// before the canvas calls preventDefault (which can swallow the gesture).
+const UNLOCK_EVENTS = ["touchstart", "touchend", "pointerdown", "mousedown", "keydown", "keyup", "keypress"];
+
+function ensure_audio_context() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
     if (audio_context == null) {
-        audio_context = new AudioContext();
-        let audio_listener = audio_context.listener;
-
-        {
-            let AudioContext = window.AudioContext || window.webkitAudioContext;
-            let ctx = new AudioContext();
-            var fixAudioContext = function (e) {
-                console.log("fix");
-
-                // On newer Safari AudioContext starts in a suspended state per
-                // spec but is only resumable by a call running in an event
-                // handler triggered by the user. Do it here. Reference:
-                // https://stackoverflow.com/questions/56768576/safari-audiocontext-suspended-even-with-onclick-creation
-                audio_context.resume();
-
-                // On older Safari, audio context should be explicitly unpaused
-                // in a mouse/touch input event even if it was created after
-                // first input event on the page thanks to:
-                // https://gist.github.com/kus/3f01d60569eeadefe3a1
-
-                // Create empty buffer
-                var buffer = ctx.createBuffer(1, 1, 22050);
-                var source = ctx.createBufferSource();
-                source.buffer = buffer;
-                // Connect to output (speakers)
-                source.connect(ctx.destination);
-                // Play sound
-                if (source.start) {
-                    source.start(0);
-                } else if (source.play) {
-                    source.play(0);
-                } else if (source.noteOn) {
-                    source.noteOn(0);
-                }
-
-                // Remove event handlers
-                document.removeEventListener('touchstart', fixAudioContext);
-                document.removeEventListener('touchend', fixAudioContext);
-                document.removeEventListener('mousedown', fixAudioContext);
-                document.removeEventListener('keydown', fixAudioContext);
-            };
-            // iOS 6-8
-            document.addEventListener('touchstart', fixAudioContext);
-            // iOS 9
-            document.addEventListener('touchend', fixAudioContext);
-            // Mac
-            document.addEventListener('mousedown', fixAudioContext);
-            document.addEventListener('keydown', fixAudioContext);
-        }
+        audio_context = new AC();
     }
+    return audio_context;
+}
+
+function unlock_web_audio() {
+    const ctx = ensure_audio_context();
+    if (!ctx) return;
+    if (ctx.resume) {
+        const pending = ctx.resume();
+        if (pending && pending.catch) pending.catch(function () {});
+    }
+    // Older Safari only starts audio after a buffer plays on the same context,
+    // from inside the gesture.
+    try {
+        const buffer = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        if (source.start) source.start(0);
+        else if (source.noteOn) source.noteOn(0);
+    } catch (e) {}
+    for (const type of UNLOCK_EVENTS) {
+        document.removeEventListener(type, unlock_web_audio, true);
+    }
+}
+
+for (const type of UNLOCK_EVENTS) {
+    document.addEventListener(type, unlock_web_audio, true);
+}
+
+function audio_init() {
+    ensure_audio_context();
 }
 
 function audio_add_buffer(content, content_len) {

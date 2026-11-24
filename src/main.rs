@@ -876,6 +876,7 @@ impl App {
                     draw_text(if value { "ON" } else { "OFF" }, sx + 68.0, ry + 29.0, 22.0, col);
                     // what it means right now
                     let note: std::borrow::Cow<str> = match o {
+                        Opt::Ai if cfg!(target_arch = "wasm32") => "web build: scripted lines".into(),
                         Opt::Ai if !self.ai_fx.has_key() => "no API key: scripted".into(),
                         Opt::Ai if self.ai_on => "live AI lines".into(),
                         Opt::Ai => "scripted lines only".into(),
@@ -1170,7 +1171,14 @@ impl App {
                 let _ = write!(self.txt.controller.s, "Status display: {}", st.label());
             }
         }
+        #[cfg(target_arch = "wasm32")]
+        if view == TitleView::Main {
+            centered("Live AI lines are in the desktop build. This web version uses scripted lines.", cx, 636.0, 16.0, DIM);
+        }
         centered("Practice game: it teaches warning signs; it can't spot real scams for you.", cx, 694.0, 18.0, DIM);
+        let ver = concat!("v", env!("CARGO_PKG_VERSION"));
+        let vw = measure_text(ver, None, 16, 1.0).width;
+        draw_text(ver, art::VW - 16.0 - vw, 24.0, 16.0, Color::new(1.0, 1.0, 1.0, 0.45));
         let loaded = &self.loaded;
         let t = self.txt.content.get(0, |s| {
             let _ = write!(s, "content: {}", loaded.source);
@@ -3253,6 +3261,7 @@ impl App {
                     .filter(|b| b.note.is_some() && b.secs - b.t > 1.0)
                     .map(|_| format!("f{floor:02}_tier_banner")),
             },
+            (Screen::Playing, Phase::Encounter) if self.owl.is_none() && t > 0.8 => Some(format!("f{floor:02}_encounter")),
             (Screen::Playing, Phase::Encounter) if typed(&self.owl) && self.owl_t > 1.6 => Some(format!("f{floor:02}_owl_hint")),
             (Screen::Playing, Phase::KeeperQuiz) if self.fight.is_some() => self.fight.as_ref().and_then(|f| match &f.stage {
                 FightStage::Menu if f.spareable() && t > 0.8 => Some("f01_fight_spareable".to_string()),
