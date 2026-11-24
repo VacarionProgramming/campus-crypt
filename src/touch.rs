@@ -307,6 +307,6 @@ mod tests {
             let (c, r) = b.circle();
             assert!(c.x - r >= 0.0 && c.x + r <= VW && c.y - r >= 0.0 && c.y + r <= VH, "{b:?}");
         }
-        assert!(STICK_HOME.x + STICK_RADIUS < STICK_ZONE_X);
+        const { assert!(STICK_HOME.x + STICK_RADIUS < STICK_ZONE_X); }
     }
 }

@@ -13,9 +13,10 @@
 //! * Reviewed (floor finished): one habit for next time, written from the choice made.
 //!
 //! Budget: tips use their own small queue, separate from the per-run feature budget.
-//! At most `MAX_AI_TIPS_PER_RUN` calls per run, and an asked tip needs
-//! `ASK_COOLDOWN_SECS` between live calls (Groq free tier). Past either limit the
-//! scripted bank answers instantly.
+//! At most `MAX_AI_TIPS_PER_RUN` calls per run (sized for a 20-floor run: one
+//! post-floor tip on every floor but the last, plus a few asked tips), and an
+//! asked tip needs `ASK_COOLDOWN_SECS` between live calls (Groq free tier).
+//! Past either limit the scripted bank answers instantly.
 
 use super::banter::MAX_BANTER_CHARS;
 use super::data::FeatureData;
@@ -32,7 +33,9 @@ pub const MAX_TIP_CHARS: usize = MAX_BANTER_CHARS;
 /// Minimum time between two live (AI) calls for asked tips.
 pub const ASK_COOLDOWN_SECS: f64 = 6.0;
 /// Live tip calls per run; after that the scripted bank answers.
-pub const MAX_AI_TIPS_PER_RUN: u32 = 12;
+/// A 20-floor run writes one post-floor tip on every floor but the last (19).
+/// The extra calls cover a handful of asked tips (T).
+pub const MAX_AI_TIPS_PER_RUN: u32 = 24;
 /// Tips kept in the log (oldest dropped).
 pub const MAX_LOG: usize = 40;
 /// (gpt-oss / Groq, where reasoning shares the budget; other providers).
@@ -98,6 +101,11 @@ const NEXT_RISKY: [&str; 5] = [
     "Hoo! Reread the warning signs once more. Spotting them early is the whole trick.",
 ];
 
+/// Every written tip the offline bank can say. The voice generator records these.
+pub fn bank_lines() -> Vec<&'static str> {
+    GENERAL.into_iter().chain(NEXT_SAFE).chain(NEXT_RISKY).chain(NEXT_MIXED).collect()
+}
+
 /// After a mixed choice.
 const NEXT_MIXED: [&str; 4] = [
     "Hoo! A decent move, and there is a stronger one. Reread the warning signs and aim for the safest path next time.",
@@ -152,6 +160,8 @@ pub struct TipContext {
     pub floor: usize,
     pub enc: Encounter,
     pub picked: Option<Picked>,
+    /// Hoot's written lines about this floor's trap (investigations.json); empty = none
+    pub floor_tips: Vec<String>,
 }
 
 /// One tip that was shown (or is waiting to be shown).
@@ -170,6 +180,11 @@ pub fn user_message(ctx: &TipContext, owl: &str) -> String {
     let e = &ctx.enc;
     let mut s = format!("TASK: companion_tip\nowl_name: {owl}\nfloor: {}\nencounter: {}\n", ctx.floor + 1, e.name);
     match ctx.stage {
+        TipStage::Exploring if !ctx.floor_tips.is_empty() => s.push_str(&format!(
+            "situation: the student is walking this floor, whose trap is {}. Give ONE habit for spotting that kind of trap. Do not describe this floor's message or its choices.\nexample tips for this floor: {}\n",
+            e.name,
+            ctx.floor_tips.join(" | ")
+        )),
         TipStage::Exploring => s.push_str(
             "situation: the student is walking the floor and has not met its character yet. Give ONE general habit for spotting scams or handling deadline pressure. Do not guess what this floor holds.\n",
         ),
@@ -254,6 +269,8 @@ pub fn scripted_tip(ctx: &TipContext, data: &FeatureData, seed: u32, history: &[
             };
             pick_fresh(&pool, seed, salt, history)
         }
+        // exploring a floor with its own lines: those first, then the general bank
+        (TipStage::Exploring, _) if ctx.floor_tips.iter().any(|t| !history.iter().any(|h| &h.text == t)) => pick_fresh(&ctx.floor_tips, seed, salt, history),
         _ => pick_fresh(&general_pool(data), seed, salt, history),
     }
 }
@@ -370,7 +387,7 @@ impl TipDesk {
     pub fn poll(&mut self, data: &FeatureData, now: f64) -> Option<Tip> {
         let p = self.pending.take()?;
         let step = match &p.wait {
-            Wait::Now(w) => Step::Why(*w),
+            Wait::Now(w) => Step::Why(w),
             Wait::Call(rx) => match rx.try_recv() {
                 Ok(Ok(raw)) => match validate_tip(&raw, &p.ctx) {
                     Some(t) => Step::Text(t),
@@ -427,7 +444,25 @@ mod tests {
             let c = &e.choices[0];
             Picked { label: c.label.clone(), outcome: c.outcome, warning_signs: c.warning_signs.clone(), safer_next_move: c.safer_next_move.clone() }
         });
-        TipContext { kind, stage, floor: 0, enc: e, picked }
+        TipContext { kind, stage, floor: 0, enc: e, picked, floor_tips: Vec::new() }
+    }
+
+    #[test]
+    fn exploring_tips_use_the_floors_own_lines_first() {
+        let data = FeatureData::default();
+        let mut c = ctx(TipKind::Ask, TipStage::Exploring);
+        c.floor_tips = vec!["Hoo, floor line one about this trap.".into(), "Hoo, floor line two about this trap.".into()];
+        let mut hist = Vec::new();
+        for _ in 0..2 {
+            let t = scripted_tip(&c, &data, 3, &hist);
+            assert!(c.floor_tips.contains(&t), "{t}");
+            hist.push(Tip { floor: 0, kind: TipKind::Ask, text: t, source: LineSource::Fallback("offline") });
+        }
+        // both used: back to the general bank
+        let t = scripted_tip(&c, &data, 3, &hist);
+        assert!(!c.floor_tips.contains(&t));
+        // and the AI is told the floor's trap
+        assert!(user_message(&c, "Hoot").contains("whose trap is"));
     }
 
     fn desk(caller: ChatCaller) -> TipDesk {
@@ -660,6 +695,9 @@ mod tests {
         t.ask(ctx(TipKind::Ask, TipStage::Exploring), now + 100.0);
         let capped = t.poll(&d, now + 100.0).expect("scripted");
         assert_eq!(capped.source, LineSource::Fallback("tip budget used"));
+        // one post-floor tip per floor except the last still fits, so floors
+        // 1-19 are not forced onto the scripted bank by the cap alone
+        const { assert!(MAX_AI_TIPS_PER_RUN >= 19); }
     }
 
     #[test]

@@ -12,10 +12,12 @@
 //! `CAMPUS_CRYPT_AI=off`, no key, no network, and on the web build.
 //!
 //! Call budget per run (all prefetched in the background, spaced `MIN_GAP_SECS`
-//! apart, capped at `MAX_CALLS_PER_RUN`): run start = floor 0 pack + 3 scam bodies
-//! + tier narration pack (5 calls); each later floor = 1 floor pack; run end =
-//!   1 debrief, plus 3 generated encounters at run start. A 10-floor run uses 18. The character reaction (ai::Reactor, 1 per
-//!   floor) is separate and unchanged.
+//! apart, capped at `MAX_CALLS_PER_RUN`). Run start spends eight calls: the
+//! floor 0 pack, three scam bodies, the tier narration pack, and three generated
+//! encounters. Each later floor spends one floor pack. Run end spends one
+//! debrief, which may use the last call of the cap. A 20-floor run uses 28.
+//! Past the cap, that floor's lines are the scripted ones. The character
+//! reaction (`ai::Reactor`, one per floor) is separate and unchanged.
 
 // The UI wiring lands later (Darby); until then only tests call most of this.
 #![allow(dead_code)]
@@ -46,8 +48,14 @@ pub use difficulty::{SkillTier, TierChange};
 pub use scamgen::{RedFlag, ScamMessage};
 pub use spotfake::SpotRound;
 
-/// Hard cap on feature calls per run (the last one is reserved for the debrief).
-pub const MAX_CALLS_PER_RUN: u32 = 19;
+/// Floors the feature budget is sized for (the shipped run, one floor per encounter).
+pub const BUDGET_FLOORS: u32 = 20;
+/// Calls spent before the debrief: one floor pack per floor, three scam bodies,
+/// the tier-narration pack, and the generated encounters.
+pub const CALLS_BEFORE_DEBRIEF: u32 = BUDGET_FLOORS + scamgen::POOL_SIZE as u32 + 1 + genenc::GEN_SLOTS as u32;
+/// Hard cap on feature calls per run. The last call is reserved for the debrief,
+/// so a 20-floor run still gets a floor pack on every floor (27 + the debrief = 28).
+pub const MAX_CALLS_PER_RUN: u32 = CALLS_BEFORE_DEBRIEF + 1;
 /// Minimum time between two feature calls (Groq free-tier friendly).
 pub const MIN_GAP_SECS: f64 = 3.0;
 /// How long the ending screen waits for the AI debrief before the templated one.
@@ -90,8 +98,12 @@ impl AiFeatures {
     }
 
     fn with(config: Option<Arc<Config>>, assets: data::Assets, caller: ChatCaller, gap: Duration) -> AiFeatures {
+        AiFeatures::with_cap(config, assets, caller, gap, MAX_CALLS_PER_RUN)
+    }
+
+    fn with_cap(config: Option<Arc<Config>>, assets: data::Assets, caller: ChatCaller, gap: Duration, cap: u32) -> AiFeatures {
         let desk = tips::TipDesk::new(config.clone(), caller, assets.data.owl_name.clone());
-        let client = FeatureClient::new(config, caller, gap, MAX_CALLS_PER_RUN);
+        let client = FeatureClient::new(config, caller, gap, cap);
         let status = Self::status_for(&client, true);
         let p = assets.prompts;
         AiFeatures {
@@ -398,9 +410,13 @@ mod tests {
         })
     }
 
-    fn features(caller: ChatCaller) -> AiFeatures {
+    fn features_cap(caller: ChatCaller, cap: u32) -> AiFeatures {
         let cfg = Config::for_test("sk-SECRET", "http://127.0.0.1:9");
-        AiFeatures::with(Some(Arc::new(cfg)), data::embedded(), caller, Duration::ZERO)
+        AiFeatures::with_cap(Some(Arc::new(cfg)), data::embedded(), caller, Duration::ZERO, cap)
+    }
+
+    fn features(caller: ChatCaller) -> AiFeatures {
+        features_cap(caller, MAX_CALLS_PER_RUN)
     }
 
     fn settle(f: &mut AiFeatures) {
@@ -455,22 +471,46 @@ mod tests {
         assert!(scamgen::verify(&m), "{m:#?}");
         f.hints.start(0, 0.0);
         assert_eq!(f.poll_hint(60.0).map(|h| h.1), Some(LineSource::Ai));
-        // a full 10-floor run: one pack per floor + debrief stays under the cap
-        for floor in 1..state::RUN_FLOORS {
+        // a full 20-floor run: one pack per floor, and the debrief takes the reserved last call
+        let n = c.encounters.len();
+        let floors = state::floors_for(n);
+        assert_eq!(floors, BUDGET_FLOORS as usize, "the cap is sized for the shipped run");
+        for floor in 1..floors {
             f.begin_floor(&c, floor, floor as f64);
             f.begin_floor(&c, floor, floor as f64); // repeat is free
         }
-        let n = c.encounters.len();
-        let run = Run::new(state::floors_for(n), n);
+        let run = Run::new(floors, n);
         f.request_debrief(&run, &c, 100.0);
-        assert_eq!(f.calls_used(), 5 + genenc::GEN_SLOTS as u32 + 9 + 1);
-        assert!(f.calls_used() <= MAX_CALLS_PER_RUN);
+        let expected = 5 + genenc::GEN_SLOTS as u32 + (floors as u32 - 1) + 1;
+        assert_eq!(f.calls_used(), expected);
+        assert_eq!(expected, MAX_CALLS_PER_RUN);
+        assert_eq!(CALLS_BEFORE_DEBRIEF, MAX_CALLS_PER_RUN - 1);
         settle(&mut f);
         let d = f.poll_debrief(&c, 101.0).unwrap();
         assert_eq!((d.lines.len(), d.source.clone()), (3, LineSource::Ai));
         assert_eq!(f.poll_debrief(&c, 500.0).unwrap(), d, "stable once decided");
-        // floor 9 uses encounter 9 of the 10-encounter file
-        assert_eq!(f.floor_enc[&9].id, c.encounters[state::encounter_for_floor(9, n)].id);
+        // the last floor still got a live pack (it is not past the cap)
+        assert_eq!(f.keeper_taunt(floors - 1).1, LineSource::Ai);
+        assert_eq!(f.floor_enc[&(floors - 1)].id, c.encounters[state::encounter_for_floor(floors - 1, n)].id);
+    }
+
+    #[test]
+    fn capped_floors_use_scripted_lines_and_the_debrief_is_kept() {
+        let c = content();
+        // cap 9: the 8 run-start calls use every slot except the one saved for the debrief
+        let mut f = features_cap(good_model, 9);
+        f.begin_run(&c, 5, 0.0);
+        assert_eq!(f.calls_used(), 5 + genenc::GEN_SLOTS as u32);
+        f.begin_floor(&c, 1, 1.0);
+        assert_eq!(f.calls_used(), 8, "a later floor does not spend the debrief's call");
+        assert_eq!(f.keeper_taunt(1).1, LineSource::Fallback("AI call cap reached"));
+        settle(&mut f);
+        assert_eq!(f.keeper_taunt(0).1, LineSource::Ai, "the floor that fit under the cap is still live");
+        let n = c.encounters.len();
+        f.request_debrief(&Run::new(state::floors_for(n), n), &c, 10.0);
+        assert_eq!(f.calls_used(), 9);
+        settle(&mut f);
+        assert_eq!(f.poll_debrief(&c, 11.0).unwrap().source, LineSource::Ai);
     }
 
     #[test]

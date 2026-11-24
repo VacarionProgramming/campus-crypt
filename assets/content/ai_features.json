@@ -400,6 +400,46 @@
       "Finals week rattles even my old bones. Let us see what you did with the Lich's bargain.",
       "Flashcards, energy drinks, and no sleep. The Lich throws quite a party. My question awaits.",
       "The library lights burn late on this floor. Tell me how you handled finals week."
+    ],
+    "scholarship_siren": [
+      "The Siren still hums your name. Let us see what you did about that award.",
+      "Free money with a fee attached. I wonder what you made of it."
+    ],
+    "listing_leech": [
+      "The Leech still clings to its FOR RENT sign. Tell me what you did about that listing.",
+      "No tour, cheap rent, a deposit today. What did you decide?"
+    ],
+    "crypto_kraken": [
+      "The Kraken's charts still glow. Let us talk about that tip from your friend.",
+      "Double your money in two days. What did you do with that offer?"
+    ],
+    "catfish_kelpie": [
+      "The Kelpie still waits by the lake. Tell me about that new match.",
+      "A sudden emergency from someone you never met. What did you do?"
+    ],
+    "loan_phantom": [
+      "The Phantom still waves its certificate. Let us see what you did about it.",
+      "Forgiveness for a fee. I am curious what you chose."
+    ],
+    "scalper_specter": [
+      "The Specter still fans its tickets. Tell me about that deal.",
+      "Cheap seats to a sold-out game. What did you do?"
+    ],
+    "package_pixie": [
+      "The Pixie still buzzes about its parcels. What did you make of that text?",
+      "A tiny fee to free a package. Let us see what you did."
+    ],
+    "sweepstakes_sphinx": [
+      "The Sphinx still guards its giant check. Answer me this about your prize.",
+      "A prize that asks for money back. What did you decide?"
+    ],
+    "code_changeling": [
+      "The Changeling still wears your friend's face. Tell me about that code.",
+      "Six little digits, and the Changeling wanted them badly. Speak."
+    ],
+    "echo_doppelganger": [
+      "The Doppelganger still speaks in a voice you know. Tell me what you did.",
+      "A family emergency, and a secret. What did you choose?"
     ]
   },
   "owl_hints": {
@@ -447,6 +487,46 @@
     "cram_lich": [
       "Hoo, finals are stacked close together. Is a sleepless night really the plan?",
       "Hoo, where do sleep and meals fit on your calendar this week?"
+    ],
+    "scholarship_siren": [
+      "Hoo, did you ever apply for this award, or did it find you?",
+      "Hoo, would a real award ask you to pay before it pays you?"
+    ],
+    "listing_leech": [
+      "Hoo, has anyone actually shown you this place?",
+      "Hoo, why would a landlord be unable to meet you at all?"
+    ],
+    "crypto_kraken": [
+      "Hoo, is that really your friend typing, and how could you check another way?",
+      "Hoo, money that doubles in two days is a story, not a plan."
+    ],
+    "catfish_kelpie": [
+      "Hoo, you have never seen this person live. What does that tell you?",
+      "Hoo, notice how fast a new match turned to an emergency."
+    ],
+    "loan_phantom": [
+      "Hoo, would a real loan program charge you to sign up?",
+      "Hoo, who actually needs your aid login, and who should never get it?"
+    ],
+    "scalper_specter": [
+      "Hoo, sold-out seats for less than face value? Why might that be?",
+      "Hoo, what protects you if the seats never arrive?"
+    ],
+    "package_pixie": [
+      "Hoo, were you even expecting a package right now?",
+      "Hoo, where does that text really want to take you?"
+    ],
+    "sweepstakes_sphinx": [
+      "Hoo, did you enter any contest at all?",
+      "Hoo, why would a real prize ever cost you anything?"
+    ],
+    "code_changeling": [
+      "Hoo, whose account does that code actually unlock?",
+      "Hoo, what does the code message itself say about sharing it?"
+    ],
+    "echo_doppelganger": [
+      "Hoo, a voice can be copied. How could you reach your family another way?",
+      "Hoo, why would someone in trouble ask you to keep it secret?"
     ]
   },
   "tier_lines": {

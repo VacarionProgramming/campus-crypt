@@ -47,6 +47,12 @@ const ENEMY_SPEED_PER_LEVEL: f32 = 0.015;
 const BOSS_SPEED_SCALE: f32 = 0.85;
 /// Every enemy shot flies at this share of its listed speed (same range).
 const ENEMY_SHOT_SPEED: f32 = 0.85;
+/// Width of the gap in the Printer Poltergeist's paper walls.
+const PRINTER_GAP: f32 = 2.8 * TILE;
+/// The Group Chat Gorgon's gaze stops tracking you this long before it fires.
+const GAZE_LOCK: f32 = 0.3;
+/// How fast homing coin sacks turn (radians per second).
+const HOMING_TURN: f32 = 2.5;
 /// Monsters per floor, one entry per difficulty level (floor 1 to 10).
 const ENEMY_COUNT: [usize; 10] = [4, 5, 5, 6, 6, 7, 7, 8, 8, 9];
 const INVULN: f32 = 1.4;
@@ -802,16 +808,61 @@ pub enum BossKind {
     OwlQueen,
     /// haunts the library stacks: fades, reappears, spins padlocks
     LibraryLich,
+    /// a student-center vending machine with teeth: rattles, then bursts of soda cans
+    VendingMimic,
+    /// a ghost on a rental scooter: three short aimed dashes
+    ScooterSpecter,
+    /// the campus Wi-Fi gone dead: a spinning spiral of signal bars
+    WifiWraith,
+    /// a lab printer: walls of paper with one gap
+    PrinterPoltergeist,
+    /// a 3 a.m. fire drill: marked sprinklers that burst after a beat
+    FireDrillBanshee,
+    /// three heads from the dining hall line: a stream of aimed meatballs
+    DiningHydra,
+    /// a stone gargoyle off the library roof: leaps and lands where you stood
+    AllNighterGargoyle,
+    /// guards the bursar's window: coin sacks that home in for a moment
+    TuitionTroll,
+    /// a group chat that never sleeps: a locked gaze line, then a stream of pings
+    GroupChatGorgon,
+    /// a syllabus that keeps getting longer: ink puddles behind it, then a fan of ink
+    SyllabusSerpent,
 }
 
 impl BossKind {
-    pub const ALL: [BossKind; 4] = [BossKind::TowTyrant, BossKind::FinalsGolem, BossKind::OwlQueen, BossKind::LibraryLich];
+    pub const ALL: [BossKind; 14] = [
+        BossKind::TowTyrant,
+        BossKind::FinalsGolem,
+        BossKind::OwlQueen,
+        BossKind::LibraryLich,
+        BossKind::VendingMimic,
+        BossKind::ScooterSpecter,
+        BossKind::WifiWraith,
+        BossKind::PrinterPoltergeist,
+        BossKind::FireDrillBanshee,
+        BossKind::DiningHydra,
+        BossKind::AllNighterGargoyle,
+        BossKind::TuitionTroll,
+        BossKind::GroupChatGorgon,
+        BossKind::SyllabusSerpent,
+    ];
     pub fn name(self) -> &'static str {
         match self {
             BossKind::TowTyrant => "THE TOW TRUCK TYRANT",
             BossKind::FinalsGolem => "THE FINALS WEEK GOLEM",
             BossKind::OwlQueen => "THE NIGHT OWL QUEEN",
             BossKind::LibraryLich => "THE LIBRARY STACKS LICH",
+            BossKind::VendingMimic => "THE VENDING MACHINE MIMIC",
+            BossKind::ScooterSpecter => "THE E-SCOOTER SPECTER",
+            BossKind::WifiWraith => "THE DEAD WI-FI WRAITH",
+            BossKind::PrinterPoltergeist => "THE PRINTER POLTERGEIST",
+            BossKind::FireDrillBanshee => "THE FIRE DRILL BANSHEE",
+            BossKind::DiningHydra => "THE DINING HALL HYDRA",
+            BossKind::AllNighterGargoyle => "THE ALL-NIGHTER GARGOYLE",
+            BossKind::TuitionTroll => "THE TUITION TROLL",
+            BossKind::GroupChatGorgon => "THE GROUP CHAT GORGON",
+            BossKind::SyllabusSerpent => "THE SYLLABUS SERPENT",
         }
     }
     /// One-line hint shown when the warden enters.
@@ -821,6 +872,16 @@ impl BossKind {
             BossKind::FinalsGolem => "A red ring grows on the floor, then exam pages fly out in every direction.",
             BossKind::OwlQueen => "She sprays club flyers and calls Spam Owls. Clear the owls, then chase her.",
             BossKind::LibraryLich => "It fades into the stacks, then spins padlock bolts. Hit it while it's solid.",
+            BossKind::VendingMimic => "It rattles, then fires soda cans in bursts. Strafe sideways between bursts.",
+            BossKind::ScooterSpecter => "A short red line, then a dash, three times in a row. Sidestep each, then hit it.",
+            BossKind::WifiWraith => "Signal rings pulse, then it spins out a spiral. Circle with the spiral and shoot.",
+            BossKind::PrinterPoltergeist => "It jams out walls of paper. Find the green gap and slip through it.",
+            BossKind::FireDrillBanshee => "Red circles mark sprinklers around you. Step out before they burst.",
+            BossKind::DiningHydra => "Its three heads glow, then fire a stream of meatballs. Keep moving sideways.",
+            BossKind::AllNighterGargoyle => "It leaps, and a shadow shows where it lands. Get out of the shadow.",
+            BossKind::TuitionTroll => "Its coin sacks chase you for a moment. Keep running until they stop turning.",
+            BossKind::GroupChatGorgon => "Its gaze locks onto a line, then pings fire down it. Step off the line.",
+            BossKind::SyllabusSerpent => "It leaves ink puddles behind it. Stay off the ink and shoot from clean floor.",
         }
     }
     pub fn sprite(self) -> &'static [&'static str; 16] {
@@ -829,6 +890,16 @@ impl BossKind {
             BossKind::FinalsGolem => &FINALS_GOLEM,
             BossKind::OwlQueen => &OWL_QUEEN,
             BossKind::LibraryLich => &LIBRARY_LICH,
+            BossKind::VendingMimic => &VENDING_MIMIC,
+            BossKind::ScooterSpecter => &SCOOTER_SPECTER,
+            BossKind::WifiWraith => &WIFI_WRAITH,
+            BossKind::PrinterPoltergeist => &PRINTER_POLTERGEIST,
+            BossKind::FireDrillBanshee => &FIRE_DRILL_BANSHEE,
+            BossKind::DiningHydra => &DINING_HYDRA,
+            BossKind::AllNighterGargoyle => &ALL_NIGHTER_GARGOYLE,
+            BossKind::TuitionTroll => &TUITION_TROLL,
+            BossKind::GroupChatGorgon => &GROUP_CHAT_GORGON,
+            BossKind::SyllabusSerpent => &SYLLABUS_SERPENT,
         }
     }
     pub fn color(self) -> Color {
@@ -837,6 +908,16 @@ impl BossKind {
             BossKind::FinalsGolem => Color::from_rgba(214, 64, 70, 255),
             BossKind::OwlQueen => Color::from_rgba(250, 230, 120, 255),
             BossKind::LibraryLich => Color::from_rgba(150, 156, 180, 255),
+            BossKind::VendingMimic => Color::from_rgba(255, 110, 90, 255),
+            BossKind::ScooterSpecter => Color::from_rgba(200, 210, 230, 255),
+            BossKind::WifiWraith => Color::from_rgba(120, 220, 230, 255),
+            BossKind::PrinterPoltergeist => Color::from_rgba(190, 190, 200, 255),
+            BossKind::FireDrillBanshee => Color::from_rgba(255, 80, 60, 255),
+            BossKind::DiningHydra => Color::from_rgba(80, 180, 90, 255),
+            BossKind::AllNighterGargoyle => Color::from_rgba(130, 130, 140, 255),
+            BossKind::TuitionTroll => Color::from_rgba(196, 140, 24, 255),
+            BossKind::GroupChatGorgon => Color::from_rgba(226, 92, 180, 255),
+            BossKind::SyllabusSerpent => Color::from_rgba(150, 100, 200, 255),
         }
     }
     fn speed(self) -> f32 {
@@ -846,17 +927,56 @@ impl BossKind {
                 BossKind::FinalsGolem => 60.0,
                 BossKind::OwlQueen => 100.0,
                 BossKind::LibraryLich => 45.0,
+                BossKind::VendingMimic => 55.0,
+                BossKind::ScooterSpecter => 75.0,
+                BossKind::WifiWraith => 70.0,
+                BossKind::PrinterPoltergeist => 50.0,
+                BossKind::FireDrillBanshee => 80.0,
+                BossKind::DiningHydra => 55.0,
+                BossKind::AllNighterGargoyle => 60.0,
+                BossKind::TuitionTroll => 70.0,
+                BossKind::GroupChatGorgon => 60.0,
+                BossKind::SyllabusSerpent => 95.0,
             }
+    }
+    /// Ranged wardens keep their distance and fire more, so they have less health.
+    /// The floor 11-20 wardens are tougher: by then your Knowledge hits much harder.
+    fn toughness(self) -> f32 {
+        match self {
+            BossKind::TowTyrant => 1.0,
+            BossKind::FinalsGolem => 1.0,
+            BossKind::OwlQueen => 0.75,
+            BossKind::LibraryLich => 0.8,
+            BossKind::VendingMimic => 1.5,
+            BossKind::ScooterSpecter => 1.3,
+            BossKind::WifiWraith => 1.25,
+            BossKind::PrinterPoltergeist => 1.3,
+            BossKind::FireDrillBanshee => 1.25,
+            BossKind::DiningHydra => 1.4,
+            BossKind::AllNighterGargoyle => 1.4,
+            BossKind::TuitionTroll => 1.45,
+            BossKind::GroupChatGorgon => 1.3,
+            BossKind::SyllabusSerpent => 1.3,
+        }
+    }
+    /// Hurts on contact while attacking (a charge, a dash or a landing).
+    fn rams(self) -> bool {
+        matches!(self, BossKind::TowTyrant | BossKind::ScooterSpecter | BossKind::AllNighterGargoyle)
     }
 }
 
-/// Warden pairs by floor (indices into `BossKind::ALL`: Tow, Golem, Queen,
-/// Lich), easiest first. Which pair you meet matters more than warden health
-/// (the two ranged wardens, the Queen and the Lich, are the hard ones, and the
-/// second warden is fought with whatever hearts are left), so the order was
-/// picked with `warden_difficulty` to fall smoothly from "always survive" on
-/// floor 1 to about the old floor 4 on floor 10, meeting all six pairings.
-const WARDEN_PAIRS: [(usize, usize); 10] = [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3), (0, 3), (2, 3), (0, 3), (2, 3)];
+/// Warden pairs by floor (indices into `BossKind::ALL`), easiest first.
+/// Floors 1-10 use the first four wardens: which pair you meet matters more
+/// than warden health (the ranged Queen and Lich are the hard ones, and the
+/// second warden is fought with whatever hearts are left), so that order was
+/// picked with `warden_difficulty`. Floors 11-20 meet the ten new wardens,
+/// each one twice, ordered by the same simulation from the Wi-Fi Wraith and
+/// Gorgon (dodge by moving) to the Vending Mimic and Printer (bursts plus walls).
+const WARDEN_PAIRS: [(usize, usize); 20] = [
+    (0, 1), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3), (0, 3), (2, 3), (0, 3), (2, 3),
+    // 4 Vending, 5 Scooter, 6 Wi-Fi, 7 Printer, 8 Banshee, 9 Hydra, 10 Gargoyle, 11 Troll, 12 Gorgon, 13 Serpent
+    (6, 12), (10, 12), (4, 9), (9, 13), (8, 13), (5, 10), (11, 6), (11, 7), (5, 8), (4, 7),
+];
 
 /// The two wardens that guard floor `floor` after a wrong answer (always two different ones).
 pub fn wardens_for(floor: usize) -> [BossKind; 2] {
@@ -896,12 +1016,7 @@ pub struct Boss {
 
 impl Boss {
     fn new(kind: BossKind, pos: Vec2, tier: Tier) -> Boss {
-        // the ranged wardens keep their distance and fire more, so they have less health
-        let toughness = match kind {
-            BossKind::TowTyrant | BossKind::FinalsGolem => 1.0,
-            BossKind::OwlQueen => 0.75,
-            BossKind::LibraryLich => 0.8,
-        };
+        let toughness = kind.toughness();
         let max_hp = tier.warden_hp() * toughness * tier.pace.warden_hp_pct as f32 / 100.0;
         Boss {
             kind,
@@ -940,6 +1055,15 @@ enum ProjKind {
     Page,
     Envelope,
     Padlock,
+    Can,
+    Signal,
+    Sheet,
+    Drop,
+    Meatball,
+    Rubble,
+    Coin,
+    Ping,
+    Ink,
 }
 
 struct Projectile {
@@ -948,6 +1072,16 @@ struct Projectile {
     radius: f32,
     life: f32,
     kind: ProjKind,
+    /// seconds before it moves or hurts (drawn as a warning ring meanwhile)
+    delay: f32,
+    /// seconds it keeps turning toward you
+    home: f32,
+}
+
+impl Projectile {
+    fn new(pos: Vec2, vel: Vec2, radius: f32, life: f32, kind: ProjKind) -> Projectile {
+        Projectile { pos, vel, radius, life, kind, delay: 0.0, home: 0.0 }
+    }
 }
 
 /// Enemy shots fly at `ENEMY_SHOT_SPEED` and live longer, so they still reach as far.
@@ -1621,14 +1755,16 @@ impl World {
                     _ => (200.0, 9.0, ProjKind::Orb),
                 };
                 let d = (ppos - e.pos).normalize_or(vec2(1.0, 0.0));
-                shots.push(Projectile { pos: e.pos + d * 14.0, vel: d * spd, radius, life: 4.0, kind });
+                shots.push(Projectile::new(e.pos + d * 14.0, d * spd, radius, 4.0, kind));
             }
             if !e.kind.ranged() && dist < r + PLAYER_RADIUS + 2.0 {
                 contact = Some(to_p);
             }
         }
-        if !shots.is_empty() {
+        if shots.iter().any(|s| s.delay <= 0.0) {
             self.sounds.push(Sfx::Shoot);
+        }
+        if !shots.is_empty() {
             self.projectiles.extend(shots.into_iter().map(slow_shot));
         }
         if let Some(d) = contact {
@@ -1688,14 +1824,25 @@ impl World {
         let ring = |shots: &mut Vec<Projectile>, at: Vec2, n: usize, off: f32, spd: f32, kind: ProjKind| {
             for k in 0..n {
                 let a = off + k as f32 / n as f32 * std::f32::consts::TAU;
-                shots.push(Projectile { pos: at, vel: vec2(a.cos(), a.sin()) * spd, radius: 8.0, life: 5.0, kind });
+                shots.push(Projectile::new(at, vec2(a.cos(), a.sin()) * spd, 8.0, 5.0, kind));
             }
+        };
+        // move to stay between `near` and `far` tiles away, drifting sideways by `drift`
+        let keep_range = |dir_p: Vec2, dist: f32, near: f32, far: f32, drift: f32| {
+            let want = if dist < near * TILE {
+                -dir_p
+            } else if dist > far * TILE {
+                dir_p
+            } else {
+                Vec2::ZERO
+            };
+            (want + vec2(-dir_p.y, dir_p.x) * drift).normalize_or_zero()
         };
         let fan = |shots: &mut Vec<Projectile>, at: Vec2, dir: Vec2, n: usize, spread: f32, spd: f32, kind: ProjKind| {
             let base = dir.y.atan2(dir.x);
             for k in 0..n {
                 let a = base + (k as f32 - (n as f32 - 1.0) * 0.5) * spread;
-                shots.push(Projectile { pos: at + dir * 30.0, vel: vec2(a.cos(), a.sin()) * spd, radius: 8.0, life: 4.0, kind });
+                shots.push(Projectile::new(at + dir * 30.0, vec2(a.cos(), a.sin()) * spd, 8.0, 4.0, kind));
             }
         };
         match (b.kind, b.state) {
@@ -1841,11 +1988,341 @@ impl World {
                     b.t = if rage { 1.4 } else { 2.0 };
                 }
             }
+            // ---- Vending Machine Mimic: rattles, then bursts of soda cans
+            (BossKind::VendingMimic, BossState::Walk) => {
+                vel = dir_p * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.7;
+                }
+            }
+            (BossKind::VendingMimic, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.volleys = if rage { 4 } else { 3 };
+                    b.shot_t = 0.0;
+                    b.t = 0.6;
+                }
+            }
+            (BossKind::VendingMimic, BossState::Act) => {
+                b.shot_t -= dt;
+                if b.volleys > 0 && b.shot_t <= 0.0 {
+                    fan(&mut shots, b.pos, dir_p, if rage { 5 } else { 3 }, 0.2, 260.0, ProjKind::Can);
+                    b.volleys -= 1;
+                    b.shot_t = 0.34;
+                }
+                if b.t <= 0.0 && b.volleys == 0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.6 } else { 2.2 };
+                }
+            }
+            // ---- E-Scooter Specter: three short aimed dashes, each with its own red line
+            (BossKind::ScooterSpecter, BossState::Walk) => {
+                vel = dir_p * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.6;
+                    b.volleys = 0;
+                }
+            }
+            (BossKind::ScooterSpecter, BossState::Tell) => {
+                b.dir = dir_p;
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.t = 0.3;
+                }
+            }
+            (BossKind::ScooterSpecter, BossState::Act) => {
+                vel = b.dir * 700.0 * BOSS_SPEED_SCALE;
+                if b.t <= 0.0 {
+                    b.volleys += 1;
+                    if b.volleys < 3 {
+                        b.state = BossState::Tell;
+                        b.t = if rage { 0.45 } else { 0.55 };
+                    } else {
+                        b.state = BossState::Walk;
+                        b.t = if rage { 1.8 } else { 2.4 };
+                    }
+                }
+            }
+            // ---- Dead Wi-Fi Wraith: keeps its distance, rings pulse, then a spiral
+            (BossKind::WifiWraith, BossState::Walk) => {
+                vel = keep_range(dir_p, dist, 4.0, 7.0, 0.6) * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.8;
+                }
+            }
+            (BossKind::WifiWraith, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.t = if rage { 2.2 } else { 1.8 };
+                    b.shot_t = 0.0;
+                }
+            }
+            (BossKind::WifiWraith, BossState::Act) => {
+                b.shot_t -= dt;
+                if b.shot_t <= 0.0 {
+                    ring(&mut shots, b.pos, if rage { 4 } else { 3 }, b.spin, 180.0, ProjKind::Signal);
+                    b.spin += 0.23;
+                    b.shot_t = 0.15;
+                }
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.7 } else { 2.3 };
+                }
+            }
+            // ---- Printer Poltergeist: walls of paper with one gap (shown green during the tell)
+            (BossKind::PrinterPoltergeist, BossState::Walk) => {
+                vel = keep_range(dir_p, dist, 5.0, 8.0, 0.3) * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.9;
+                    // the gap never opens where you stand: you have to move to it
+                    let side = if gen_range(0, 2) == 0 { -1.0 } else { 1.0 };
+                    b.spin = side * gen_range(1.6f32, 2.8) * TILE;
+                }
+            }
+            (BossKind::PrinterPoltergeist, BossState::Tell) => {
+                b.dir = dir_p;
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.volleys = if rage { 3 } else { 2 };
+                    b.shot_t = 0.0;
+                    b.t = 0.4;
+                }
+            }
+            (BossKind::PrinterPoltergeist, BossState::Act) => {
+                b.shot_t -= dt;
+                if b.volleys > 0 && b.shot_t <= 0.0 {
+                    let perp = vec2(-b.dir.y, b.dir.x);
+                    let mut k = -12.0f32;
+                    while k <= 12.0 {
+                        let off = k * TILE;
+                        if (off - b.spin).abs() > PRINTER_GAP * 0.5 {
+                            shots.push(Projectile::new(b.pos + perp * off, b.dir * 160.0, 9.0, 7.0, ProjKind::Sheet));
+                        }
+                        k += 0.75;
+                    }
+                    b.volleys -= 1;
+                    b.shot_t = 0.85;
+                    if b.volleys > 0 {
+                        b.spin = (b.spin + gen_range(-1.2f32, 1.2) * TILE).clamp(-2.5 * TILE, 2.5 * TILE);
+                    }
+                }
+                if b.t <= 0.0 && b.volleys == 0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.8 } else { 2.4 };
+                }
+            }
+            // ---- Fire Drill Banshee: marks sprinklers on and around you; they burst after a beat
+            (BossKind::FireDrillBanshee, BossState::Walk) => {
+                vel = keep_range(dir_p, dist, 4.0, 7.0, 0.7) * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.4;
+                }
+            }
+            (BossKind::FireDrillBanshee, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    let n = if rage { 4 } else { 3 };
+                    for i in 0..n {
+                        let at = if i == 0 {
+                            ppos
+                        } else {
+                            let a = gen_range(0.0f32, std::f32::consts::TAU);
+                            ppos + vec2(a.cos(), a.sin()) * gen_range(1.8f32, 3.0) * TILE
+                        };
+                        if self.map.solid_at(at) {
+                            continue;
+                        }
+                        for k in 0..8 {
+                            let a = k as f32 / 8.0 * std::f32::consts::TAU + i as f32 * 0.3;
+                            let mut d = Projectile::new(at, vec2(a.cos(), a.sin()) * 150.0, 7.0, 1.4, ProjKind::Drop);
+                            d.delay = 1.0 + 0.25 * i as f32;
+                            shots.push(d);
+                        }
+                    }
+                    b.state = BossState::Act;
+                    b.t = 0.3;
+                }
+            }
+            (BossKind::FireDrillBanshee, BossState::Act) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 2.0 } else { 2.6 };
+                }
+            }
+            // ---- Dining Hall Hydra: heads glow, then a stream of aimed meatballs
+            (BossKind::DiningHydra, BossState::Walk) => {
+                vel = dir_p * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.6;
+                }
+            }
+            (BossKind::DiningHydra, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.t = 1.4;
+                    b.shot_t = 0.0;
+                    b.volleys = 0;
+                }
+            }
+            (BossKind::DiningHydra, BossState::Act) => {
+                b.shot_t -= dt;
+                if b.shot_t <= 0.0 {
+                    let perp = vec2(-dir_p.y, dir_p.x);
+                    let head = b.pos + perp * [-26.0, 0.0, 26.0][(b.volleys % 3) as usize] - vec2(0.0, 24.0);
+                    let aim = (ppos - head).normalize_or(dir_p);
+                    let a = aim.y.atan2(aim.x) + gen_range(-0.12f32, 0.12);
+                    shots.push(Projectile::new(head + aim * 20.0, vec2(a.cos(), a.sin()) * 290.0, 9.0, 4.0, ProjKind::Meatball));
+                    b.volleys += 1;
+                    b.shot_t = if rage { 0.13 } else { 0.18 };
+                }
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.6 } else { 2.2 };
+                }
+            }
+            // ---- All-Nighter Gargoyle: leaps; its shadow follows you, then sets; lands with rubble
+            (BossKind::AllNighterGargoyle, BossState::Walk) => {
+                b.alpha = (b.alpha + dt * 3.0).min(1.0);
+                vel = dir_p * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = if rage { 0.95 } else { 1.15 };
+                    b.teleport_to = Some(ppos);
+                }
+            }
+            (BossKind::AllNighterGargoyle, BossState::Tell) => {
+                b.alpha = (b.alpha - dt * 3.0).max(0.3);
+                if b.t > 0.55 {
+                    if let Some(to) = &mut b.teleport_to {
+                        *to += (ppos - *to) * (dt * 3.0).min(1.0);
+                    }
+                }
+                if b.t <= 0.0 {
+                    if let Some(to) = b.teleport_to {
+                        if !self.map.solid_at(to) {
+                            b.pos = to;
+                        }
+                    }
+                    b.alpha = 1.0;
+                    b.state = BossState::Act;
+                    b.t = 0.3;
+                    ring(&mut shots, b.pos, if rage { 12 } else { 8 }, b.spin, 190.0, ProjKind::Rubble);
+                    b.spin += 0.2;
+                    shook = 0.4;
+                }
+            }
+            (BossKind::AllNighterGargoyle, BossState::Act) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.6 } else { 2.2 };
+                    b.teleport_to = None;
+                }
+            }
+            // ---- Tuition Troll: coin sacks that turn toward you for a moment
+            (BossKind::TuitionTroll, BossState::Walk) => {
+                vel = dir_p * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.7;
+                }
+            }
+            (BossKind::TuitionTroll, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    let n = if rage { 3 } else { 2 };
+                    let base = dir_p.y.atan2(dir_p.x);
+                    for k in 0..n {
+                        let a = base + (k as f32 - (n as f32 - 1.0) * 0.5) * 0.9;
+                        let mut c = Projectile::new(b.pos + dir_p * 30.0, vec2(a.cos(), a.sin()) * 190.0, 10.0, 4.5, ProjKind::Coin);
+                        c.home = 1.2;
+                        shots.push(c);
+                    }
+                    b.state = BossState::Act;
+                    b.t = 0.4;
+                }
+            }
+            (BossKind::TuitionTroll, BossState::Act) => {
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.8 } else { 2.4 };
+                }
+            }
+            // ---- Group Chat Gorgon: its gaze line tracks you, locks, then pings fire down it
+            (BossKind::GroupChatGorgon, BossState::Walk) => {
+                vel = keep_range(dir_p, dist, 4.0, 7.0, 0.6) * b.kind.speed();
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.9;
+                }
+            }
+            (BossKind::GroupChatGorgon, BossState::Tell) => {
+                if b.t > GAZE_LOCK {
+                    b.dir = dir_p;
+                }
+                if b.t <= 0.0 {
+                    b.state = BossState::Act;
+                    b.t = 0.8;
+                    b.shot_t = 0.0;
+                }
+            }
+            (BossKind::GroupChatGorgon, BossState::Act) => {
+                b.shot_t -= dt;
+                if b.shot_t <= 0.0 {
+                    let base = b.dir.y.atan2(b.dir.x);
+                    let beams: &[f32] = if rage { &[-0.3, 0.0, 0.3] } else { &[0.0] };
+                    for o in beams {
+                        let a = base + o;
+                        shots.push(Projectile::new(b.pos + b.dir * 30.0, vec2(a.cos(), a.sin()) * 390.0, 7.0, 2.5, ProjKind::Ping));
+                    }
+                    b.shot_t = 0.08;
+                }
+                if b.t <= 0.0 {
+                    b.state = BossState::Walk;
+                    b.t = if rage { 1.5 } else { 2.0 };
+                }
+            }
+            // ---- Syllabus Serpent: weaves, leaves ink puddles behind, then a fan of ink
+            (BossKind::SyllabusSerpent, BossState::Walk) => {
+                let perp = vec2(-dir_p.y, dir_p.x);
+                let want = if dist < 3.5 * TILE {
+                    -dir_p
+                } else if dist > 6.5 * TILE {
+                    dir_p
+                } else {
+                    Vec2::ZERO
+                };
+                vel = (want * 0.8 + perp * (b.anim * 2.2).sin()).normalize_or_zero() * b.kind.speed();
+                b.shot_t -= dt;
+                if b.shot_t <= 0.0 {
+                    let mut ink = Projectile::new(b.pos, Vec2::ZERO, 12.0, 2.6, ProjKind::Ink);
+                    ink.delay = 0.4;
+                    shots.push(ink);
+                    b.shot_t = if rage { 0.26 } else { 0.34 };
+                }
+                if b.t <= 0.0 {
+                    b.state = BossState::Tell;
+                    b.t = 0.5;
+                }
+            }
+            (BossKind::SyllabusSerpent, BossState::Tell) => {
+                if b.t <= 0.0 {
+                    fan(&mut shots, b.pos, dir_p, if rage { 5 } else { 3 }, 0.3, 210.0, ProjKind::Ink);
+                    b.state = BossState::Walk;
+                    b.t = if rage { 2.0 } else { 2.6 };
+                }
+            }
+            (BossKind::SyllabusSerpent, BossState::Act) => {
+                b.state = BossState::Walk;
+            }
         }
         let want = b.pos + vel * dt;
         let mut pos = b.pos;
         move_and_collide(&self.map, &mut pos, vel * dt, b.radius * 0.7);
-        if b.kind == BossKind::TowTyrant && b.state == BossState::Act && pos.distance(want) > 1.0 {
+        if matches!(b.kind, BossKind::TowTyrant | BossKind::ScooterSpecter) && b.state == BossState::Act && pos.distance(want) > 1.0 {
             // charged into a wall or pillar: dazed for a moment (a free hit window)
             b.state = BossState::Walk;
             b.t = 1.2;
@@ -1855,7 +2332,7 @@ impl World {
         let touching = b.hittable() && b.pos.distance(ppos) < b.radius + PLAYER_RADIUS;
         // only a charge hurts on contact; otherwise a warden just shoves you back,
         // so standing in sword range is a choice, not a penalty
-        let ramming = b.kind == BossKind::TowTyrant && b.state == BossState::Act;
+        let ramming = b.kind.rams() && b.state == BossState::Act;
         let bpos = b.pos;
         if !shots.is_empty() {
             self.sounds.push(Sfx::Shoot);
@@ -1888,6 +2365,26 @@ impl World {
         let mut pops = Vec::new();
         let map = &self.map;
         self.projectiles.retain_mut(|p| {
+            if p.delay > 0.0 {
+                // armed but waiting: frozen and harmless
+                p.delay -= dt;
+                return true;
+            }
+            if p.home > 0.0 {
+                p.home -= dt;
+                let spd = p.vel.length();
+                let have = p.vel.y.atan2(p.vel.x);
+                let to = ppos - p.pos;
+                let mut turn = to.y.atan2(to.x) - have;
+                while turn > std::f32::consts::PI {
+                    turn -= std::f32::consts::TAU;
+                }
+                while turn < -std::f32::consts::PI {
+                    turn += std::f32::consts::TAU;
+                }
+                let a = have + turn.clamp(-HOMING_TURN * dt, HOMING_TURN * dt);
+                p.vel = vec2(a.cos(), a.sin()) * spd;
+            }
             p.pos += p.vel * dt;
             p.life -= dt;
             let hit_player = p.pos.distance(ppos) < p.radius + PLAYER_RADIUS - 7.0; // a forgiving hitbox: grazes don't count
@@ -1970,9 +2467,26 @@ impl World {
                 // the growing ring means pages are coming: get room to slip between them
                 ctl.mv = -to.normalize_or_zero();
                 ctl.attack = false;
+            } else if matches!(b.kind, BossKind::ScooterSpecter | BossKind::GroupChatGorgon) && b.state != BossState::Walk {
+                // step off the locked line
+                let side = vec2(-b.dir.y, b.dir.x);
+                ctl.mv = if side.dot(ppos - b.pos) >= 0.0 { side } else { -side };
+            } else if let (BossKind::AllNighterGargoyle, BossState::Tell, Some(to)) = (b.kind, b.state, b.teleport_to) {
+                // get out from under the shadow
+                ctl.mv = (ppos - to).normalize_or(perp);
+                ctl.attack = false;
+            } else if let Some(h) = self
+                .projectiles
+                .iter()
+                .filter(|p| (p.delay > 0.0 || p.vel == Vec2::ZERO) && p.pos.distance(ppos) < if p.kind == ProjKind::Drop { 2.2 * TILE } else { p.radius + 40.0 })
+                .min_by(|a, b| a.pos.distance(ppos).total_cmp(&b.pos.distance(ppos)))
+            {
+                // a marked sprinkler or an ink puddle: walk away from it
+                ctl.mv = ((ppos - h.pos).normalize_or(perp) + perp * 0.3).normalize_or_zero();
             } else if let Some(pr) = self
                 .projectiles
                 .iter()
+                .filter(|p| p.delay <= 0.0)
                 .filter(|p| {
                     let rel = ppos - p.pos;
                     let v = p.vel.normalize_or_zero();
@@ -2022,6 +2536,23 @@ impl World {
     }
 
     // ------------------------------------------------------------ queries
+
+    /// CC_SHOT_EVENTS: "<warden>_tell" late in a tell, "<warden>_attack" once
+    /// enough shots are out (or armed), for screenshot tags.
+    pub fn boss_shot(&self) -> Option<String> {
+        let b = self.boss.as_ref()?;
+        if b.entering > 0.0 {
+            return None;
+        }
+        let name = format!("{:?}", b.kind).to_lowercase();
+        if b.state == BossState::Tell && b.t < 0.3 {
+            Some(format!("{name}_tell"))
+        } else if self.projectiles.len() >= 8 || (b.kind.rams() && b.state == BossState::Act) {
+            Some(format!("{name}_attack"))
+        } else {
+            None
+        }
+    }
 
     /// Which warden is up (1-based), for the "WARDEN 1 OF 2" bar.
     pub fn boss_number(&self) -> usize {
@@ -2174,7 +2705,52 @@ impl World {
         for pr in &self.projectiles {
             let q = pr.pos + off;
             let r = pr.radius;
+            if pr.delay > 0.0 {
+                let pulse = (pr.delay * 14.0).sin().abs();
+                draw_circle_lines(q.x, q.y, 34.0 + 18.0 * pr.delay.min(1.0), 2.5, Color::new(1.0, 0.25, 0.25, 0.45 + 0.4 * pulse));
+            }
             match pr.kind {
+                ProjKind::Can => {
+                    draw_rectangle(q.x - r * 0.7, q.y - r, r * 1.4, r * 2.0, Color::from_rgba(214, 64, 70, 255));
+                    draw_rectangle(q.x - r * 0.7, q.y - r, r * 1.4, 3.0, Color::from_rgba(212, 214, 226, 255));
+                    draw_rectangle(q.x - r * 0.7, q.y - 1.0, r * 1.4, 2.0, WHITE);
+                }
+                ProjKind::Signal => {
+                    draw_circle(q.x, q.y, r * 0.55, Color::from_rgba(120, 220, 230, 255));
+                    draw_circle_lines(q.x, q.y, r, 2.0, Color::from_rgba(200, 245, 250, 255));
+                }
+                ProjKind::Sheet => {
+                    draw_rectangle(q.x - r * 0.75, q.y - r, r * 1.5, r * 2.0, WHITE);
+                    draw_rectangle(q.x - r * 0.5, q.y - r * 0.5, r, 1.5, Color::from_rgba(150, 156, 180, 255));
+                    draw_rectangle(q.x - r * 0.5, q.y, r, 1.5, Color::from_rgba(150, 156, 180, 255));
+                    draw_rectangle(q.x - r * 0.5, q.y + r * 0.5, r * 0.7, 1.5, Color::from_rgba(150, 156, 180, 255));
+                }
+                ProjKind::Drop => {
+                    draw_circle(q.x, q.y, r, Color::from_rgba(70, 140, 255, 255));
+                    draw_circle(q.x - r * 0.3, q.y - r * 0.3, r * 0.35, WHITE);
+                }
+                ProjKind::Meatball => {
+                    draw_circle(q.x, q.y, r, Color::from_rgba(140, 88, 48, 255));
+                    draw_circle(q.x + r * 0.2, q.y + r * 0.2, r * 0.5, Color::from_rgba(96, 58, 30, 255));
+                }
+                ProjKind::Rubble => {
+                    draw_rectangle(q.x - r, q.y - r, r * 2.0, r * 2.0, INK);
+                    draw_rectangle(q.x - r + 2.0, q.y - r + 2.0, r * 2.0 - 4.0, r * 2.0 - 4.0, Color::from_rgba(130, 130, 140, 255));
+                }
+                ProjKind::Coin => {
+                    draw_circle(q.x, q.y, r + 1.5, INK);
+                    draw_circle(q.x, q.y, r, KSU_GOLD);
+                    draw_rectangle(q.x - 1.5, q.y - r * 0.6, 3.0, r * 1.2, INK);
+                }
+                ProjKind::Ping => {
+                    draw_circle(q.x, q.y, r, Color::from_rgba(226, 92, 180, 255));
+                    draw_circle(q.x, q.y, r * 0.4, WHITE);
+                }
+                ProjKind::Ink => {
+                    let c = Color::from_rgba(80, 50, 120, if pr.delay > 0.0 { 140 } else { 235 });
+                    draw_ellipse(q.x, q.y, r * 1.3, r, 0.0, c);
+                    draw_circle(q.x + r * 0.6, q.y - r * 0.4, r * 0.4, c);
+                }
                 ProjKind::Envelope | ProjKind::Page => {
                     let (c1, c2) = if pr.kind == ProjKind::Page { (PAPER, RISKY) } else { (WHITE, KSU_GOLD) };
                     draw_rectangle(q.x - r, q.y - r * 0.7, r * 2.0, r * 1.4, c1);
@@ -2250,6 +2826,42 @@ impl World {
                 draw_circle_lines(p.x, p.y, 30.0 + 150.0 * f, 4.0, Color::new(1.0, 0.3, 0.25, 0.3 + 0.6 * f));
             }
             (BossKind::OwlQueen, BossState::Tell) => glow(p.x, p.y, 100.0, b.kind.color(), 5.0),
+            (BossKind::ScooterSpecter, BossState::Tell) => {
+                let end = p + b.dir * 320.0;
+                draw_line(p.x, p.y, end.x, end.y, 8.0, Color::new(1.0, 0.2, 0.2, 0.15 + 0.25 * (t * 20.0).sin().abs()));
+                draw_line(p.x, p.y, end.x, end.y, 2.0, RISKY);
+            }
+            (BossKind::GroupChatGorgon, BossState::Tell) => {
+                let end = p + b.dir * 760.0;
+                let locked = b.t <= GAZE_LOCK;
+                let c = if locked { Color::new(1.0, 0.25, 0.4, 0.55) } else { Color::new(0.9, 0.36, 0.7, 0.3) };
+                draw_line(p.x, p.y, end.x, end.y, if locked { 9.0 } else { 3.0 }, c);
+            }
+            (BossKind::PrinterPoltergeist, BossState::Tell) => {
+                // the gap's lane, in green, all the way across
+                let perp = vec2(-b.dir.y, b.dir.x);
+                let a = p + perp * b.spin;
+                let z = a + b.dir * 900.0;
+                draw_line(a.x, a.y, z.x, z.y, PRINTER_GAP * 0.8, Color::new(0.3, 0.85, 0.4, 0.12 + 0.1 * (t * 10.0).sin().abs()));
+                draw_line(a.x, a.y, z.x, z.y, 2.0, Color::new(0.3, 0.85, 0.4, 0.7));
+            }
+            (BossKind::WifiWraith, BossState::Tell) => {
+                let f = (1.0 - b.t / 0.8).clamp(0.0, 1.0);
+                for i in 0..3 {
+                    draw_circle_lines(p.x, p.y, 40.0 + 30.0 * i as f32 + 40.0 * f, 3.0, Color::new(0.47, 0.86, 0.9, 0.25 + 0.5 * f));
+                }
+            }
+            (BossKind::AllNighterGargoyle, BossState::Tell) => {
+                if let Some(to) = b.teleport_to {
+                    let q = to + off;
+                    let f = (1.0 - b.t / 1.15).clamp(0.0, 1.0);
+                    draw_ellipse(q.x, q.y + 20.0, 30.0 + 30.0 * f, 12.0 + 10.0 * f, 0.0, Color::new(0.0, 0.0, 0.0, 0.35 + 0.35 * f));
+                    draw_circle_lines(q.x, q.y + 10.0, 50.0 + 10.0 * f, 3.0, Color::new(1.0, 0.25, 0.25, 0.4 + 0.5 * f));
+                }
+            }
+            (BossKind::VendingMimic | BossKind::DiningHydra | BossKind::TuitionTroll | BossKind::FireDrillBanshee | BossKind::SyllabusSerpent, BossState::Tell) => {
+                glow(p.x, p.y, 100.0, b.kind.color(), 5.0)
+            }
             _ => {}
         }
         if b.enraged() {
@@ -2262,7 +2874,10 @@ impl World {
         draw_ellipse(p.x, p.y + 52.0, 46.0, 10.0, 0.0, Color::new(0.0, 0.0, 0.0, 0.4 * alpha));
         let tint = if b.flash > 0.0 { Color::new(1.0, 0.45, 0.45, alpha) } else { Color::new(1.0, 1.0, 1.0, alpha) };
         let bob = (b.anim * 2.5).sin() * 4.0;
-        draw_sprite_centered(b.kind.sprite(), p.x, p.y + bob, 7.0, b.pos.x > self.player.pos.x, tint);
+        // the Vending Mimic rattles before a burst; the Gargoyle rises as it leaps
+        let jx = if b.kind == BossKind::VendingMimic && b.state == BossState::Tell { (t * 70.0).sin() * 4.0 } else { 0.0 };
+        let lift = if b.kind == BossKind::AllNighterGargoyle { (1.0 - b.alpha) * 60.0 } else { 0.0 };
+        draw_sprite_centered(b.kind.sprite(), p.x + jx, p.y + bob - lift, 7.0, b.pos.x > self.player.pos.x, tint);
     }
 }
 
@@ -2279,6 +2894,11 @@ mod tests {
     /// Floor `f` of the 10-floor run.
     fn tier(f: u32) -> Tier {
         Tier::of(f, 10)
+    }
+
+    /// Floor `f` of a 20-floor run (the shipped run: one floor per encounter).
+    fn tier20(f: u32) -> Tier {
+        Tier::of(f, 20)
     }
 
     /// macroquad's RNG is one global: tests that seed it hold this lock so
@@ -2314,12 +2934,21 @@ mod tests {
     fn wardens_are_two_different_bosses_on_every_floor() {
         let _rng = rng_lock();
         let mut pairs = std::collections::HashSet::new();
+        let mut seen = [0usize; BossKind::ALL.len()];
         for f in 0..20 {
             let [a, b] = wardens_for(f);
             assert_ne!(a, b);
-            pairs.insert(if (a as u8) < (b as u8) { (a as u8, b as u8) } else { (b as u8, a as u8) });
+            if f < 10 {
+                pairs.insert(if (a as u8) < (b as u8) { (a as u8, b as u8) } else { (b as u8, a as u8) });
+                assert!((a as usize) < 4 && (b as usize) < 4, "floor {f}: the first ten floors keep the first four wardens");
+            } else {
+                assert!((a as usize) >= 4 && (b as usize) >= 4, "floor {f}: floors 11-20 meet the new wardens");
+            }
+            seen[a as usize] += 1;
+            seen[b as usize] += 1;
         }
-        assert_eq!(pairs.len(), 6, "a long run meets every pairing");
+        assert_eq!(pairs.len(), 6, "floors 1-10 meet every pairing of the first four");
+        assert!(seen[4..].iter().all(|&n| n == 2), "each new warden guards two floors: {seen:?}");
         // floor 1 keeps the gentlest pair, floor 10 ends on the two ranged wardens
         assert_eq!(wardens_for(0), [BossKind::TowTyrant, BossKind::FinalsGolem]);
         assert_eq!(wardens_for(9), [BossKind::OwlQueen, BossKind::LibraryLich]);
@@ -2330,8 +2959,8 @@ mod tests {
     fn autopilot_beats_both_wardens() {
         let _rng = rng_lock();
         macroquad::rand::srand(7);
-        for f in 0..10u32 {
-            let mut w = World::arena(tier(f), &wardens_for(f as usize));
+        for f in 0..20u32 {
+            let mut w = World::arena(tier20(f), &wardens_for(f as usize));
             w.god = true;
             let mut downs = Vec::new();
             let mut entered = 0;
@@ -2423,7 +3052,7 @@ mod tests {
         macroquad::rand::srand(6);
         let mut w = World::arena(tier(0), &[]);
         let start = w.player.pos;
-        w.projectiles.push(Projectile { pos: start, vel: vec2(1.0, 0.0), radius: 8.0, life: 1.0, kind: ProjKind::Orb });
+        w.projectiles.push(Projectile::new(start, vec2(1.0, 0.0), 8.0, 1.0, ProjKind::Orb));
         w.update(1.0 / 60.0, Control { mv: vec2(0.0, 1.0), dodge: true, ..Control::default() }, power());
         assert!(!w.events.contains(&WorldEvent::PlayerHit), "rolling through a shot");
         for _ in 0..18 {
@@ -2504,13 +3133,13 @@ mod tests {
     fn two_wardens_are_beatable_but_not_trivial() {
         let _rng = rng_lock();
         let mut slow_medians = Vec::new();
-        for f in 0..10u32 {
+        for f in 0..20u32 {
             for (lag, label) in [(0usize, "sharp"), (15, "slow")] {
                 let mut hits = Vec::new();
                 let mut wins = 0;
                 for seed in 0..20u64 {
                     macroquad::rand::srand(1000 + seed);
-                    let (won, h, _) = fight(tier(f), 5, lag);
+                    let (won, h, _) = fight(tier20(f), 5, lag);
                     wins += usize::from(won);
                     hits.push(h);
                 }
@@ -2524,7 +3153,7 @@ mod tests {
                 }
             }
         }
-        // gentler, not free: the late bot still gets hit somewhere on floors 6-10
+        // gentler, not free: the late bot still gets hit somewhere past floor 5
         assert!(slow_medians[5..].iter().any(|m| *m >= 1), "slow bot never got hit late in the run: {slow_medians:?}");
     }
 
@@ -2556,7 +3185,7 @@ mod tests {
         // is measured against), then the 10-floor run
         use BossKind::*;
         let old_pairs = [[TowTyrant, FinalsGolem], [FinalsGolem, OwlQueen], [OwlQueen, LibraryLich], [LibraryLich, TowTyrant]];
-        for floors in [4u32, 10] {
+        for floors in [4u32, 20] {
             for lag in [0usize, 15] {
                 for f in 0..floors {
                     let t = Tier::of(f, floors);
@@ -2601,20 +3230,20 @@ mod tests {
     };
 
     /// Adaptive pacing (the skill tier) must keep the warden fight fair: on
-    /// floor 10 the slow bot (0.25 s late) survives at least 45% of the time
+    /// floor 20 the slow bot (0.25 s late) survives at least 45% of the time
     /// at every tier, with the pace applied to the arena (warden health and the
     /// Night Owl Queen's summoned owls). Same seeds as `warden_difficulty`.
     #[test]
     fn skill_tier_pacing_keeps_the_last_wardens_fair() {
         let _rng = rng_lock();
         for st in SKILL_TIERS {
-            let t = tier(9).with_pace(tier_pace(st));
+            let t = tier20(19).with_pace(tier_pace(st));
             let mut wins = 0;
             for seed in 0..40u64 {
                 macroquad::rand::srand(seed);
                 wins += usize::from(fight(t, 5, 15).0);
             }
-            assert!(wins * 100 >= 45 * 40, "{st:?}: slow bot survived {wins}/40 on floor 10");
+            assert!(wins * 100 >= 45 * 40, "{st:?}: slow bot survived {wins}/40 on floor 20");
         }
     }
 
@@ -2650,8 +3279,8 @@ mod tests {
             let raw = Pace { monster_speed_pct: p.monster_speed_pct, monster_count_delta: p.monster_count_delta, warden_hp_pct: p.warden_hp_pct };
             for (label, pace) in [("capped", tier_pace(st)), ("uncapped", raw)] {
                 let mut row = String::new();
-                for f in 0..10u32 {
-                    let t = tier(f).with_pace(pace);
+                for f in 0..20u32 {
+                    let t = tier20(f).with_pace(pace);
                     let mut wins = 0;
                     for seed in 0..n {
                         macroquad::rand::srand(seed);
@@ -2659,7 +3288,7 @@ mod tests {
                     }
                     row.push_str(&format!(" {wins:>2}"));
                 }
-                println!("{st:?} {label:>8} (warden HP {}%, owl speed {}%): slow bot survived /{n} on floors 1-10:{row}", pace.warden_hp_pct, pace.monster_speed_pct);
+                println!("{st:?} {label:>8} (warden HP {}%, owl speed {}%): slow bot survived /{n} on floors 1-20:{row}", pace.warden_hp_pct, pace.monster_speed_pct);
             }
         }
     }

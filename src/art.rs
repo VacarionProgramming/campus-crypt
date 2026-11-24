@@ -473,6 +473,198 @@ pub const KEEPER: [&str; 16] = [
     "..kkkk...kkkk...",
 ];
 
+// ---- floor 11-20 wardens
+
+pub const VENDING_MIMIC: [&str; 16] = [
+    "..kkkkkkkkkkkk..",
+    "..krrrrrrrrrrk..",
+    "..krwwwwwwwwrk..",
+    "..krwcceeyywrk..",
+    "..krwcceeyywrk..",
+    "..krwooppmmwrk..",
+    "..krwooppmmwrk..",
+    "..krwwwwwwwwrk..",
+    "..krkwkwkwkwrk..",
+    "..krrkrkrkrkrk..",
+    "..krrrrrrrrrrk..",
+    "..krkkkkkkkrrk..",
+    "..krkwwwwkkrrk..",
+    "..krkkkkkkkrrk..",
+    "..kRRRRRRRRRRk..",
+    "..kk........kk..",
+];
+
+pub const SCOOTER_SPECTER: [&str; 16] = [
+    "......llll......",
+    ".....llllll.....",
+    "....llkllkll....",
+    "....llkllkll....",
+    "....llllllll....",
+    ".....lllllll..k.",
+    "......lllll..kgk",
+    ".......lll...kg.",
+    "........l...kg..",
+    "...........kg...",
+    "..........kg....",
+    ".........kg.....",
+    "..kkkkkkkkkkkk..",
+    ".kgggggggggggggk",
+    ".kkk........kkk.",
+    "..k..........k..",
+];
+
+pub const WIFI_WRAITH: [&str; 16] = [
+    "....cccccccc....",
+    "...c........c...",
+    "..c..cccccc..c..",
+    "....c......c....",
+    ".....c.cc.c.....",
+    ".......cc.......",
+    "......PPPP......",
+    ".....PPPPPP.....",
+    "....PPkPPkPP....",
+    "....PPPPPPPP....",
+    "...PPPPPPPPPP...",
+    "...PpPPPPPPpP...",
+    "..PPpPPPPPPpPP..",
+    "..PPPPPPPPPPPP..",
+    "..P.PP.PP.PP.P..",
+    "................",
+];
+
+pub const PRINTER_POLTERGEIST: [&str; 16] = [
+    "....wwwwwwww....",
+    "....wllllllw....",
+    "..kkkkkkkkkkkk..",
+    ".kggggggggggggk.",
+    ".kgrkggggggkrgk.",
+    ".kggggggggggggk.",
+    ".kGGGGGGGGGGGGk.",
+    ".kgkkkkkkkkkkgk.",
+    ".kgkwwwwwwwwkgk.",
+    ".kggkwllllwkggk.",
+    ".kGGGkwwwwkGGGk.",
+    "..kkkkwllwkkkk..",
+    "......wwww......",
+    "......wllw......",
+    ".......ww.......",
+    "................",
+];
+
+pub const FIRE_DRILL_BANSHEE: [&str; 16] = [
+    ".....rrrrrr.....",
+    "....rRRRRRRr....",
+    "...rRwwwwwwRr...",
+    "...rwwkwwkwwr...",
+    "...rwwkwwkwwr...",
+    "...rwwwkkwwwr...",
+    "...rwwwkkwwwr...",
+    "..rwwwwwwwwwwr..",
+    "..rwwwwwwwwwwr..",
+    ".rwwwwwwwwwwwwr.",
+    ".rwwwwwwwwwwwwr.",
+    ".rwwwwwwwwwwwwr.",
+    "rwwrwwrwwrwwrwwr",
+    "rwr.rwr.rwr.rwr.",
+    "rr..rr..rr..rr..",
+    "................",
+];
+
+pub const DINING_HYDRA: [&str; 16] = [
+    ".eee...eee...eee",
+    "ekwe..ekwe..ekwe",
+    "eeee..eeee..eeee",
+    ".eE....eE....eE.",
+    ".eE....eE...eE..",
+    "..eE...eE..eE...",
+    "...eE..eE.eE....",
+    "....eEEeEEeE....",
+    ".....eeeeeee....",
+    "....eeEEEEEee...",
+    "...eeEEEEEEEee..",
+    "...eEEEEEEEEEe..",
+    "...eeEEEEEEEee..",
+    "....eeeeeeeee...",
+    "....ee.....ee...",
+    "...eee.....eee..",
+];
+
+pub const ALL_NIGHTER_GARGOYLE: [&str; 16] = [
+    "..g..........g..",
+    ".gG...gggg...Gg.",
+    ".gGg.gGGGGg.gGg.",
+    "gGGgggrGGrgggGGg",
+    "gGGGgGGGGGGgGGGg",
+    "gGGGgGkkkkGgGGGg",
+    ".gGGggGwwGggGGg.",
+    "..gGggGGGGggGg..",
+    "...g.gGGGGg.g...",
+    ".....gGGGGg.....",
+    "....gGGGGGGg....",
+    "....gGG..GGg....",
+    "...gGGg..gGGg...",
+    "...ggg....ggg...",
+    "................",
+    "................",
+];
+
+pub const TUITION_TROLL: [&str; 16] = [
+    "....nnnnnn......",
+    "...nNNNNNNn.....",
+    "..nNkNNNNkNn....",
+    "..nNNNNNNNNn....",
+    "..nNwkwwkwNn....",
+    "...nNNNNNNn.....",
+    "..nnnNNNNnnn....",
+    ".nNNNNNNNNNNn...",
+    "nNNnNNNNNNnNNn..",
+    "nNn.nNNNNn.nNn.y",
+    "nNn.nNNNNn..nyyy",
+    ".n..nNNNNn..yYyy",
+    "....nNNnNn..yyyy",
+    "...nNNn.nNNn.yy.",
+    "...nnn...nnn....",
+    "................",
+];
+
+pub const GROUP_CHAT_GORGON: [&str; 16] = [
+    ".m.m..m..m.m....",
+    "mMm.mMm.mMm.m...",
+    ".m.m.m.m.m.m.m..",
+    "..mmmmmmmmmmm...",
+    "..mmmmmmmmmmm...",
+    "..mmwwmmmwwmm...",
+    "..mmwkmmmwkmm...",
+    "..mmmmmmmmmmm...",
+    "..mmmmmrrmmmm...",
+    "...mmmmmmmmm....",
+    "....mmmmmmm.....",
+    ".....MMMMM......",
+    "....MMMMMMM.....",
+    "...MMMMMMMMM....",
+    "...MMM...MMM....",
+    "................",
+];
+
+pub const SYLLABUS_SERPENT: [&str; 16] = [
+    "................",
+    "..........pppp..",
+    ".........ppkppp.",
+    ".........pppppr.",
+    "..........pppp.r",
+    "...........pp...",
+    "..wwwwww...pp...",
+    "..wkkkkw..pp....",
+    "..wwwwww.pp.....",
+    "..wkkkkwpp......",
+    "..wwwwwpp.......",
+    "...ppppp........",
+    "..ppPPpp........",
+    ".pPPpppPPpppp...",
+    ".ppppPPPPpppPpp.",
+    "...ppppppppppp..",
+];
+
 /// Warden: The Tow Truck Tyrant, a black-and-gold tow truck off the parking deck (beacon, hook, headlights).
 pub const TOW_TYRANT: [&str; 16] = [
     "......rr........",
@@ -895,6 +1087,197 @@ pub const AT_SIGN: [&str; 16] = [
     "................",
 ];
 
+// ---- floors 11-20 (v0.4)
+const SCHOLARSHIP_SIREN: [&str; 16] = [
+    "................",
+    "....kkkkkk......",
+    "...kyyyyyyk.....",
+    "..kyysssssyk....",
+    "..kyswksswkk....",
+    "..kyssssssk.....",
+    "..kyysrrssk.kkkk",
+    "...kkssssk.kywwk",
+    "..kcckssskkkwyyk",
+    ".kcCCckkkcckkwwk",
+    ".kcCCcccccCk.kk.",
+    "..kcCCccccCk....",
+    "...kcCCCCck.....",
+    "....kccCCk......",
+    "...kcckkcck.....",
+    "...kkk..kkk.....",
+];
+
+const LISTING_LEECH: [&str; 16] = [
+    "................",
+    "................",
+    "......kkkk......",
+    ".....keeeek.....",
+    "....keewweek....",
+    "....kewkkwek....",
+    "....keeeeeek....",
+    "....keErrEek....",
+    "...keeeeeeeek...",
+    "..keeyyeeeeeek..",
+    "..keeyYeeeeEek..",
+    ".keeeeeeeeeEeek.",
+    ".keEeeeeeeeeEek.",
+    "..keeEEeeEEeek..",
+    "...kkeeeeeekk...",
+    ".....kkkkkk.....",
+];
+
+const CRYPTO_KRAKEN: [&str; 16] = [
+    "................",
+    ".....kkkkkk.....",
+    "....kppppppk....",
+    "...kppppppppk...",
+    "...kpwkppwkpk...",
+    "...kpkkppkkpk...",
+    "...kppppppppk...",
+    "....kpPrrPpk....",
+    "...kppppppppk...",
+    "..kpkpkppkpkpk..",
+    ".kpk.kpkkpk.kpk.",
+    ".kpk.kpkkpk.kpk.",
+    "kyk..kpk.kpk.kyk",
+    "kk...kyk..kyk.kk",
+    "......k....k....",
+    "................",
+];
+
+const CATFISH_KELPIE: [&str; 16] = [
+    "................",
+    "......kk..kk....",
+    ".....kCk.kCk....",
+    "....kCCCkCCCk...",
+    "...kCcccccccCk..",
+    "...kcwkcccwkck..",
+    "...kckkcccckck..",
+    "...kccccccccck..",
+    "....kcccccccck..",
+    ".....kccccrrck..",
+    ".....kcccccckk..",
+    "....kxkcccck....",
+    "...kxxkcccck....",
+    "...kxxkCCCCk....",
+    "....kk.kCCk.....",
+    ".......kkk......",
+];
+
+const LOAN_PHANTOM: [&str; 16] = [
+    "................",
+    "....kkkkkkkk....",
+    "...kDDDDDDDDk...",
+    "....kkkDDkkkyk..",
+    ".....kllllk..yk.",
+    "....kllllllk..k.",
+    "...kllwkkwllk...",
+    "...kllkkkkllk...",
+    "...kllllllllk...",
+    "...klllrrlllk...",
+    "...kllllllllk...",
+    "..kllrrrrrllk...",
+    "..kllrwwwrlllk..",
+    "..kllrrrrrlllk..",
+    "..klklllklklk...",
+    "..kk.kk.kk.kk...",
+];
+
+const SCALPER_SPECTER: [&str; 16] = [
+    "................",
+    ".....kkkkkk.....",
+    "....kllllllk....",
+    "...kllwkkwllk...",
+    "...kllkkkkllk...",
+    "...kllllllllk...",
+    "...klllkkllllk..",
+    "..kyyyyyyyyyyk..",
+    ".kykyyyyyyyykyk.",
+    "kyyk.kyyyyk.kyyk",
+    "krrk.kyyyyk.kwwk",
+    "kwwk.kyyyyk.krrk",
+    "kkk..kllllk..kkk",
+    ".....klklkk.....",
+    ".....k.k..k.....",
+    "................",
+];
+
+const PACKAGE_PIXIE: [&str; 16] = [
+    "................",
+    ".cc........cc...",
+    "cxxc.kkkk.cxxc..",
+    "cxxckoooockxxc..",
+    ".cckooooookcc...",
+    "...ksssssk......",
+    "...kswkwsk......",
+    "...ksssssk......",
+    "....kssk........",
+    "...kbbbbk.kkkk..",
+    "..kbbbbbbknnnnk.",
+    "..kbkbbbkknNNnk.",
+    "..kskbbbk.knnnk.",
+    "....kbbk..kkkkk.",
+    "....kbkk........",
+    "....kk..........",
+];
+
+const SWEEPSTAKES_SPHINX: [&str; 16] = [
+    "................",
+    "....kkkkkkkk....",
+    "...kYYYYYYYYk...",
+    "..kYYyyyyyyYYk..",
+    "..kYysssssyYk...",
+    "..kYswksswkYk...",
+    "..kYsssssssYk...",
+    "..kYysrrrsyYk...",
+    "...kYyssyyYk....",
+    "..kyyyyyyyyyk...",
+    ".kyyyyyyyyyyykkk",
+    ".kyyyyyyyyyyykwk",
+    ".kyykyyyyykyykek",
+    ".kyyk.kyyk.kyyk.",
+    ".kkk..kkkk..kkk.",
+    "................",
+];
+
+const CODE_CHANGELING: [&str; 16] = [
+    "................",
+    ".....kkkkkkk....",
+    "....khhhhmmmk...",
+    "...khhhhhmmmmk..",
+    "...kssssmmmmmk..",
+    "...kswksmwkmmk..",
+    "...kssssmmmmmk..",
+    "...kssrsmMMmmk..",
+    "....kssmmmmmk...",
+    "...kddddmmmmk...",
+    "..kddddddmmmmk..",
+    "..kdkdddmmkmmk..",
+    "..kskkxxkmkmmk..",
+    "....kxxxxk......",
+    "....kxxxxk......",
+    ".....kkkk.......",
+];
+
+const ECHO_DOPPELGANGER: [&str; 16] = [
+    "................",
+    "....kkkkkkkk....",
+    "...kGGGGGGGGk...",
+    "..kGcccccccGGk..",
+    "..kGcwccccwcGk..",
+    "..kGclllllllGk..",
+    "..kGcwkcckwcGk..",
+    "..kGccccccccGk..",
+    "..kGcccrrcccGk..",
+    "..kGGccccccGGk..",
+    "...kGGGGGGGGk...",
+    "..kddddddddddk..",
+    ".kddkddddddkddk.",
+    ".kxxkddddddkddk.",
+    "..kk.kddddk.kk..",
+    ".....kkkkkk.....",
+];
+
 /// Sprite for an encounter id (unknown ids get a generic hooded figure).
 pub fn character_sprite(id: &str) -> &'static [&'static str; 16] {
     match id {
@@ -908,6 +1291,16 @@ pub fn character_sprite(id: &str) -> &'static [&'static str; 16] {
         "push_poltergeist" => &PUSH_POLTERGEIST,
         "overpay_ogre" => &OVERPAY_OGRE,
         "cram_lich" => &CRAM_LICH,
+        "scholarship_siren" => &SCHOLARSHIP_SIREN,
+        "listing_leech" => &LISTING_LEECH,
+        "crypto_kraken" => &CRYPTO_KRAKEN,
+        "catfish_kelpie" => &CATFISH_KELPIE,
+        "loan_phantom" => &LOAN_PHANTOM,
+        "scalper_specter" => &SCALPER_SPECTER,
+        "package_pixie" => &PACKAGE_PIXIE,
+        "sweepstakes_sphinx" => &SWEEPSTAKES_SPHINX,
+        "code_changeling" => &CODE_CHANGELING,
+        "echo_doppelganger" => &ECHO_DOPPELGANGER,
         _ => &HOODED,
     }
 }
@@ -1353,7 +1746,7 @@ mod tests {
         for e in &c.encounters {
             let g = character_sprite(&e.id);
             assert!(g != &HOODED, "{} uses the generic hooded sprite", e.id);
-            assert!(!seen.iter().any(|s| *s == g), "{} shares a sprite", e.id);
+            assert!(!seen.contains(&g), "{} shares a sprite", e.id);
             seen.push(g);
         }
         assert!(character_sprite("someone_new") == &HOODED);

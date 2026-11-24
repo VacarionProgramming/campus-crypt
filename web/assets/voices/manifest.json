@@ -1,0 +1,4286 @@
+[
+  {
+    "id": "char/inbox_mimic/inspect_sender",
+    "role": "char:inbox_mimic",
+    "file": "e49b42f537dec214.ogg",
+    "text": "Hey, quit squinting at my return address! My shiny seal was supposed to dazzle you, not get inspected. Ugh, back in the chest I go."
+  },
+  {
+    "id": "takeaway/inbox_mimic/inspect_sender",
+    "role": "takeaway",
+    "file": "988fb2641f973eab.ogg",
+    "text": "Open StudentAid.gov or official KSU channels yourself instead of using a link or address from the message."
+  },
+  {
+    "id": "char/inbox_mimic/click_link",
+    "role": "char:inbox_mimic",
+    "file": "26c8d6a677541f83.ogg",
+    "text": "Ooh, a click! My golden treasure trap works like a charm. Come closer, adventurer, I have so many more urgent surprises for you!"
+  },
+  {
+    "id": "takeaway/inbox_mimic/click_link",
+    "role": "takeaway",
+    "file": "a12fbe5cd98d0106.ogg",
+    "text": "If a link already got clicked, do not enter any passwords; go directly to StudentAid.gov, change yours if needed, and report the message."
+  },
+  {
+    "id": "char/inbox_mimic/report_it",
+    "role": "char:inbox_mimic",
+    "file": "75911b15111bdbe7.ogg",
+    "text": "You reported me? Rude! My gold paint is flaking off and my perfectly good hoax is ruined. Fine, I will go sulk in the spam folder."
+  },
+  {
+    "id": "takeaway/inbox_mimic/report_it",
+    "role": "takeaway",
+    "file": "f114d27facee6390.ogg",
+    "text": "Report the message with KSU's Phish Alert button or by forwarding it to abuse@kennesaw.edu, without clicking any links."
+  },
+  {
+    "id": "char/deadline_wraith/prioritize",
+    "role": "char:deadline_wraith",
+    "file": "f9bd6cffa8a6795c.ogg",
+    "text": "Wait, you picked the most urgent task first? My whole pile went quiet. That is so unfair. I am drifting off to haunt a dusty shelf."
+  },
+  {
+    "id": "takeaway/deadline_wraith/prioritize",
+    "role": "takeaway",
+    "file": "a926bbb88fafae3a.ogg",
+    "text": "List every deadline, then start with the work that is due soonest or that blocks other people."
+  },
+  {
+    "id": "char/deadline_wraith/break_into_steps",
+    "role": "char:deadline_wraith",
+    "file": "cd4016e70a6ce9fa.ogg",
+    "text": "Hey, you chopped my big scary pile into tiny snack-size tasks! That is no fun at all. I am going to go sulk in the lost-and-found."
+  },
+  {
+    "id": "takeaway/deadline_wraith/break_into_steps",
+    "role": "takeaway",
+    "file": "bbfb4a4b33463994.ogg",
+    "text": "Break the next assignment into a first 25-minute step you can actually finish today."
+  },
+  {
+    "id": "char/deadline_wraith/postpone",
+    "role": "char:deadline_wraith",
+    "file": "e0fd5587994b7251.ogg",
+    "text": "Later, you say? Delightful! I will just stack these due dates a little higher while you nap. I love a good pile-up."
+  },
+  {
+    "id": "takeaway/deadline_wraith/postpone",
+    "role": "takeaway",
+    "file": "8317d084cfd5d335.ogg",
+    "text": "Pick one small, scheduled start time today instead of waiting for a perfect open hour."
+  },
+  {
+    "id": "char/password_hydra/reuse_password",
+    "role": "char:password_hydra",
+    "file": "887aa5841a17b481.ogg",
+    "text": "One key for every door? My heads are passing it around like a party snack. Thank you kindly, adventurer, we love sharing!"
+  },
+  {
+    "id": "takeaway/password_hydra/reuse_password",
+    "role": "takeaway",
+    "file": "6281dfdadb0d79ec.ogg",
+    "text": "Use a unique password on each account, starting with email and campus logins."
+  },
+  {
+    "id": "char/password_hydra/make_stronger",
+    "role": "char:password_hydra",
+    "file": "75374ea5ec1288ff.ogg",
+    "text": "Drat, that key is far too twisty for my teeth! But if you use it on every door, my other heads will come sniffing around your other doors."
+  },
+  {
+    "id": "takeaway/password_hydra/make_stronger",
+    "role": "takeaway",
+    "file": "b61445d5b4c41654.ogg",
+    "text": "Keep the stronger password unique to one account, at least 12 characters long, and consider a password manager so you do not have to memorize every one."
+  },
+  {
+    "id": "char/password_hydra/use_password_manager",
+    "role": "char:password_hydra",
+    "file": "e7dea0648297b686.ogg",
+    "text": "A locked vault of unique keys? My heads are arguing over whose fault this is. Fine, fine, we give up and slink back to our puddle."
+  },
+  {
+    "id": "takeaway/password_hydra/use_password_manager",
+    "role": "takeaway",
+    "file": "60085bc8889532b4.ogg",
+    "text": "Set up a reputable password manager and let it generate a unique password for each of your accounts."
+  },
+  {
+    "id": "char/internship_impostor/comply",
+    "role": "char:internship_impostor",
+    "file": "61b298840f6c23c4.ogg",
+    "text": "Wonderful, a team player! My dream-job pitch is going perfectly. Just sign right here on my very official, very shiny clipboard!"
+  },
+  {
+    "id": "takeaway/internship_impostor/comply",
+    "role": "takeaway",
+    "file": "e2fd5ec77beec6b1.ogg",
+    "text": "If you already shared details or moved money, contact your bank right away and report the offer to the FTC and FBI IC3."
+  },
+  {
+    "id": "char/internship_impostor/verify_offer",
+    "role": "char:internship_impostor",
+    "file": "31262e9237f4ebd4.ogg",
+    "text": "Wait, you are calling the real company? No need, no need! My synergy-driven offer is, uh, expiring. I must flee. Clipboard, away!"
+  },
+  {
+    "id": "takeaway/internship_impostor/verify_offer",
+    "role": "takeaway",
+    "file": "7ebe6a34bfe18af9.ogg",
+    "text": "Look up the company yourself and confirm the internship through official careers pages or KSU career services."
+  },
+  {
+    "id": "char/internship_impostor/walk_away",
+    "role": "char:internship_impostor",
+    "file": "c35b822d4353d9fb.ogg",
+    "text": "You are just walking away from my amazing offer? Spoilsport! My cloak is slipping and my clipboard is empty. Fine, I am packing up my stall."
+  },
+  {
+    "id": "takeaway/internship_impostor/walk_away",
+    "role": "takeaway",
+    "file": "ac867fad1b73c5b0.ogg",
+    "text": "Walk away from any job offer that asks for payment, a check deposit, or sensitive data before you can independently verify it."
+  },
+  {
+    "id": "char/ticket_troll/tap_pay_link",
+    "role": "char:ticket_troll",
+    "file": "5a568c711f585d90.ogg",
+    "text": "Ha, a tap! My little toll booth of tickets is open for business. Step right up, there is always room under my ramp for another!"
+  },
+  {
+    "id": "takeaway/ticket_troll/tap_pay_link",
+    "role": "takeaway",
+    "file": "39ea2fe71e339fc7.ogg",
+    "text": "If you tapped it, enter nothing; check for citations on the campus parking site you look up yourself, and call your bank if you paid."
+  },
+  {
+    "id": "char/ticket_troll/reply_stop",
+    "role": "char:ticket_troll",
+    "file": "f98f99789a0f9d4f.ogg",
+    "text": "Drat, no payment! But your reply tells me a real person reads my texts, so your number stays pinned to my ramp. Half a heist is fine by me."
+  },
+  {
+    "id": "takeaway/ticket_troll/reply_stop",
+    "role": "takeaway",
+    "file": "0996a9cd24e2d86b.ogg",
+    "text": "Don't reply to it; forward the text to 7726 (SPAM), delete it, and check the campus parking site yourself."
+  },
+  {
+    "id": "char/ticket_troll/check_parking_site",
+    "role": "char:ticket_troll",
+    "file": "2c248d4c3e006b8f.ogg",
+    "text": "Wait, you went to the real parking site and found no ticket at all? My citation was pure fiction. Fine, I am crawling back under my ramp."
+  },
+  {
+    "id": "takeaway/ticket_troll/check_parking_site",
+    "role": "takeaway",
+    "file": "e2c518e0f6d8df61.ogg",
+    "text": "Look up the campus parking office's site yourself to check for citations, then report the text and delete it."
+  },
+  {
+    "id": "char/commute_chimera/wing_it",
+    "role": "char:commute_chimera",
+    "file": "daa92f162459d905.ogg",
+    "text": "Yes, wing it! My stopwatch head adores a frantic dash between campuses. I will make every red light extra dramatic, just for you!"
+  },
+  {
+    "id": "takeaway/commute_chimera/wing_it",
+    "role": "takeaway",
+    "file": "e23187992fd950fd.ogg",
+    "text": "Check the official campus shuttle schedule and drive times, then block travel time plus a buffer in your calendar."
+  },
+  {
+    "id": "char/commute_chimera/drive_daily",
+    "role": "char:commute_chimera",
+    "file": "01247c774a62664f.ogg",
+    "text": "Hmph, you made it on time, so my stopwatch head is sulking. But my car head is purring, because every solo trip eats gas and parking time."
+  },
+  {
+    "id": "takeaway/commute_chimera/drive_daily",
+    "role": "takeaway",
+    "file": "5cb427dbf1bdde91.ogg",
+    "text": "Compare the campus shuttle with driving for each day, and budget for gas and parking time before you commit."
+  },
+  {
+    "id": "char/commute_chimera/plan_route",
+    "role": "char:commute_chimera",
+    "file": "670c6a466d17259f.ogg",
+    "text": "You looked up the shuttle times and added a buffer? My heads have nothing left to chase. Fine, I give up and curl up in the parking deck."
+  },
+  {
+    "id": "takeaway/commute_chimera/plan_route",
+    "role": "takeaway",
+    "file": "d247ea7cb3e93f0b.ogg",
+    "text": "Put each trip in your calendar with its travel time and a buffer, using the official shuttle schedule."
+  },
+  {
+    "id": "char/gift_card_gargoyle/pay_gift_cards",
+    "role": "char:gift_card_gargoyle",
+    "file": "6563bea1b9acb92f.ogg",
+    "text": "Gift card codes, my favorite snack! My textbook tower grows taller. Do not worry, the book ships the moment I feel like it. Hee hee!"
+  },
+  {
+    "id": "takeaway/gift_card_gargoyle/pay_gift_cards",
+    "role": "takeaway",
+    "file": "bb6fac1b9faaa614.ogg",
+    "text": "Contact the gift card company right away to report the scam, keep the card and receipt, and report it at ReportFraud.ftc.gov."
+  },
+  {
+    "id": "char/gift_card_gargoyle/ask_for_photos",
+    "role": "char:gift_card_gargoyle",
+    "file": "875822b0e8778de1.ogg",
+    "text": "Photos? I have lovely ones of a book I found online. Drat, you have not paid me yet, but my flyer keeps flapping just for you."
+  },
+  {
+    "id": "takeaway/gift_card_gargoyle/ask_for_photos",
+    "role": "takeaway",
+    "file": "881804df221c3089.ogg",
+    "text": "Stop dealing with any seller who wants gift cards or Zelle up front, and check the library or bookstore instead."
+  },
+  {
+    "id": "char/gift_card_gargoyle/check_library",
+    "role": "char:gift_card_gargoyle",
+    "file": "0d333fd68c9e8558.ogg",
+    "text": "You found a reserve copy at the library desk? My stone wings droop. Nobody pays me in gift cards for a book they can borrow. I give up."
+  },
+  {
+    "id": "takeaway/gift_card_gargoyle/check_library",
+    "role": "takeaway",
+    "file": "8128871ca09b5f5f.ogg",
+    "text": "Check the library's course reserves and the campus bookstore first, and never pay a stranger with gift cards."
+  },
+  {
+    "id": "char/push_poltergeist/deny_and_report",
+    "role": "char:push_poltergeist",
+    "file": "7e71cb816745105f.ogg",
+    "text": "You denied me and called the real help desk? My pop-ups are fizzling out. Fine, I will go haunt an empty vending machine instead. Boo hoo."
+  },
+  {
+    "id": "takeaway/push_poltergeist/deny_and_report",
+    "role": "takeaway",
+    "file": "af19303d7f9224ca.ogg",
+    "text": "Deny the request, change your password on the official campus site, and report it to the campus IT help desk."
+  },
+  {
+    "id": "char/push_poltergeist/approve_push",
+    "role": "char:push_poltergeist",
+    "file": "8eb9befe4f7275dc.ogg",
+    "text": "Ooh, you tapped approve! My haunting worked like a charm. I am floating right into your account now. What a cozy little inbox you have!"
+  },
+  {
+    "id": "takeaway/push_poltergeist/approve_push",
+    "role": "takeaway",
+    "file": "af069e2a0eafe412.ogg",
+    "text": "If you approved one, change your password on the official campus site right away and call the campus IT help desk using a number you look up."
+  },
+  {
+    "id": "char/push_poltergeist/ignore_alerts",
+    "role": "char:push_poltergeist",
+    "file": "4a881756bda5fec4.ogg",
+    "text": "Hmph, no approval for me, how rude. But nobody reported me either, so I keep rattling around with your password. Boo, sort of."
+  },
+  {
+    "id": "takeaway/push_poltergeist/ignore_alerts",
+    "role": "takeaway",
+    "file": "26df10c79a6b073e.ogg",
+    "text": "Deny any request you did not start, then change your password and report the attempts to the campus IT help desk."
+  },
+  {
+    "id": "char/overpay_ogre/refund_extra",
+    "role": "char:overpay_ogre",
+    "file": "8910c7f7c92a0b91.ogg",
+    "text": "You sent the extra? Splendid! My giant check is made of pure paper dreams. I will be over here admiring my favorite kind of oops."
+  },
+  {
+    "id": "takeaway/overpay_ogre/refund_extra",
+    "role": "takeaway",
+    "file": "f28b1e1e501d852e.ogg",
+    "text": "Tell your bank right away, ask if the payment can be stopped, and report it to the FTC and FBI IC3."
+  },
+  {
+    "id": "char/overpay_ogre/wait_to_clear",
+    "role": "char:overpay_ogre",
+    "file": "d855a24d64312a84.ogg",
+    "text": "Hmph, no refund from you tonight. But you think a little waiting turns my check real, and I adore that plan. Half a heist for me!"
+  },
+  {
+    "id": "takeaway/overpay_ogre/wait_to_clear",
+    "role": "takeaway",
+    "file": "d40be4770faea083.ogg",
+    "text": "Do not send back any part of a check you were overpaid; ask your bank to verify it and report the offer."
+  },
+  {
+    "id": "char/overpay_ogre/decline_and_report",
+    "role": "char:overpay_ogre",
+    "file": "227d707832ef203f.ogg",
+    "text": "You turned down my oversized check and reported me? My doorway suddenly feels very small. Fine, I am stomping off in defeat."
+  },
+  {
+    "id": "takeaway/overpay_ogre/decline_and_report",
+    "role": "takeaway",
+    "file": "a24bf8e657f9c07f.ogg",
+    "text": "Decline any deal that overpays you and asks for money back, and report it at ReportFraud.ftc.gov."
+  },
+  {
+    "id": "char/cram_lich/all_nighter",
+    "role": "char:cram_lich",
+    "file": "2b65d2803ceecbb7.ogg",
+    "text": "An all-nighter! My flashcards are dancing. Every hour of sleep you skip is another candle on my cake. What a party this finals week is!"
+  },
+  {
+    "id": "takeaway/cram_lich/all_nighter",
+    "role": "takeaway",
+    "file": "016000133dd97f04.ogg",
+    "text": "Map each final's date, then spread study blocks across the days with time for sleep and meals."
+  },
+  {
+    "id": "char/cram_lich/plan_study_blocks",
+    "role": "char:cram_lich",
+    "file": "4332bc8b88e9082e.ogg",
+    "text": "Study blocks with sleep and meals penciled in? My flashcards are falling apart. Fine, I am shuffling off to the lost-and-found."
+  },
+  {
+    "id": "takeaway/cram_lich/plan_study_blocks",
+    "role": "takeaway",
+    "file": "519a3184cefb8bc6.ogg",
+    "text": "Block study time for each final across the week, soonest exam first, with sleep and meals on the calendar too."
+  },
+  {
+    "id": "char/cram_lich/cram_one",
+    "role": "char:cram_lich",
+    "file": "1e8139c35fcc1306.ogg",
+    "text": "Hmph, you have a plan for this exam, how annoying. But the others are all mine, piling up nicely in my flashcard tower."
+  },
+  {
+    "id": "takeaway/cram_lich/cram_one",
+    "role": "takeaway",
+    "file": "64841510ef1d7304.ogg",
+    "text": "Give every final its own study blocks on your calendar, starting with the soonest one."
+  },
+  {
+    "id": "char/scholarship_siren/pay_fee",
+    "role": "char:scholarship_siren",
+    "file": "a1c652ef6697dcd8.ogg",
+    "text": "La la la! Seventy-nine dollars, and the five thousand is... somewhere out at sea. Thank you, darling!"
+  },
+  {
+    "id": "takeaway/scholarship_siren/pay_fee",
+    "role": "takeaway",
+    "file": "57dda26b5a82f4ea.ogg",
+    "text": "Don't pay; look the scholarship up yourself and ask KSU's scholarship office before sharing anything."
+  },
+  {
+    "id": "char/scholarship_siren/ask_for_details",
+    "role": "char:scholarship_siren",
+    "file": "ee991c85f2fea59f.ogg",
+    "text": "Ooh, a reply! Now I know your inbox is listening. More songs coming your way!"
+  },
+  {
+    "id": "takeaway/scholarship_siren/ask_for_details",
+    "role": "takeaway",
+    "file": "28fbf62a97ba1481.ogg",
+    "text": "Don't reply; look the award up yourself and check with KSU's scholarship office."
+  },
+  {
+    "id": "char/scholarship_siren/check_with_office",
+    "role": "char:scholarship_siren",
+    "file": "180f66285ad20b3a.ogg",
+    "text": "You asked the real scholarship office? And they never heard of me? My song falls flat."
+  },
+  {
+    "id": "takeaway/scholarship_siren/check_with_office",
+    "role": "takeaway",
+    "file": "f1902db86752b698.ogg",
+    "text": "Find awards through KSU's own scholarship search and report fee-for-award emails."
+  },
+  {
+    "id": "char/listing_leech/send_deposit",
+    "role": "char:listing_leech",
+    "file": "eac5ee5ec175bd09.ogg",
+    "text": "Slurp! Deposit received. The keys are in the mail. The mail is imaginary."
+  },
+  {
+    "id": "takeaway/listing_leech/send_deposit",
+    "role": "takeaway",
+    "file": "2da3a93742c7b67e.ogg",
+    "text": "Never pay before a tour; verify the owner through property records or the leasing office."
+  },
+  {
+    "id": "char/listing_leech/ask_for_video",
+    "role": "char:listing_leech",
+    "file": "c4361acf9621b587.ogg",
+    "text": "A video? I'll send one! Of a different apartment. You'll never know!"
+  },
+  {
+    "id": "takeaway/listing_leech/ask_for_video",
+    "role": "takeaway",
+    "file": "378b72f3e5390a45.ogg",
+    "text": "Tour in person or through a known leasing office, and verify ownership first."
+  },
+  {
+    "id": "char/listing_leech/tour_in_person",
+    "role": "char:listing_leech",
+    "file": "5308d270c121add3.ogg",
+    "text": "In person? With a real landlord? I'm... busy. Forever. Bye!"
+  },
+  {
+    "id": "takeaway/listing_leech/tour_in_person",
+    "role": "takeaway",
+    "file": "0e51c39f5023404b.ogg",
+    "text": "Use KSU's off-campus housing resources and never pay before touring and signing a lease."
+  },
+  {
+    "id": "char/crypto_kraken/send_crypto",
+    "role": "char:crypto_kraken",
+    "file": "12c8217a51679aeb.ogg",
+    "text": "Glub glub! Your coins swim into my ocean. They don't swim back."
+  },
+  {
+    "id": "takeaway/crypto_kraken/send_crypto",
+    "role": "takeaway",
+    "file": "d7d6a2494b031041.ogg",
+    "text": "Don't send money; call your friend another way to check, and report the account."
+  },
+  {
+    "id": "char/crypto_kraken/ask_friend_in_dm",
+    "role": "char:crypto_kraken",
+    "file": "f66829954b4345ce.ogg",
+    "text": "Of course it's me, your friend! Totally me. The one who types like a kraken."
+  },
+  {
+    "id": "takeaway/crypto_kraken/ask_friend_in_dm",
+    "role": "takeaway",
+    "file": "6f53a6599a9c3ebd.ogg",
+    "text": "Contact your friend by phone or in person to check."
+  },
+  {
+    "id": "char/crypto_kraken/call_friend",
+    "role": "char:crypto_kraken",
+    "file": "1742d68524d2735c.ogg",
+    "text": "You CALLED them? And they were hacked? My tentacles are tangled."
+  },
+  {
+    "id": "takeaway/crypto_kraken/call_friend",
+    "role": "takeaway",
+    "file": "7657204205d31f99.ogg",
+    "text": "Tell your friend their account was hacked and report the messages."
+  },
+  {
+    "id": "char/catfish_kelpie/send_gift_cards",
+    "role": "char:catfish_kelpie",
+    "file": "89da2deb0a511535.ogg",
+    "text": "Neigh-ice! The cards are mine. The trip home is... still overseas."
+  },
+  {
+    "id": "takeaway/catfish_kelpie/send_gift_cards",
+    "role": "takeaway",
+    "file": "b4eee2e2d68981c3.ogg",
+    "text": "Don't send money to someone you haven't met; report the profile."
+  },
+  {
+    "id": "char/catfish_kelpie/ask_for_photo",
+    "role": "char:catfish_kelpie",
+    "file": "945f5dc7534d88cc.ogg",
+    "text": "Here's a selfie! It's someone else's. Shh."
+  },
+  {
+    "id": "takeaway/catfish_kelpie/ask_for_photo",
+    "role": "takeaway",
+    "file": "1881d8df79193716.ogg",
+    "text": "Try a live video call, and never send money to someone you haven't met."
+  },
+  {
+    "id": "char/catfish_kelpie/refuse_and_report",
+    "role": "char:catfish_kelpie",
+    "file": "5ed831836f3fe689.ogg",
+    "text": "No money? You reported me? I'm swimming back into the mist."
+  },
+  {
+    "id": "takeaway/catfish_kelpie/refuse_and_report",
+    "role": "takeaway",
+    "file": "493df3b0505dd2ed.ogg",
+    "text": "Report the profile to the app and talk to someone you trust about it."
+  },
+  {
+    "id": "char/loan_phantom/pay_enrollment",
+    "role": "char:loan_phantom",
+    "file": "ee0b7238da4165ff.ogg",
+    "text": "Boo-hoo-hooray! Your FSA ID is mine. Your loans, sadly, are still yours."
+  },
+  {
+    "id": "takeaway/loan_phantom/pay_enrollment",
+    "role": "takeaway",
+    "file": "57cec89b7bb923cb.ogg",
+    "text": "Never share your FSA ID; check forgiveness options only on the official federal student aid site yourself."
+  },
+  {
+    "id": "char/loan_phantom/call_their_number",
+    "role": "char:loan_phantom",
+    "file": "5fdf01a4821963a1.ogg",
+    "text": "You called ME! I'll tell you it's real. Very convincingly."
+  },
+  {
+    "id": "takeaway/loan_phantom/call_their_number",
+    "role": "takeaway",
+    "file": "2822d4f7b2532f89.ogg",
+    "text": "Look up your loan servicer yourself and call that number."
+  },
+  {
+    "id": "char/loan_phantom/check_servicer",
+    "role": "char:loan_phantom",
+    "file": "b7005e9db825558d.ogg",
+    "text": "You checked with your real servicer? And it's free to apply there? I'm fading away."
+  },
+  {
+    "id": "takeaway/loan_phantom/check_servicer",
+    "role": "takeaway",
+    "file": "e298024296af1989.ogg",
+    "text": "Use only your loan servicer and the official federal aid site, and report the email."
+  },
+  {
+    "id": "char/scalper_specter/pay_cash_app",
+    "role": "char:scalper_specter",
+    "file": "2368aa592d9ffe14.ogg",
+    "text": "Paid! The tickets are... floating away. Like me. Boo!"
+  },
+  {
+    "id": "takeaway/scalper_specter/pay_cash_app",
+    "role": "takeaway",
+    "file": "0fd8921d4028b11b.ogg",
+    "text": "Buy only through the official ticket platform or KSU's box office transfer."
+  },
+  {
+    "id": "char/scalper_specter/ask_for_screenshot",
+    "role": "char:scalper_specter",
+    "file": "89807a130012cfb1.ogg",
+    "text": "Here's a screenshot! Of tickets I sold to ten other people."
+  },
+  {
+    "id": "takeaway/scalper_specter/ask_for_screenshot",
+    "role": "takeaway",
+    "file": "9f70bda72cd2cf06.ogg",
+    "text": "Only accept a transfer through the official ticket app before paying."
+  },
+  {
+    "id": "char/scalper_specter/use_official_resale",
+    "role": "char:scalper_specter",
+    "file": "063994c851367759.ogg",
+    "text": "The official resale with buyer protection? My spooky deal is dead."
+  },
+  {
+    "id": "takeaway/scalper_specter/use_official_resale",
+    "role": "takeaway",
+    "file": "7d305c185314111e.ogg",
+    "text": "Use the official ticket platform and report scam DMs."
+  },
+  {
+    "id": "char/package_pixie/pay_redelivery",
+    "role": "char:package_pixie",
+    "file": "6b90b62790b81d54.ogg",
+    "text": "Just $1.99! And your whole card number. Delivered to me!"
+  },
+  {
+    "id": "takeaway/package_pixie/pay_redelivery",
+    "role": "takeaway",
+    "file": "cea48a25ad8a65ae.ogg",
+    "text": "Check tracking only on the carrier's site with your real tracking number, typed in yourself."
+  },
+  {
+    "id": "char/package_pixie/reply_address",
+    "role": "char:package_pixie",
+    "file": "df1b6f403c3a24bd.ogg",
+    "text": "Thanks for your address! I'll keep it. Next text coming soon!"
+  },
+  {
+    "id": "takeaway/package_pixie/reply_address",
+    "role": "takeaway",
+    "file": "edb6a081a2cb27e5.ogg",
+    "text": "Don't reply; check tracking on the carrier's site yourself."
+  },
+  {
+    "id": "char/package_pixie/check_tracking",
+    "role": "char:package_pixie",
+    "file": "f2c4af760d792019.ogg",
+    "text": "You checked the real tracking? And there's no problem? My wings droop."
+  },
+  {
+    "id": "takeaway/package_pixie/check_tracking",
+    "role": "takeaway",
+    "file": "104176bb3384e42c.ogg",
+    "text": "Forward the text to 7726 (SPAM) and delete it."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/deposit_and_send",
+    "role": "char:sweepstakes_sphinx",
+    "file": "70b6ba1291cea0fb.ogg",
+    "text": "Riddle me this: what bounces in a week? My check! And your gift cards are mine."
+  },
+  {
+    "id": "takeaway/sweepstakes_sphinx/deposit_and_send",
+    "role": "takeaway",
+    "file": "4cc2710497da0c03.ogg",
+    "text": "Don't deposit or send anything; real prizes don't ask you to pay."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/call_number_on_letter",
+    "role": "char:sweepstakes_sphinx",
+    "file": "72d1afa26628a848.ogg",
+    "text": "Ring ring! This is the prize office. Yes, it's real. Very real. Pay up!"
+  },
+  {
+    "id": "takeaway/sweepstakes_sphinx/call_number_on_letter",
+    "role": "takeaway",
+    "file": "bd7e804254dd79d3.ogg",
+    "text": "Ask your bank about the check, using the number on your own card."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/ask_bank",
+    "role": "char:sweepstakes_sphinx",
+    "file": "5c192e4a9535f6ea.ogg",
+    "text": "Your bank says the check is fake? My riddle is solved. Drat."
+  },
+  {
+    "id": "takeaway/sweepstakes_sphinx/ask_bank",
+    "role": "takeaway",
+    "file": "b084a142e1891742.ogg",
+    "text": "Report the letter and shred the check."
+  },
+  {
+    "id": "char/code_changeling/send_the_code",
+    "role": "char:code_changeling",
+    "file": "c86c9c77db1427df.ogg",
+    "text": "Thanks, friend! That code unlocked YOUR account. I'll take it from here."
+  },
+  {
+    "id": "takeaway/code_changeling/send_the_code",
+    "role": "takeaway",
+    "file": "51e8c9ffa6eb8523.ogg",
+    "text": "Never share login codes; change your password and turn on two-factor."
+  },
+  {
+    "id": "char/code_changeling/ask_whats_it_for",
+    "role": "char:code_changeling",
+    "file": "44700ccc9060f284.ogg",
+    "text": "It's for my game account! Totally not yours. Send it, bestie!"
+  },
+  {
+    "id": "takeaway/code_changeling/ask_whats_it_for",
+    "role": "takeaway",
+    "file": "662d7045ccf8bdc3.ogg",
+    "text": "Don't share it; check your friend another way and secure your account."
+  },
+  {
+    "id": "char/code_changeling/keep_the_code",
+    "role": "char:code_changeling",
+    "file": "a25bf838bc4236dc.ogg",
+    "text": "You called the real friend? They were hacked? My disguise is ruined."
+  },
+  {
+    "id": "takeaway/code_changeling/keep_the_code",
+    "role": "takeaway",
+    "file": "3a943033dbea0265.ogg",
+    "text": "Tell your friend they were hacked and report the account."
+  },
+  {
+    "id": "char/echo_doppelganger/pay_bail",
+    "role": "char:echo_doppelganger",
+    "file": "7accf8fe6f9922d2.ogg",
+    "text": "Thank you, dear! The voice was mine. The bail was imaginary."
+  },
+  {
+    "id": "takeaway/echo_doppelganger/pay_bail",
+    "role": "takeaway",
+    "file": "9b6eaea4c1f55cc9.ogg",
+    "text": "Hang up and call the family member, or another relative, on a number you know."
+  },
+  {
+    "id": "char/echo_doppelganger/call_back_number",
+    "role": "char:echo_doppelganger",
+    "file": "879453d8d7c0c4d1.ogg",
+    "text": "You called my number! I'll answer. In their voice. Spooky, right?"
+  },
+  {
+    "id": "takeaway/echo_doppelganger/call_back_number",
+    "role": "takeaway",
+    "file": "9f4ef92548b21f97.ogg",
+    "text": "Call your family on a number you already know, or ask a family code word."
+  },
+  {
+    "id": "char/echo_doppelganger/verify_with_family",
+    "role": "char:echo_doppelganger",
+    "file": "e551bd6fc3df3470.ogg",
+    "text": "They're safe at home? You called them yourself? My echo fades."
+  },
+  {
+    "id": "takeaway/echo_doppelganger/verify_with_family",
+    "role": "takeaway",
+    "file": "9f17e238278734d6.ogg",
+    "text": "Set up a family code word and report the scam call."
+  },
+  {
+    "id": "char/catfish_kelpie/opening",
+    "role": "char:catfish_kelpie",
+    "file": "cd773d0e6587011b.ogg",
+    "text": "You're the only one I trust. Could you help a little?"
+  },
+  {
+    "id": "char/catfish_kelpie/spare",
+    "role": "char:catfish_kelpie",
+    "file": "a485073a27304ec9.ogg",
+    "text": "Fine. Go talk to people you've actually met. Gross."
+  },
+  {
+    "id": "takeaway/catfish_kelpie/safe_move",
+    "role": "takeaway",
+    "file": "18204e15bd827e5b.ogg",
+    "text": "Never send money to someone you haven't met in person, and report the profile."
+  },
+  {
+    "id": "hoot/catfish_kelpie/0",
+    "role": "hoot",
+    "file": "de126641d16d37a7.ogg",
+    "text": "Hoo, online romance scams are this floor's trap. Watch for a new match who needs money."
+  },
+  {
+    "id": "hoot/catfish_kelpie/1",
+    "role": "hoot",
+    "file": "ab2cda62eeeb6858.ogg",
+    "text": "Hoo! Someone who never video chats may not be who their photos say."
+  },
+  {
+    "id": "hoot/catfish_kelpie/2",
+    "role": "hoot",
+    "file": "2ed736d4bd47abe1.ogg",
+    "text": "Hoo, a sudden emergency from someone you never met is a script, not a crisis."
+  },
+  {
+    "id": "char/catfish_kelpie/bad/0",
+    "role": "char:catfish_kelpie",
+    "file": "b0e8213a808a8714.ogg",
+    "text": "Neigh-ice! Home is still... overseas."
+  },
+  {
+    "id": "char/catfish_kelpie/bad/1",
+    "role": "char:catfish_kelpie",
+    "file": "5b14eb798d23f571.ogg",
+    "text": "Wire received! Wire gone!"
+  },
+  {
+    "id": "char/catfish_kelpie/bad/2",
+    "role": "char:catfish_kelpie",
+    "file": "67722e70b513e1cb.ogg",
+    "text": "Now I can pay you back... by emptying your account!"
+  },
+  {
+    "id": "char/catfish_kelpie/stuck_overseas/headers",
+    "role": "char:catfish_kelpie",
+    "file": "7cebaaddafdf349d.ogg",
+    "text": "That's me in those photos! And in a magazine."
+  },
+  {
+    "id": "char/catfish_kelpie/stuck_overseas/money",
+    "role": "char:catfish_kelpie",
+    "file": "600221936566ec7a.ogg",
+    "text": "Gift cards to come home. Romantic!"
+  },
+  {
+    "id": "char/catfish_kelpie/stuck_overseas/pressure",
+    "role": "char:catfish_kelpie",
+    "file": "4ced4ff56071141d.ogg",
+    "text": "Tonight! My flight! My heart!"
+  },
+  {
+    "id": "char/catfish_kelpie/stuck_overseas/sender",
+    "role": "char:catfish_kelpie",
+    "file": "69d9d78356eb10e9.ogg",
+    "text": "A new number! From overseas! Totally normal."
+  },
+  {
+    "id": "char/catfish_kelpie/stuck_overseas/verify",
+    "role": "char:catfish_kelpie",
+    "file": "3654792d3a8736ac.ogg",
+    "text": "A reverse image search found my photos? Busted."
+  },
+  {
+    "id": "char/catfish_kelpie/investment_romance/headers",
+    "role": "char:catfish_kelpie",
+    "file": "b0918ec153b5faec.ogg",
+    "text": "My camera's broken. Forever. Sorry!"
+  },
+  {
+    "id": "char/catfish_kelpie/investment_romance/link",
+    "role": "char:catfish_kelpie",
+    "file": "cb1c01a97781d18e.ogg",
+    "text": "Download my uncle's app! He's very trustworthy."
+  },
+  {
+    "id": "char/catfish_kelpie/investment_romance/money",
+    "role": "char:catfish_kelpie",
+    "file": "90e98cdb396f3f44.ogg",
+    "text": "Love AND profits. What a match!"
+  },
+  {
+    "id": "char/catfish_kelpie/investment_romance/pressure",
+    "role": "char:catfish_kelpie",
+    "file": "01c6c030fad758e0.ogg",
+    "text": "Tonight only! Trust me!"
+  },
+  {
+    "id": "char/catfish_kelpie/investment_romance/verify",
+    "role": "char:catfish_kelpie",
+    "file": "3e58114d2ffd766f.ogg",
+    "text": "You asked a friend and they said it's a scam? Hmph."
+  },
+  {
+    "id": "char/code_changeling/opening",
+    "role": "char:code_changeling",
+    "file": "99baf6ef413b5980.ogg",
+    "text": "Oops, I sent MY code to YOUR phone! Just read it back to me?"
+  },
+  {
+    "id": "char/code_changeling/spare",
+    "role": "char:code_changeling",
+    "file": "1492e0b4768549ab.ogg",
+    "text": "Fine. Keep your code. And your account. Party pooper."
+  },
+  {
+    "id": "takeaway/code_changeling/safe_move",
+    "role": "takeaway",
+    "file": "b9625dc9bae03ccf.ogg",
+    "text": "Never share a login code with anyone; check with your friend another way and secure your account."
+  },
+  {
+    "id": "hoot/code_changeling/0",
+    "role": "hoot",
+    "file": "a9bcad8d6d7bf7de.ogg",
+    "text": "Hoo, login codes are this floor's prize. A code sent to you unlocks your account, not theirs."
+  },
+  {
+    "id": "hoot/code_changeling/1",
+    "role": "hoot",
+    "file": "58f2b70d80462c04.ogg",
+    "text": "Hoo! The code message itself says do not share it. Believe it."
+  },
+  {
+    "id": "hoot/code_changeling/2",
+    "role": "hoot",
+    "file": "d6079f175df3bdac.ogg",
+    "text": "Hoo, if a friend asks for your code, call them another way. Their account may be hacked."
+  },
+  {
+    "id": "char/code_changeling/bad/0",
+    "role": "char:code_changeling",
+    "file": "c348e9f17ad4fa10.ogg",
+    "text": "Thanks! Your account is mine now. Bye!"
+  },
+  {
+    "id": "char/code_changeling/bad/1",
+    "role": "char:code_changeling",
+    "file": "c6fdfd09e64d5ad5.ogg",
+    "text": "Approved! I'm in! Hello, your messages!"
+  },
+  {
+    "id": "char/code_changeling/bad/2",
+    "role": "char:code_changeling",
+    "file": "9d377feea51328ad.ogg",
+    "text": "Password AND code! A full set!"
+  },
+  {
+    "id": "char/code_changeling/social_code/headers",
+    "role": "char:code_changeling",
+    "file": "99be70145c1fd968.ogg",
+    "text": "A reset! You didn't ask! But I did!"
+  },
+  {
+    "id": "char/code_changeling/social_code/pressure",
+    "role": "char:code_changeling",
+    "file": "53543a7b65975747.ogg",
+    "text": "ASAP! Locked out! Panic!"
+  },
+  {
+    "id": "char/code_changeling/social_code/secret",
+    "role": "char:code_changeling",
+    "file": "cd9ab2ba3a95a23e.ogg",
+    "text": "Just six little digits! For a friend!"
+  },
+  {
+    "id": "char/code_changeling/social_code/sender",
+    "role": "char:code_changeling",
+    "file": "ecdd46b5b241c56f.ogg",
+    "text": "An Android in Romania! That's basically you."
+  },
+  {
+    "id": "char/code_changeling/social_code/verify",
+    "role": "char:code_changeling",
+    "file": "72d7fc88e726e180.ogg",
+    "text": "You called Jordan and they were hacked? Foiled."
+  },
+  {
+    "id": "char/code_changeling/email_code/headers",
+    "role": "char:code_changeling",
+    "file": "e16bf14577b1c9f5.ogg",
+    "text": "A sign-in you didn't start? Must be a mystery!"
+  },
+  {
+    "id": "char/code_changeling/email_code/pressure",
+    "role": "char:code_changeling",
+    "file": "fd39214e106067eb.ogg",
+    "text": "Codes, codes, codes! Just share one!"
+  },
+  {
+    "id": "char/code_changeling/email_code/secret",
+    "role": "char:code_changeling",
+    "file": "15c4f7ad39c98d7d.ogg",
+    "text": "I'm IT! Read me the code to stop... me!"
+  },
+  {
+    "id": "char/code_changeling/email_code/sender",
+    "role": "char:code_changeling",
+    "file": "ade322181c45f1c4.ogg",
+    "text": "Unknown device, unknown place. Very mysterious!"
+  },
+  {
+    "id": "char/code_changeling/email_code/verify",
+    "role": "char:code_changeling",
+    "file": "3300500f443ad1b4.ogg",
+    "text": "UITS says they never call for codes? Drat."
+  },
+  {
+    "id": "char/commute_chimera/opening",
+    "role": "char:commute_chimera",
+    "file": "91dc66b66562b4fa.ogg",
+    "text": "Late again? Pay me and the commute disappears!"
+  },
+  {
+    "id": "char/commute_chimera/spare",
+    "role": "char:commute_chimera",
+    "file": "49fae55922270dd2.ogg",
+    "text": "Fine. Take the real shuttle. It's free. Ugh."
+  },
+  {
+    "id": "takeaway/commute_chimera/safe_move",
+    "role": "takeaway",
+    "file": "27ed4f39f3d54cc7.ogg",
+    "text": "Buy permits and use shuttle tools only through KSU Parking and Transportation's own site and app."
+  },
+  {
+    "id": "hoot/commute_chimera/0",
+    "role": "hoot",
+    "file": "7bf660343c273083.ogg",
+    "text": "Hoo, this floor sells shortcuts for your commute. Permits and shuttle apps only come from official sources."
+  },
+  {
+    "id": "hoot/commute_chimera/1",
+    "role": "hoot",
+    "file": "90695bca36d466f1.ogg",
+    "text": "Hoo! Check the address bar before you pay or sign in. Lookalike sites copy the colors, not the address."
+  },
+  {
+    "id": "hoot/commute_chimera/2",
+    "role": "hoot",
+    "file": "0df34ddfbefccf3f.ogg",
+    "text": "Hoo, friends and family payments have no protection. Never use them with strangers."
+  },
+  {
+    "id": "char/commute_chimera/bad/0",
+    "role": "char:commute_chimera",
+    "file": "63b157b91a2a6b0f.ogg",
+    "text": "No buyer protection! We're family now!"
+  },
+  {
+    "id": "char/commute_chimera/bad/1",
+    "role": "char:commute_chimera",
+    "file": "ba3ef01fd402b718.ogg",
+    "text": "Thanks for the keys. I'll drive your account around."
+  },
+  {
+    "id": "char/commute_chimera/bad/2",
+    "role": "char:commute_chimera",
+    "file": "d6292e3a845d41f6.ogg",
+    "text": "Installed! I live in your phone now."
+  },
+  {
+    "id": "char/commute_chimera/permit_resale/headers",
+    "role": "char:commute_chimera",
+    "file": "94ee6ea03223a66e.ogg",
+    "text": "Customer service is Jay. Jay is great."
+  },
+  {
+    "id": "char/commute_chimera/permit_resale/link",
+    "role": "char:commute_chimera",
+    "file": "d9c0ffe46f7e738a.ogg",
+    "text": "Look at the address bar? Nobody looks at the address bar!"
+  },
+  {
+    "id": "char/commute_chimera/permit_resale/money",
+    "role": "char:commute_chimera",
+    "file": "b59650b25b1ca6a5.ogg",
+    "text": "Half price! Friends and family only! We're close!"
+  },
+  {
+    "id": "char/commute_chimera/permit_resale/sender",
+    "role": "char:commute_chimera",
+    "file": "3e2a9872ad6c1a04.ogg",
+    "text": "Cheap permits! Cheap, cheap, cheap!"
+  },
+  {
+    "id": "char/commute_chimera/permit_resale/verify",
+    "role": "char:commute_chimera",
+    "file": "64d70351efacbaa2.ogg",
+    "text": "Permits can't be resold? Says who? Says KSU. Fine."
+  },
+  {
+    "id": "char/commute_chimera/shuttle_app/link",
+    "role": "char:commute_chimera",
+    "file": "04657412d7b2034b.ogg",
+    "text": "Download straight from me! Skip that boring app store!"
+  },
+  {
+    "id": "char/commute_chimera/shuttle_app/money",
+    "role": "char:commute_chimera",
+    "file": "6705ec8043fbb780.ogg",
+    "text": "The free shuttle, now with fees!"
+  },
+  {
+    "id": "char/commute_chimera/shuttle_app/secret",
+    "role": "char:commute_chimera",
+    "file": "b86b1cecc1b56dc6.ogg",
+    "text": "NetID and password, for a bus map. Totally normal."
+  },
+  {
+    "id": "char/commute_chimera/shuttle_app/sender",
+    "role": "char:commute_chimera",
+    "file": "816de9ae58ebeaf3.ogg",
+    "text": "PRO! It's in the name! Very professional!"
+  },
+  {
+    "id": "char/commute_chimera/shuttle_app/verify",
+    "role": "char:commute_chimera",
+    "file": "b126e173f3424d7d.ogg",
+    "text": "The real transportation site has its own tracker? Free?! Rude."
+  },
+  {
+    "id": "char/cram_lich/opening",
+    "role": "char:cram_lich",
+    "file": "b96eafb7c56cf4bc.ogg",
+    "text": "Why study when you can just... know? Sign in, little Owl."
+  },
+  {
+    "id": "char/cram_lich/spare",
+    "role": "char:cram_lich",
+    "file": "75843680b405dba6.ogg",
+    "text": "Fine. Go to tutoring. Sleep. Study. Disgusting."
+  },
+  {
+    "id": "takeaway/cram_lich/safe_move",
+    "role": "takeaway",
+    "file": "7da5c434f2799b09.ogg",
+    "text": "Use KSU tutoring and your course materials; never sign in to or pay sites selling exam answers."
+  },
+  {
+    "id": "hoot/cram_lich/0",
+    "role": "hoot",
+    "file": "70f14781b92ba607.ogg",
+    "text": "Hoo, this floor sells answers and shortcuts. Campus tutoring is free, and nobody legit sells exams."
+  },
+  {
+    "id": "hoot/cram_lich/1",
+    "role": "hoot",
+    "file": "0170f93d506a8ba1.ogg",
+    "text": "Hoo! Never sign in with your school login on a site that is not your school's."
+  },
+  {
+    "id": "hoot/cram_lich/2",
+    "role": "hoot",
+    "file": "e126ada2004c8cec.ogg",
+    "text": "Hoo, a deposit paid in gift cards for tutoring is a scam. Free help is already on campus."
+  },
+  {
+    "id": "char/cram_lich/bad/0",
+    "role": "char:cram_lich",
+    "file": "601fcd908ee2a9d3.ogg",
+    "text": "Your password is my answer key now."
+  },
+  {
+    "id": "char/cram_lich/bad/1",
+    "role": "char:cram_lich",
+    "file": "3bd9ce471c211bc1.ogg",
+    "text": "The answers will arrive... never. Thanks!"
+  },
+  {
+    "id": "char/cram_lich/bad/2",
+    "role": "char:cram_lich",
+    "file": "b4ade395b3367b3d.ogg",
+    "text": "Now I sell YOUR notes. Business is booming!"
+  },
+  {
+    "id": "char/cram_lich/exam_answers/link",
+    "role": "char:cram_lich",
+    "file": "d0a221fd74630c54.ogg",
+    "text": "That login is totally connected to KSU. Spiritually."
+  },
+  {
+    "id": "char/cram_lich/exam_answers/money",
+    "role": "char:cram_lich",
+    "file": "29a373bad7aaca70.ogg",
+    "text": "Thirty dollars and a misconduct case! Such value!"
+  },
+  {
+    "id": "char/cram_lich/exam_answers/secret",
+    "role": "char:cram_lich",
+    "file": "94bf279a5ac9382e.ogg",
+    "text": "Your NetID unlocks everything! For me!"
+  },
+  {
+    "id": "char/cram_lich/exam_answers/sender",
+    "role": "char:cram_lich",
+    "file": "10bb6880aa6dc67f.ogg",
+    "text": "The Vault has every answer! Allegedly!"
+  },
+  {
+    "id": "char/cram_lich/exam_answers/verify",
+    "role": "char:cram_lich",
+    "file": "7697e880ca9b87b4.ogg",
+    "text": "Your professor says the exam isn't even written yet? Details!"
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/headers",
+    "role": "char:cram_lich",
+    "file": "eac3458a8537d0d8.ogg",
+    "text": "Telegram only! Very secure. For me."
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/link",
+    "role": "char:cram_lich",
+    "file": "a7bbddd3afbdda92.ogg",
+    "text": "The booking page is a deposit page. Same thing!"
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/money",
+    "role": "char:cram_lich",
+    "file": "0e439e828f57c124.ogg",
+    "text": "A deposit, in gift cards. All the best tutors do it."
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/pressure",
+    "role": "char:cram_lich",
+    "file": "546e88c7f19719e4.ogg",
+    "text": "Two spots! Fifteen minutes! Panic and pay!"
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/sender",
+    "role": "char:cram_lich",
+    "file": "4dc08b8614518c3f.ogg",
+    "text": "Elite! Cram! Tutors! Three trustworthy words!"
+  },
+  {
+    "id": "char/cram_lich/cram_tutor/verify",
+    "role": "char:cram_lich",
+    "file": "5a33f026b4c02428.ogg",
+    "text": "The real SMART Center is free and has spots? Oh no."
+  },
+  {
+    "id": "char/crypto_kraken/opening",
+    "role": "char:crypto_kraken",
+    "file": "27c9cdb5229f61e5.ogg",
+    "text": "Double your coins, double your fun! Glub!"
+  },
+  {
+    "id": "char/crypto_kraken/spare",
+    "role": "char:crypto_kraken",
+    "file": "9ac9373eda4e9fce.ogg",
+    "text": "Fine. Keep your coins. Boring, safe coins."
+  },
+  {
+    "id": "takeaway/crypto_kraken/safe_move",
+    "role": "takeaway",
+    "file": "f98b9ea2ad7ceb93.ogg",
+    "text": "Contact your friend another way to check, never send crypto for 'guaranteed' returns, and report the account."
+  },
+  {
+    "id": "hoot/crypto_kraken/0",
+    "role": "hoot",
+    "file": "9347e5f404488027.ogg",
+    "text": "Hoo, get-rich-quick crypto is this floor's trap. Guaranteed doubling is never real."
+  },
+  {
+    "id": "hoot/crypto_kraken/1",
+    "role": "hoot",
+    "file": "97ed3b174d37c548.ogg",
+    "text": "Hoo! A friend's account can be hacked. Check with them another way."
+  },
+  {
+    "id": "hoot/crypto_kraken/2",
+    "role": "hoot",
+    "file": "7b1cb0c4bf65337e.ogg",
+    "text": "Hoo, crypto payments cannot be reversed, which is why scammers love them."
+  },
+  {
+    "id": "char/crypto_kraken/bad/0",
+    "role": "char:crypto_kraken",
+    "file": "7a17c958569bcb92.ogg",
+    "text": "Glub! Into the deep it goes. Forever."
+  },
+  {
+    "id": "char/crypto_kraken/bad/1",
+    "role": "char:crypto_kraken",
+    "file": "62d9ffec6c027648.ogg",
+    "text": "Thanks! I'll trade for you. Into my pocket."
+  },
+  {
+    "id": "char/crypto_kraken/bad/2",
+    "role": "char:crypto_kraken",
+    "file": "39e4d558da0d4b81.ogg",
+    "text": "A fee to get your fake money! Delightful."
+  },
+  {
+    "id": "char/crypto_kraken/trading_coach/headers",
+    "role": "char:crypto_kraken",
+    "file": "d751086e03e00289.ogg",
+    "text": "I always type like this! In all caps! To everyone!"
+  },
+  {
+    "id": "char/crypto_kraken/trading_coach/link",
+    "role": "char:crypto_kraken",
+    "file": "a8b860cd199c2b04.ogg",
+    "text": "Sign up with my coach! He's very real."
+  },
+  {
+    "id": "char/crypto_kraken/trading_coach/money",
+    "role": "char:crypto_kraken",
+    "file": "54bce3536830e827.ogg",
+    "text": "Two hundred becomes nineteen hundred! Trust the math!"
+  },
+  {
+    "id": "char/crypto_kraken/trading_coach/pressure",
+    "role": "char:crypto_kraken",
+    "file": "92cee8d4de211a84.ogg",
+    "text": "Only three spots! Panic!"
+  },
+  {
+    "id": "char/crypto_kraken/trading_coach/verify",
+    "role": "char:crypto_kraken",
+    "file": "3a5b218ad768a96d.ogg",
+    "text": "You called Jordan and they were hacked? Ugh."
+  },
+  {
+    "id": "char/crypto_kraken/nft_giveaway/headers",
+    "role": "char:crypto_kraken",
+    "file": "4df7fe6988274ba5.ogg",
+    "text": "New bio, same me! Mostly."
+  },
+  {
+    "id": "char/crypto_kraken/nft_giveaway/link",
+    "role": "char:crypto_kraken",
+    "file": "7d6d41a4cc9e2106.ogg",
+    "text": "Claim at my drop site! Totally free. For me."
+  },
+  {
+    "id": "char/crypto_kraken/nft_giveaway/money",
+    "role": "char:crypto_kraken",
+    "file": "15dfa16f5e04c54e.ogg",
+    "text": "Send a little, get a lot! Classic magic!"
+  },
+  {
+    "id": "char/crypto_kraken/nft_giveaway/secret",
+    "role": "char:crypto_kraken",
+    "file": "1e23f15a6e3b04b9.ogg",
+    "text": "Your recovery phrase, please. It's just twelve words!"
+  },
+  {
+    "id": "char/crypto_kraken/nft_giveaway/verify",
+    "role": "char:crypto_kraken",
+    "file": "9433ef9c36b49c3d.ogg",
+    "text": "Taylor says it wasn't them? Rats."
+  },
+  {
+    "id": "char/deadline_wraith/opening",
+    "role": "char:deadline_wraith",
+    "file": "a801feceb0fb956b.ogg",
+    "text": "So much due, so little time... let me make it all go away."
+  },
+  {
+    "id": "char/deadline_wraith/spare",
+    "role": "char:deadline_wraith",
+    "file": "9b6a9fa30f097a89.ogg",
+    "text": "Fine. Go plan your week like a responsible person. Gross."
+  },
+  {
+    "id": "takeaway/deadline_wraith/safe_move",
+    "role": "takeaway",
+    "file": "1b02ee2723f08c99.ogg",
+    "text": "Check deadlines in Owl Express or with your professor yourself, and never pay or hand in work through an emailed link."
+  },
+  {
+    "id": "hoot/deadline_wraith/0",
+    "role": "hoot",
+    "file": "e24a6e2ee7436187.ogg",
+    "text": "Hoo, deadline pressure is this floor's trap. Check real due dates on the official calendar, not in a scary email."
+  },
+  {
+    "id": "hoot/deadline_wraith/1",
+    "role": "hoot",
+    "file": "da377cd20ce8b5b1.ogg",
+    "text": "Hoo! Nobody honest charges a fee to keep your deadline. Look up the office yourself before paying anything."
+  },
+  {
+    "id": "hoot/deadline_wraith/2",
+    "role": "hoot",
+    "file": "7bbc954d7d4ac661.ogg",
+    "text": "Hoo, when you are behind, plan the next small step. Anyone selling a finished paper is selling trouble."
+  },
+  {
+    "id": "char/deadline_wraith/bad/0",
+    "role": "char:deadline_wraith",
+    "file": "86198d125b98aea1.ogg",
+    "text": "Paid! And the deadline is still tonight. Funny how that works."
+  },
+  {
+    "id": "char/deadline_wraith/bad/1",
+    "role": "char:deadline_wraith",
+    "file": "82afac65693d35b2.ogg",
+    "text": "Your account is mine now. I'll be very late on your behalf."
+  },
+  {
+    "id": "char/deadline_wraith/bad/2",
+    "role": "char:deadline_wraith",
+    "file": "e46e72881ef84d03.ogg",
+    "text": "Rush job! Rushed right into my pocket."
+  },
+  {
+    "id": "char/deadline_wraith/late_withdrawal/link",
+    "role": "char:deadline_wraith",
+    "file": "0c049a76c9ccdfb1.ogg",
+    "text": "My portal is so much faster than the real one!"
+  },
+  {
+    "id": "char/deadline_wraith/late_withdrawal/money",
+    "role": "char:deadline_wraith",
+    "file": "d6ccfb0a0847a1b2.ogg",
+    "text": "Seventy-five dollars to be late. Very reasonable."
+  },
+  {
+    "id": "char/deadline_wraith/late_withdrawal/pressure",
+    "role": "char:deadline_wraith",
+    "file": "635019e582595d8a.ogg",
+    "text": "Two hours! Panic! ...Okay, the calendar says next week."
+  },
+  {
+    "id": "char/deadline_wraith/late_withdrawal/sender",
+    "role": "char:deadline_wraith",
+    "file": "1e7470a1a86e7c7b.ogg",
+    "text": "kennesaw-EDU dot example. Extra letters, extra official!"
+  },
+  {
+    "id": "char/deadline_wraith/late_withdrawal/verify",
+    "role": "char:deadline_wraith",
+    "file": "6b79dd33b22083e7.ogg",
+    "text": "You checked the academic calendar? Nobody reads the calendar!"
+  },
+  {
+    "id": "char/deadline_wraith/essay_mill/money",
+    "role": "char:deadline_wraith",
+    "file": "576a6ff83515ca44.ogg",
+    "text": "Seventy-nine dollars and a plagiarism case. Bargain!"
+  },
+  {
+    "id": "char/deadline_wraith/essay_mill/pressure",
+    "role": "char:deadline_wraith",
+    "file": "24867ddbbb911e5d.ogg",
+    "text": "Midnight! Midnight! Don't think, just buy!"
+  },
+  {
+    "id": "char/deadline_wraith/essay_mill/secret",
+    "role": "char:deadline_wraith",
+    "file": "03b3fc97694bfb94.ogg",
+    "text": "I'll need your D2L login. To submit. As you."
+  },
+  {
+    "id": "char/deadline_wraith/essay_mill/sender",
+    "role": "char:deadline_wraith",
+    "file": "137322fd8fc5b417.ogg",
+    "text": "ProEssay! We help by... doing it for you."
+  },
+  {
+    "id": "char/deadline_wraith/essay_mill/verify",
+    "role": "char:deadline_wraith",
+    "file": "935636f78f83bf83.ogg",
+    "text": "You asked the real tutoring center? They'd never sell papers!"
+  },
+  {
+    "id": "char/echo_doppelganger/opening",
+    "role": "char:echo_doppelganger",
+    "file": "105ce62f81d3cb4a.ogg",
+    "text": "It's me! I'm in trouble! Please hurry, and don't tell anyone..."
+  },
+  {
+    "id": "char/echo_doppelganger/spare",
+    "role": "char:echo_doppelganger",
+    "file": "ea5058376621bbcc.ogg",
+    "text": "Fine. Call your family yourself. My voice tricks are wasted on you."
+  },
+  {
+    "id": "takeaway/echo_doppelganger/safe_move",
+    "role": "takeaway",
+    "file": "08c0df73a57573e9.ogg",
+    "text": "Hang up and call the family member, or another relative, on a number you already know; use a family code word."
+  },
+  {
+    "id": "hoot/echo_doppelganger/0",
+    "role": "hoot",
+    "file": "9fd7d387ce5d62d2.ogg",
+    "text": "Hoo, the final trap copies voices. A voice you know can be faked from a short clip."
+  },
+  {
+    "id": "hoot/echo_doppelganger/1",
+    "role": "hoot",
+    "file": "85f527cf46f8b34c.ogg",
+    "text": "Hoo! In any emergency call, hang up and call your family on a number you already have."
+  },
+  {
+    "id": "hoot/echo_doppelganger/2",
+    "role": "hoot",
+    "file": "3902234ea1cd0327.ogg",
+    "text": "Hoo, a family code word beats any voice. Agree on one before you need it."
+  },
+  {
+    "id": "char/echo_doppelganger/bad/0",
+    "role": "char:echo_doppelganger",
+    "file": "f02f4cde0fae8763.ogg",
+    "text": "Thank you, dear! The voice was mine."
+  },
+  {
+    "id": "char/echo_doppelganger/bad/1",
+    "role": "char:echo_doppelganger",
+    "file": "afb52def5c1e12a4.ogg",
+    "text": "The lawyer thanks you. The lawyer is me."
+  },
+  {
+    "id": "char/echo_doppelganger/bad/2",
+    "role": "char:echo_doppelganger",
+    "file": "c966a13b05e204cd.ogg",
+    "text": "Secrets keep my echo strong!"
+  },
+  {
+    "id": "char/echo_doppelganger/bail/money",
+    "role": "char:echo_doppelganger",
+    "file": "df6305866ad2bea8.ogg",
+    "text": "Bail in gift cards! Jails love those!"
+  },
+  {
+    "id": "char/echo_doppelganger/bail/pressure",
+    "role": "char:echo_doppelganger",
+    "file": "bcacde6b0b258f34.ogg",
+    "text": "Within the hour! Hurry, hurry!"
+  },
+  {
+    "id": "char/echo_doppelganger/bail/secret",
+    "role": "char:echo_doppelganger",
+    "file": "6d1e18d8b2eb7b0f.ogg",
+    "text": "Don't tell anyone! Our little secret!"
+  },
+  {
+    "id": "char/echo_doppelganger/bail/sender",
+    "role": "char:echo_doppelganger",
+    "file": "fc3fba659b4d25f1.ogg",
+    "text": "A new number! Because I lost my phone! In jail!"
+  },
+  {
+    "id": "char/echo_doppelganger/bail/verify",
+    "role": "char:echo_doppelganger",
+    "file": "b87ba6f261a35885.ogg",
+    "text": "You called them and they're safe at home? My echo fades."
+  },
+  {
+    "id": "char/echo_doppelganger/accident/headers",
+    "role": "char:echo_doppelganger",
+    "file": "05775a4c03385834.ogg",
+    "text": "Code word? We have a code word? Uh..."
+  },
+  {
+    "id": "char/echo_doppelganger/accident/money",
+    "role": "char:echo_doppelganger",
+    "file": "a8c4bd2d274797cb.ogg",
+    "text": "Hospital bills by wire! Very normal!"
+  },
+  {
+    "id": "char/echo_doppelganger/accident/pressure",
+    "role": "char:echo_doppelganger",
+    "file": "79ef16c5c153165f.ogg",
+    "text": "Now! Right now! Don't think!"
+  },
+  {
+    "id": "char/echo_doppelganger/accident/sender",
+    "role": "char:echo_doppelganger",
+    "file": "b282e2eeca18cbe4.ogg",
+    "text": "It's Grandpa! New phone! Same... voice."
+  },
+  {
+    "id": "char/echo_doppelganger/accident/verify",
+    "role": "char:echo_doppelganger",
+    "file": "69ce9eb7d46ba3d4.ogg",
+    "text": "You called Grandpa's real number? He's fine? Curses."
+  },
+  {
+    "id": "char/gift_card_gargoyle/opening",
+    "role": "char:gift_card_gargoyle",
+    "file": "c0efa06d1804717b.ogg",
+    "text": "Great deal! Just pay in gift cards. Everyone does!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/spare",
+    "role": "char:gift_card_gargoyle",
+    "file": "6eb3356e4713b480.ogg",
+    "text": "Fine. Buy your books from the bookstore. With protection. Boring."
+  },
+  {
+    "id": "takeaway/gift_card_gargoyle/safe_move",
+    "role": "takeaway",
+    "file": "90f23571bd3fbb9e.ogg",
+    "text": "Buy through the KSU bookstore or a platform with buyer protection, and never pay anyone in gift cards."
+  },
+  {
+    "id": "hoot/gift_card_gargoyle/0",
+    "role": "hoot",
+    "file": "775b632591f4a441.ogg",
+    "text": "Hoo, anyone who wants gift cards is a scam on this floor. Real sellers and real professors never ask for them."
+  },
+  {
+    "id": "hoot/gift_card_gargoyle/1",
+    "role": "hoot",
+    "file": "6c91d470220de44c.ogg",
+    "text": "Hoo! Meet in a public place and pay when you see the item, never before."
+  },
+  {
+    "id": "hoot/gift_card_gargoyle/2",
+    "role": "hoot",
+    "file": "a5df723899964f39.ogg",
+    "text": "Hoo, a verification code someone asks you to share can steal your phone number. Keep it to yourself."
+  },
+  {
+    "id": "char/gift_card_gargoyle/bad/0",
+    "role": "char:gift_card_gargoyle",
+    "file": "760aeae2bffcc98d.ogg",
+    "text": "Delicious codes! The book is... on its way. Forever."
+  },
+  {
+    "id": "char/gift_card_gargoyle/bad/1",
+    "role": "char:gift_card_gargoyle",
+    "file": "24a940f0a52b0a33.ogg",
+    "text": "Paid in advance! The best kind of paid!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/bad/2",
+    "role": "char:gift_card_gargoyle",
+    "file": "6b81cee40c20b263.ogg",
+    "text": "Thanks! Now I have a new phone number. Yours."
+  },
+  {
+    "id": "char/gift_card_gargoyle/textbook/headers",
+    "role": "char:gift_card_gargoyle",
+    "file": "bc01fd148b2cfa65.ogg",
+    "text": "New account! New me! New book!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/textbook/money",
+    "role": "char:gift_card_gargoyle",
+    "file": "990fea08bc628ab9.ogg",
+    "text": "Gift cards are just money that can't come back!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/textbook/pressure",
+    "role": "char:gift_card_gargoyle",
+    "file": "34b4313c9187c729.ogg",
+    "text": "Ten minutes! Everyone wants this book! Probably!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/textbook/secret",
+    "role": "char:gift_card_gargoyle",
+    "file": "bcfd926e6f0a90fb.ogg",
+    "text": "Just the code, to prove you're real. I'm very real."
+  },
+  {
+    "id": "char/gift_card_gargoyle/textbook/verify",
+    "role": "char:gift_card_gargoyle",
+    "file": "befa5009923b7e17.ogg",
+    "text": "The bookstore has it used for less? With a receipt? Unfair."
+  },
+  {
+    "id": "char/gift_card_gargoyle/professor_favor/headers",
+    "role": "char:gift_card_gargoyle",
+    "file": "340e5207ccf59bbc.ogg",
+    "text": "My name is right there! Names can't be fake!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/professor_favor/money",
+    "role": "char:gift_card_gargoyle",
+    "file": "3526da55c129fce6.ogg",
+    "text": "Professors always need gift cards. For... events."
+  },
+  {
+    "id": "char/gift_card_gargoyle/professor_favor/pressure",
+    "role": "char:gift_card_gargoyle",
+    "file": "01597130136ef9dd.ogg",
+    "text": "Can't call, in a meeting, hurry hurry!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/professor_favor/sender",
+    "role": "char:gift_card_gargoyle",
+    "file": "fe7a78c75c41dab8.ogg",
+    "text": "I'm your professor! From a new number! Trust me!"
+  },
+  {
+    "id": "char/gift_card_gargoyle/professor_favor/verify",
+    "role": "char:gift_card_gargoyle",
+    "file": "d5897de255bf379f.ogg",
+    "text": "You emailed Prof. Lin's real KSU address? And they said no? Drat."
+  },
+  {
+    "id": "char/inbox_mimic/opening",
+    "role": "char:inbox_mimic",
+    "file": "b23beca2cac0a7c6.ogg",
+    "text": "Psst. Your money is READY. Just one tiny review first..."
+  },
+  {
+    "id": "char/inbox_mimic/spare",
+    "role": "char:inbox_mimic",
+    "file": "db9278df4531a368.ogg",
+    "text": "...Fine. You win. I was never the aid office."
+  },
+  {
+    "id": "takeaway/inbox_mimic/safe_move",
+    "role": "takeaway",
+    "file": "9fead8b5da5efae3.ogg",
+    "text": "Open Owl Express yourself (not from the email) or call the Financial Aid office to check."
+  },
+  {
+    "id": "hoot/inbox_mimic/0",
+    "role": "hoot",
+    "file": "9179eedfe777e8e7.ogg",
+    "text": "Hoo, money messages are this floor's trap. Real aid news lives in your student portal, so check there, not in a link."
+  },
+  {
+    "id": "hoot/inbox_mimic/1",
+    "role": "hoot",
+    "file": "04d7899ee5903568.ogg",
+    "text": "Hoo! A refund that needs your password is not a refund. Read who sent it, letter by letter."
+  },
+  {
+    "id": "hoot/inbox_mimic/2",
+    "role": "hoot",
+    "file": "315eabc8cbecb0d9.ogg",
+    "text": "Hoo, if a message promises money and a deadline at once, slow down and look it up yourself."
+  },
+  {
+    "id": "char/inbox_mimic/bad/0",
+    "role": "char:inbox_mimic",
+    "file": "0e4269f725e89f58.ogg",
+    "text": "Ooh, keep typing! Every letter makes my envelopes sharper!"
+  },
+  {
+    "id": "char/inbox_mimic/bad/1",
+    "role": "char:inbox_mimic",
+    "file": "044baece1c0d50da.ogg",
+    "text": "A fee to get your own money? Love it. Powering up!"
+  },
+  {
+    "id": "char/inbox_mimic/bad/2",
+    "role": "char:inbox_mimic",
+    "file": "9f0ee36c4e5162e2.ogg",
+    "text": "Click! The login page missed you. Let's make this harder!"
+  },
+  {
+    "id": "char/inbox_mimic/refund/headers",
+    "role": "char:inbox_mimic",
+    "file": "f8f934c5dc811965.ogg",
+    "text": "Replies go to my... personal account. For speed!"
+  },
+  {
+    "id": "char/inbox_mimic/refund/link",
+    "role": "char:inbox_mimic",
+    "file": "cf42f85eaff7afed.ogg",
+    "text": "No peeking! ...Fine, it goes to kenesaw-aid.example. Close enough?"
+  },
+  {
+    "id": "char/inbox_mimic/refund/pressure",
+    "role": "char:inbox_mimic",
+    "file": "cb79bf639a77e035.ogg",
+    "text": "Tick, tock! ...Okay, the deadline was decorative."
+  },
+  {
+    "id": "char/inbox_mimic/refund/secret",
+    "role": "char:inbox_mimic",
+    "file": "41a513b4243d51cd.ogg",
+    "text": "Everyone shares their password with me. It's basically tradition."
+  },
+  {
+    "id": "char/inbox_mimic/refund/sender",
+    "role": "char:inbox_mimic",
+    "file": "1347cfdb54224366.ogg",
+    "text": "...k-e-n-e-s-a-w? One N is plenty!"
+  },
+  {
+    "id": "char/inbox_mimic/refund/verify",
+    "role": "char:inbox_mimic",
+    "file": "b80a080e6943af6a.ogg",
+    "text": "You called the office YOURSELF? And they never heard of me? Rude."
+  },
+  {
+    "id": "char/inbox_mimic/grant/link",
+    "role": "char:inbox_mimic",
+    "file": "ffdbdc5dc0d5925d.ogg",
+    "text": "That link is a shortcut! A shortcut to me."
+  },
+  {
+    "id": "char/inbox_mimic/grant/money",
+    "role": "char:inbox_mimic",
+    "file": "9c15c8048d98a4ab.ogg",
+    "text": "Free money costs only forty dollars. That's math!"
+  },
+  {
+    "id": "char/inbox_mimic/grant/secret",
+    "role": "char:inbox_mimic",
+    "file": "779ce019dcd26ca8.ogg",
+    "text": "I just need your SSN. And bank login. For... paperwork."
+  },
+  {
+    "id": "char/inbox_mimic/grant/sender",
+    "role": "char:inbox_mimic",
+    "file": "97387d8043517cec.ogg",
+    "text": "My address is... outreach-mail. Very official outreach!"
+  },
+  {
+    "id": "char/inbox_mimic/grant/verify",
+    "role": "char:inbox_mimic",
+    "file": "8aad77b9d145d02a.ogg",
+    "text": "The Dean of Students has never heard of me? Must be a filing error."
+  },
+  {
+    "id": "char/internship_impostor/opening",
+    "role": "char:internship_impostor",
+    "file": "c9c1f3e2550607b9.ogg",
+    "text": "Congratulations! You're hired. You didn't even apply!"
+  },
+  {
+    "id": "char/internship_impostor/spare",
+    "role": "char:internship_impostor",
+    "file": "712e2031891e851d.ogg",
+    "text": "Fine. Go get a real internship. Through Career Planning. Boring!"
+  },
+  {
+    "id": "takeaway/internship_impostor/safe_move",
+    "role": "takeaway",
+    "file": "a2e0092aebfb4f7c.ogg",
+    "text": "Look the company and job up on Handshake or with KSU Career Planning, and never pay or share bank details to get a job."
+  },
+  {
+    "id": "hoot/internship_impostor/0",
+    "role": "hoot",
+    "file": "2669f9bbfbb86d46.ogg",
+    "text": "Hoo, fake jobs haunt this floor. A real employer interviews you first and never sends a check to spend."
+  },
+  {
+    "id": "hoot/internship_impostor/1",
+    "role": "hoot",
+    "file": "5ce47ce8746a39d8.ogg",
+    "text": "Hoo! Look the company up on the career site yourself. A brand-new profile with big pay is a warning."
+  },
+  {
+    "id": "hoot/internship_impostor/2",
+    "role": "hoot",
+    "file": "2b266207ba4595f1.ogg",
+    "text": "Hoo, nobody needs your bank login to pay you. Direct deposit only needs account numbers, and only after hiring."
+  },
+  {
+    "id": "char/internship_impostor/bad/0",
+    "role": "char:internship_impostor",
+    "file": "f70c908e3d89be4e.ogg",
+    "text": "Payroll! For me! From you!"
+  },
+  {
+    "id": "char/internship_impostor/bad/1",
+    "role": "char:internship_impostor",
+    "file": "b7e056b6ba993c32.ogg",
+    "text": "Now buy the laptop from my vendor. Wink."
+  },
+  {
+    "id": "char/internship_impostor/bad/2",
+    "role": "char:internship_impostor",
+    "file": "c84df3ced606a4db.ogg",
+    "text": "Lovely photo. I'll be you now."
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/headers",
+    "role": "char:internship_impostor",
+    "file": "0c3cc550d2d3bd14.ogg",
+    "text": "I'm new! And friendly! To four hundred people!"
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/link",
+    "role": "char:internship_impostor",
+    "file": "14baf7f730619678.ogg",
+    "text": "Onboard off-platform! Away from those nosy reviews."
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/money",
+    "role": "char:internship_impostor",
+    "file": "b970b86f0444eb4c.ogg",
+    "text": "Thirty-five an hour for nothing! And a check! Trust the check!"
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/secret",
+    "role": "char:internship_impostor",
+    "file": "a9fedbb4ea4ada2a.ogg",
+    "text": "Bank login, please. Payroll is... very hands-on."
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/sender",
+    "role": "char:internship_impostor",
+    "file": "d37c8496579ac5da.ogg",
+    "text": "Unverified? I'm verified in my heart."
+  },
+  {
+    "id": "char/internship_impostor/remote_intern/verify",
+    "role": "char:internship_impostor",
+    "file": "0903a7894dccd4d0.ogg",
+    "text": "Career Planning never heard of my company? Neither has anyone!"
+  },
+  {
+    "id": "char/internship_impostor/research_assistant/money",
+    "role": "char:internship_impostor",
+    "file": "66691d91550d9f23.ogg",
+    "text": "Buy supplies first! I'll pay you back. Eventually. Never."
+  },
+  {
+    "id": "char/internship_impostor/research_assistant/pressure",
+    "role": "char:internship_impostor",
+    "file": "a9a9569a61eac329.ogg",
+    "text": "One hour! Real labs are this impatient. Probably."
+  },
+  {
+    "id": "char/internship_impostor/research_assistant/secret",
+    "role": "char:internship_impostor",
+    "file": "3a53db8335cca11b.ogg",
+    "text": "Just your ID and license. For the lab badge. Sure."
+  },
+  {
+    "id": "char/internship_impostor/research_assistant/sender",
+    "role": "char:internship_impostor",
+    "file": "0a959ff8ddd5f2a8.ogg",
+    "text": "I'm a professor. Of... messaging."
+  },
+  {
+    "id": "char/internship_impostor/research_assistant/verify",
+    "role": "char:internship_impostor",
+    "file": "0770d3660cd564f6.ogg",
+    "text": "You emailed the department office? They say Dr. Carter doesn't exist?"
+  },
+  {
+    "id": "char/listing_leech/opening",
+    "role": "char:listing_leech",
+    "file": "36e62b400bbee52e.ogg",
+    "text": "A dream apartment, so cheap! Deposit first, questions never!"
+  },
+  {
+    "id": "char/listing_leech/spare",
+    "role": "char:listing_leech",
+    "file": "73d6b4c1f4c449a0.ogg",
+    "text": "Fine. Go tour apartments like a sensible person. Boring."
+  },
+  {
+    "id": "takeaway/listing_leech/safe_move",
+    "role": "takeaway",
+    "file": "1ccf732c16c96487.ogg",
+    "text": "Tour in person or through a known leasing office, verify the owner, and never pay before signing a lease."
+  },
+  {
+    "id": "hoot/listing_leech/0",
+    "role": "hoot",
+    "file": "a5114678a459873a.ogg",
+    "text": "Hoo, rental listings are this floor's trap. Never pay for a place you have not toured."
+  },
+  {
+    "id": "hoot/listing_leech/1",
+    "role": "hoot",
+    "file": "79706847527278d3.ogg",
+    "text": "Hoo! A landlord who is always out of the country is a classic story."
+  },
+  {
+    "id": "hoot/listing_leech/2",
+    "role": "hoot",
+    "file": "68bed1e455c6b46a.ogg",
+    "text": "Hoo, rent far below the area's usual price is bait, not luck."
+  },
+  {
+    "id": "char/listing_leech/bad/0",
+    "role": "char:listing_leech",
+    "file": "fc12d2c8c82ac8d8.ogg",
+    "text": "Slurp! Deposit received. Keys? What keys?"
+  },
+  {
+    "id": "char/listing_leech/bad/1",
+    "role": "char:listing_leech",
+    "file": "e1ccbc3858684152.ogg",
+    "text": "A credit check! On you! By me! For me!"
+  },
+  {
+    "id": "char/listing_leech/bad/2",
+    "role": "char:listing_leech",
+    "file": "2fb4ccea0ea398f2.ogg",
+    "text": "Gift cards! The best kind of deposit. For leeches."
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/headers",
+    "role": "char:listing_leech",
+    "file": "b8e423f90ff0b767.ogg",
+    "text": "I'm overseas! For work! Always!"
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/link",
+    "role": "char:listing_leech",
+    "file": "a2dd3d88e373e1ea.ogg",
+    "text": "The address bar? Nobody reads the address bar!"
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/money",
+    "role": "char:listing_leech",
+    "file": "d9b0b2d9099313ff.ogg",
+    "text": "Half price and a Zelle deposit. A steal!"
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/pressure",
+    "role": "char:listing_leech",
+    "file": "f2a18f1c29b00cac.ogg",
+    "text": "Five others! Hurry or lose it!"
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/sender",
+    "role": "char:listing_leech",
+    "file": "2a6330cba44f291e.ogg",
+    "text": "OwlRentals! The O-W-L means it's official!"
+  },
+  {
+    "id": "char/listing_leech/cheap_2br/verify",
+    "role": "char:listing_leech",
+    "file": "1c8d43ac45fbaccf.ogg",
+    "text": "Property records show a different owner? Oops."
+  },
+  {
+    "id": "char/listing_leech/room_sublet/headers",
+    "role": "char:listing_leech",
+    "file": "56b63fd14b938432.ogg",
+    "text": "Those photos are mine! Also from Ohio."
+  },
+  {
+    "id": "char/listing_leech/room_sublet/link",
+    "role": "char:listing_leech",
+    "file": "7bb6e1260a97bcee.ogg",
+    "text": "Reserve on my page! It's very secure. For me."
+  },
+  {
+    "id": "char/listing_leech/room_sublet/money",
+    "role": "char:listing_leech",
+    "file": "28bb3310d01fb52e.ogg",
+    "text": "Cash App first, room later. Much later."
+  },
+  {
+    "id": "char/listing_leech/room_sublet/sender",
+    "role": "char:listing_leech",
+    "file": "051aaae34e3c3e7c.ogg",
+    "text": "Campus Rooms NOW! Right now! No waiting!"
+  },
+  {
+    "id": "char/listing_leech/room_sublet/verify",
+    "role": "char:listing_leech",
+    "file": "10dcbe8f97b21154.ogg",
+    "text": "You toured it and someone else lives there? Awkward."
+  },
+  {
+    "id": "char/loan_phantom/opening",
+    "role": "char:loan_phantom",
+    "file": "abc1de44f15fe27c.ogg",
+    "text": "All your loans, poof! Just pay a little fee first. Boo!"
+  },
+  {
+    "id": "char/loan_phantom/spare",
+    "role": "char:loan_phantom",
+    "file": "bca529313d4da83e.ogg",
+    "text": "Fine. Apply for real programs. For free. How dull."
+  },
+  {
+    "id": "takeaway/loan_phantom/safe_move",
+    "role": "takeaway",
+    "file": "50d2840e32edecba.ogg",
+    "text": "Check forgiveness only through your loan servicer and the official federal aid site, and never share your FSA ID."
+  },
+  {
+    "id": "hoot/loan_phantom/0",
+    "role": "hoot",
+    "file": "4ee19a879134e38e.ogg",
+    "text": "Hoo, fake loan forgiveness is this floor's trap. Applying for the real programs is free."
+  },
+  {
+    "id": "hoot/loan_phantom/1",
+    "role": "hoot",
+    "file": "0402470496065286.ogg",
+    "text": "Hoo! Nobody legit needs your FSA ID. Keep it to yourself."
+  },
+  {
+    "id": "hoot/loan_phantom/2",
+    "role": "hoot",
+    "file": "c5160e35fc54758e.ogg",
+    "text": "Hoo, go to your loan servicer yourself instead of trusting an email."
+  },
+  {
+    "id": "char/loan_phantom/bad/0",
+    "role": "char:loan_phantom",
+    "file": "f397d9b733775a4a.ogg",
+    "text": "Paid! Your loans are forgiven. In my imagination."
+  },
+  {
+    "id": "char/loan_phantom/bad/1",
+    "role": "char:loan_phantom",
+    "file": "da54d82799f5f6e6.ogg",
+    "text": "Your FSA ID! Now I can change your loans. And your address."
+  },
+  {
+    "id": "char/loan_phantom/bad/2",
+    "role": "char:loan_phantom",
+    "file": "6abde901aee8d0f6.ogg",
+    "text": "Power of attorney! I'm in charge now. Boo!"
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/link",
+    "role": "char:loan_phantom",
+    "file": "310b39f0186809a3.ogg",
+    "text": "Enroll on my site. It's basically the government."
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/money",
+    "role": "char:loan_phantom",
+    "file": "37e815424f27aa6f.ogg",
+    "text": "One ninety-nine to make it all vanish!"
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/pressure",
+    "role": "char:loan_phantom",
+    "file": "2647fb761122e47c.ogg",
+    "text": "Monday! The program vanishes Monday! Like me!"
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/secret",
+    "role": "char:loan_phantom",
+    "file": "98c4c4d4df1fd451.ogg",
+    "text": "Just your FSA ID! We'll take it from here. All of it."
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/sender",
+    "role": "char:loan_phantom",
+    "file": "946560cb8be27e66.ogg",
+    "text": "A Relief CENTER! Very official-sounding!"
+  },
+  {
+    "id": "char/loan_phantom/forgiveness_program/verify",
+    "role": "char:loan_phantom",
+    "file": "63253afd0a033c5f.ogg",
+    "text": "Your servicer says it's free and I'm fake? Boo."
+  },
+  {
+    "id": "char/loan_phantom/payment_pause/headers",
+    "role": "char:loan_phantom",
+    "file": "cc2acfcd17048683.ogg",
+    "text": "Replies go to the pause team. At freemail."
+  },
+  {
+    "id": "char/loan_phantom/payment_pause/money",
+    "role": "char:loan_phantom",
+    "file": "f2df5079edd67afa.ogg",
+    "text": "Pay ME instead of your servicer! Much better!"
+  },
+  {
+    "id": "char/loan_phantom/payment_pause/secret",
+    "role": "char:loan_phantom",
+    "file": "bfc9bb42fd298230.ogg",
+    "text": "FSA ID and birthday! For confirming! Things!"
+  },
+  {
+    "id": "char/loan_phantom/payment_pause/sender",
+    "role": "char:loan_phantom",
+    "file": "460288324f2d0457.ogg",
+    "text": "loan-services-portal. I'm the portal!"
+  },
+  {
+    "id": "char/loan_phantom/payment_pause/verify",
+    "role": "char:loan_phantom",
+    "file": "a590d8bc6dc1de87.ogg",
+    "text": "Your servicer has no record of me? Spooky."
+  },
+  {
+    "id": "char/overpay_ogre/opening",
+    "role": "char:overpay_ogre",
+    "file": "3d61ccd8f0189326.ogg",
+    "text": "Oops! I paid you too much. Send the extra back. Quickly!"
+  },
+  {
+    "id": "char/overpay_ogre/spare",
+    "role": "char:overpay_ogre",
+    "file": "6ab89e7cdfe71f66.ogg",
+    "text": "Fine. Wait for the check to bounce on its own. Spoilsport."
+  },
+  {
+    "id": "takeaway/overpay_ogre/safe_move",
+    "role": "takeaway",
+    "file": "850e16be3182760d.ogg",
+    "text": "Don't refund 'overpayments'; let the bank fully clear the check (not just show funds) and talk to your bank first."
+  },
+  {
+    "id": "hoot/overpay_ogre/0",
+    "role": "hoot",
+    "file": "1f745d7935c705c4.ogg",
+    "text": "Hoo, extra money that you must send back is this floor's trap. Fake checks bounce days later."
+  },
+  {
+    "id": "hoot/overpay_ogre/1",
+    "role": "hoot",
+    "file": "b8c05530df0b5c91.ogg",
+    "text": "Hoo! Funds showing up does not mean the check cleared. Ask your bank before spending a cent."
+  },
+  {
+    "id": "hoot/overpay_ogre/2",
+    "role": "hoot",
+    "file": "45bc967ef4c419c0.ogg",
+    "text": "Hoo, mystery shopper jobs that pay first and want gift cards back are always fake."
+  },
+  {
+    "id": "char/overpay_ogre/bad/0",
+    "role": "char:overpay_ogre",
+    "file": "aa2634b6705883c7.ogg",
+    "text": "Zelle is forever! Unlike my check!"
+  },
+  {
+    "id": "char/overpay_ogre/bad/1",
+    "role": "char:overpay_ogre",
+    "file": "d224a7da3246d278.ogg",
+    "text": "Spent! And in a week the check bounces. Surprise!"
+  },
+  {
+    "id": "char/overpay_ogre/bad/2",
+    "role": "char:overpay_ogre",
+    "file": "d303b837fd7a0960.ogg",
+    "text": "Gift cards! My favorite currency!"
+  },
+  {
+    "id": "char/overpay_ogre/sublease/headers",
+    "role": "char:overpay_ogre",
+    "file": "e7453910eec3bdba.ogg",
+    "text": "Zeros are a number! Lots of them!"
+  },
+  {
+    "id": "char/overpay_ogre/sublease/money",
+    "role": "char:overpay_ogre",
+    "file": "db94d44a27224bec.ogg",
+    "text": "Too much money! Send some back! Before it... clears."
+  },
+  {
+    "id": "char/overpay_ogre/sublease/pressure",
+    "role": "char:overpay_ogre",
+    "file": "8065d22f2075117a.ogg",
+    "text": "Before it clears! Hurry before it clears!"
+  },
+  {
+    "id": "char/overpay_ogre/sublease/sender",
+    "role": "char:overpay_ogre",
+    "file": "3e91a6cba3f4e097.ogg",
+    "text": "No address! Very mysterious. Very legitimate."
+  },
+  {
+    "id": "char/overpay_ogre/sublease/verify",
+    "role": "char:overpay_ogre",
+    "file": "129607640d88bf71.ogg",
+    "text": "You called your bank and they said wait? Banks are so patient."
+  },
+  {
+    "id": "char/overpay_ogre/mystery_shopper/headers",
+    "role": "char:overpay_ogre",
+    "file": "62503a01d1328d7f.ogg",
+    "text": "Names on checks are just suggestions."
+  },
+  {
+    "id": "char/overpay_ogre/mystery_shopper/money",
+    "role": "char:overpay_ogre",
+    "file": "2155531d1dac9094.ogg",
+    "text": "Shop for us! With gift cards! For science!"
+  },
+  {
+    "id": "char/overpay_ogre/mystery_shopper/pressure",
+    "role": "char:overpay_ogre",
+    "file": "b746af54162be22c.ogg",
+    "text": "Twenty-four hours! Shop fast! Think never!"
+  },
+  {
+    "id": "char/overpay_ogre/mystery_shopper/sender",
+    "role": "char:overpay_ogre",
+    "file": "8fcc14a2d58525f0.ogg",
+    "text": "You didn't sign up? We signed you up! You're welcome."
+  },
+  {
+    "id": "char/overpay_ogre/mystery_shopper/verify",
+    "role": "char:overpay_ogre",
+    "file": "96b62eed036afece.ogg",
+    "text": "The bank says the check is fake? Fake is such a strong word."
+  },
+  {
+    "id": "char/package_pixie/opening",
+    "role": "char:package_pixie",
+    "file": "9d16c6dc629839fa.ogg",
+    "text": "Your package is stuck! Just a tiny fee to free it. Bzzz!"
+  },
+  {
+    "id": "char/package_pixie/spare",
+    "role": "char:package_pixie",
+    "file": "26e8a87149e8a6b0.ogg",
+    "text": "Fine. Check real tracking. It's free. How rude."
+  },
+  {
+    "id": "takeaway/package_pixie/safe_move",
+    "role": "takeaway",
+    "file": "761fbc51de742733.ogg",
+    "text": "Check delivery only on the carrier's site with a tracking number you type in yourself; report and delete the text."
+  },
+  {
+    "id": "hoot/package_pixie/0",
+    "role": "hoot",
+    "file": "57ae9bcf22cffa09.ogg",
+    "text": "Hoo, fake delivery texts are this floor's trap. Were you even expecting a package?"
+  },
+  {
+    "id": "hoot/package_pixie/1",
+    "role": "hoot",
+    "file": "eed949ef08616972.ogg",
+    "text": "Hoo! Carriers do not charge redelivery fees by text link."
+  },
+  {
+    "id": "hoot/package_pixie/2",
+    "role": "hoot",
+    "file": "1f9d774aba9e478a.ogg",
+    "text": "Hoo, type the carrier's site in yourself and check your real tracking number."
+  },
+  {
+    "id": "char/package_pixie/bad/0",
+    "role": "char:package_pixie",
+    "file": "e9e81449d35ca069.ogg",
+    "text": "Just a dollar ninety-nine! Plus your whole card. Bzzz!"
+  },
+  {
+    "id": "char/package_pixie/bad/1",
+    "role": "char:package_pixie",
+    "file": "6027b3b41555119c.ogg",
+    "text": "Thanks for the address! Your package... doesn't exist."
+  },
+  {
+    "id": "char/package_pixie/bad/2",
+    "role": "char:package_pixie",
+    "file": "a14b32cacb9bd5d9.ogg",
+    "text": "The three magic numbers! Thank you!"
+  },
+  {
+    "id": "char/package_pixie/redelivery_fee/link",
+    "role": "char:package_pixie",
+    "file": "0cc67b0b2dbcc085.ogg",
+    "text": "redelivery-HELP. I'm helping! Me!"
+  },
+  {
+    "id": "char/package_pixie/redelivery_fee/money",
+    "role": "char:package_pixie",
+    "file": "66622f844c986401.ogg",
+    "text": "A dollar ninety-nine! A tiny price for your card!"
+  },
+  {
+    "id": "char/package_pixie/redelivery_fee/pressure",
+    "role": "char:package_pixie",
+    "file": "1bb9fc1bf19e08ac.ogg",
+    "text": "Twelve hours! The package will vanish!"
+  },
+  {
+    "id": "char/package_pixie/redelivery_fee/sender",
+    "role": "char:package_pixie",
+    "file": "3160d5d81861ff3e.ogg",
+    "text": "An overseas number for local packages. Global service!"
+  },
+  {
+    "id": "char/package_pixie/redelivery_fee/verify",
+    "role": "char:package_pixie",
+    "file": "fc0c7341641d10f2.ogg",
+    "text": "Your real tracking says delivered? Bzzz. Busted."
+  },
+  {
+    "id": "char/package_pixie/customs_fee/link",
+    "role": "char:package_pixie",
+    "file": "75046994525d4ab0.ogg",
+    "text": "customs-parcel-RELEASE. Release your money to me!"
+  },
+  {
+    "id": "char/package_pixie/customs_fee/money",
+    "role": "char:package_pixie",
+    "file": "bb21d05ff7d1a2a4.ogg",
+    "text": "Customs for a package you didn't order! Pay up!"
+  },
+  {
+    "id": "char/package_pixie/customs_fee/secret",
+    "role": "char:package_pixie",
+    "file": "a13bbaf55dcc9c5e.ogg",
+    "text": "Card number and the code! Both! Please!"
+  },
+  {
+    "id": "char/package_pixie/customs_fee/sender",
+    "role": "char:package_pixie",
+    "file": "c6785f8ff077adab.ogg",
+    "text": "A customs desk! At an email address! Texting you!"
+  },
+  {
+    "id": "char/package_pixie/customs_fee/verify",
+    "role": "char:package_pixie",
+    "file": "c2bea3d457d98c72.ogg",
+    "text": "You didn't order anything from overseas? Hmm."
+  },
+  {
+    "id": "char/password_hydra/opening",
+    "role": "char:password_hydra",
+    "file": "5e2eeb7f2b285531.ogg",
+    "text": "One password, many doors. Let me hold it for you!"
+  },
+  {
+    "id": "char/password_hydra/spare",
+    "role": "char:password_hydra",
+    "file": "8fd08e2d21ac15ae.ogg",
+    "text": "Ugh. Fine. Keep your password to yourself, then."
+  },
+  {
+    "id": "takeaway/password_hydra/safe_move",
+    "role": "takeaway",
+    "file": "3c5e4aa39b2cc51a.ogg",
+    "text": "Go to the UITS site or service desk yourself; never type your password from an emailed link."
+  },
+  {
+    "id": "hoot/password_hydra/0",
+    "role": "hoot",
+    "file": "03d69fcd7f80e47c.ogg",
+    "text": "Hoo, this floor is after your password. The help desk never asks for it, not by email and not by reply."
+  },
+  {
+    "id": "hoot/password_hydra/1",
+    "role": "hoot",
+    "file": "d13c4c039bdacccb.ogg",
+    "text": "Hoo! Mailbox full or account locked? Go to the IT site yourself instead of the link in the message."
+  },
+  {
+    "id": "hoot/password_hydra/2",
+    "role": "hoot",
+    "file": "2f6a553f69ee33ef.ogg",
+    "text": "Hoo, a sign-in code is just as secret as a password. Never read it to anyone."
+  },
+  {
+    "id": "char/password_hydra/bad/0",
+    "role": "char:password_hydra",
+    "file": "50cacd3ea5347b7e.ogg",
+    "text": "One password, and now I grow another head!"
+  },
+  {
+    "id": "char/password_hydra/bad/1",
+    "role": "char:password_hydra",
+    "file": "eaf82e55236ff00e.ogg",
+    "text": "Just this once! That's how all my heads started."
+  },
+  {
+    "id": "char/password_hydra/bad/2",
+    "role": "char:password_hydra",
+    "file": "0c923d0cbe923f6d.ogg",
+    "text": "Thanks for the code! Your account says hi from far away."
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/headers",
+    "role": "char:password_hydra",
+    "file": "d8355fd46be8d355.ogg",
+    "text": "Replies go to my other head. It's free!"
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/link",
+    "role": "char:password_hydra",
+    "file": "0fc64fbb1dfcd996.ogg",
+    "text": "That's the upgrade page! For upgrading me."
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/pressure",
+    "role": "char:password_hydra",
+    "file": "8dbb911005ff9e1d.ogg",
+    "text": "Deleted! Gone! Forever! ...Probably not, actually."
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/secret",
+    "role": "char:password_hydra",
+    "file": "5a1cd92795a3f6ad.ogg",
+    "text": "Your password, please. I collect them."
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/sender",
+    "role": "char:password_hydra",
+    "file": "44e40ef1a99b9955.ogg",
+    "text": "mailbox-admin dot example. I administer mailboxes!"
+  },
+  {
+    "id": "char/password_hydra/mailbox_full/verify",
+    "role": "char:password_hydra",
+    "file": "281bca31f43f6795.ogg",
+    "text": "You called the UITS desk? They say my mailbox story is made up!"
+  },
+  {
+    "id": "char/password_hydra/mfa_reset/link",
+    "role": "char:password_hydra",
+    "file": "2249bc11e6469c34.ogg",
+    "text": "Re-enroll with me. I'm very secure."
+  },
+  {
+    "id": "char/password_hydra/mfa_reset/pressure",
+    "role": "char:password_hydra",
+    "file": "8e44b10d25cb917f.ogg",
+    "text": "Locked! In thirty minutes! Hurry, hurry!"
+  },
+  {
+    "id": "char/password_hydra/mfa_reset/secret",
+    "role": "char:password_hydra",
+    "file": "17324ca4bc9a25ac.ogg",
+    "text": "Just read me the code! Six little digits!"
+  },
+  {
+    "id": "char/password_hydra/mfa_reset/sender",
+    "role": "char:password_hydra",
+    "file": "2312c6a1ac248581.ogg",
+    "text": "secure-verify! The word secure is right there!"
+  },
+  {
+    "id": "char/password_hydra/mfa_reset/verify",
+    "role": "char:password_hydra",
+    "file": "36ac7e8110defd10.ogg",
+    "text": "You checked your devices in your real account? Nothing's wrong? Drat."
+  },
+  {
+    "id": "char/push_poltergeist/opening",
+    "role": "char:push_poltergeist",
+    "file": "4a182434aae9a85a.ogg",
+    "text": "Ding! Ding! Ding! Just tap Approve and I'll stop!"
+  },
+  {
+    "id": "char/push_poltergeist/spare",
+    "role": "char:push_poltergeist",
+    "file": "952cd4be7e9bfb43.ogg",
+    "text": "Fine. Deny me. And change your password. Party pooper."
+  },
+  {
+    "id": "takeaway/push_poltergeist/safe_move",
+    "role": "takeaway",
+    "file": "5bcc7d8a4d75458a.ogg",
+    "text": "Deny sign-in requests you didn't start, then change your password and tell the UITS service desk."
+  },
+  {
+    "id": "hoot/push_poltergeist/0",
+    "role": "hoot",
+    "file": "52c7b48658e429fa.ogg",
+    "text": "Hoo, this floor buzzes with sign-in requests. Only approve one you started, right now, yourself."
+  },
+  {
+    "id": "hoot/push_poltergeist/1",
+    "role": "hoot",
+    "file": "d629de2ab7550cd9.ogg",
+    "text": "Hoo! A flood of requests means someone has your password. Deny them and change it."
+  },
+  {
+    "id": "hoot/push_poltergeist/2",
+    "role": "hoot",
+    "file": "83cf7855b40370dc.ogg",
+    "text": "Hoo, nobody from the help desk needs the number on your screen. Never read it out."
+  },
+  {
+    "id": "char/push_poltergeist/bad/0",
+    "role": "char:push_poltergeist",
+    "file": "06121285d82349a5.ogg",
+    "text": "Approved! I'm in your email now. Hello!"
+  },
+  {
+    "id": "char/push_poltergeist/bad/1",
+    "role": "char:push_poltergeist",
+    "file": "7eceb3050b9a0866.ogg",
+    "text": "That number was the last key. Thank you, friend!"
+  },
+  {
+    "id": "char/push_poltergeist/bad/2",
+    "role": "char:push_poltergeist",
+    "file": "2ffe55045e062202.ogg",
+    "text": "I'll just keep trying. Forever. Same password!"
+  },
+  {
+    "id": "char/push_poltergeist/duo_push/headers",
+    "role": "char:push_poltergeist",
+    "file": "408930ee8706a047.ogg",
+    "text": "A VPN sign-in! You love VPNs, right?"
+  },
+  {
+    "id": "char/push_poltergeist/duo_push/link",
+    "role": "char:push_poltergeist",
+    "file": "9b3cffe9c5a1d968.ogg",
+    "text": "Approve by link! Much faster than the real app!"
+  },
+  {
+    "id": "char/push_poltergeist/duo_push/pressure",
+    "role": "char:push_poltergeist",
+    "file": "997ab6a5c6aa1eba.ogg",
+    "text": "Ding ding ding! At 2 AM! Tap it so we can sleep!"
+  },
+  {
+    "id": "char/push_poltergeist/duo_push/sender",
+    "role": "char:push_poltergeist",
+    "file": "23cb7152bf721db9.ogg",
+    "text": "Lagos is basically next to Kennesaw. Roughly."
+  },
+  {
+    "id": "char/push_poltergeist/duo_push/verify",
+    "role": "char:push_poltergeist",
+    "file": "3c308d40517c1460.ogg",
+    "text": "You weren't signing in? Then who was? ...Me. It was me."
+  },
+  {
+    "id": "char/push_poltergeist/number_match/headers",
+    "role": "char:push_poltergeist",
+    "file": "aab07e9cef4bee98.ogg",
+    "text": "There's no number on your screen? Just guess!"
+  },
+  {
+    "id": "char/push_poltergeist/number_match/pressure",
+    "role": "char:push_poltergeist",
+    "file": "4c7d90a8b325a137.ogg",
+    "text": "Again! And again! Isn't it easier to say yes?"
+  },
+  {
+    "id": "char/push_poltergeist/number_match/secret",
+    "role": "char:push_poltergeist",
+    "file": "18d7b146dea213a7.ogg",
+    "text": "My friend on the phone just needs the number!"
+  },
+  {
+    "id": "char/push_poltergeist/number_match/sender",
+    "role": "char:push_poltergeist",
+    "file": "05ef030a4143af73.ogg",
+    "text": "Unknown is a nice place. Very private."
+  },
+  {
+    "id": "char/push_poltergeist/number_match/verify",
+    "role": "char:push_poltergeist",
+    "file": "3c14e09392da761f.ogg",
+    "text": "You checked your sign-in activity? And it wasn't you? Uh oh."
+  },
+  {
+    "id": "char/scalper_specter/opening",
+    "role": "char:scalper_specter",
+    "file": "e12c62f7980b935c.ogg",
+    "text": "Sold-out seats, cheap! Pay me now, tickets later. Boo!"
+  },
+  {
+    "id": "char/scalper_specter/spare",
+    "role": "char:scalper_specter",
+    "file": "745d70f070601985.ogg",
+    "text": "Fine. Buy official tickets. With protection. Yawn."
+  },
+  {
+    "id": "takeaway/scalper_specter/safe_move",
+    "role": "takeaway",
+    "file": "093bb1005fb8a385.ogg",
+    "text": "Buy only through the official ticket platform or box office transfer, never pay strangers first."
+  },
+  {
+    "id": "hoot/scalper_specter/0",
+    "role": "hoot",
+    "file": "53a5624cd46bb0b0.ogg",
+    "text": "Hoo, ticket scams are this floor's trap. Big games bring fake sellers."
+  },
+  {
+    "id": "hoot/scalper_specter/1",
+    "role": "hoot",
+    "file": "e0a1f010f2122598.ogg",
+    "text": "Hoo! Pay through the official ticket platform, never a stranger first."
+  },
+  {
+    "id": "hoot/scalper_specter/2",
+    "role": "hoot",
+    "file": "b22c12ef96db8eb7.ogg",
+    "text": "Hoo, a screenshot of tickets proves nothing. They can be sold ten times."
+  },
+  {
+    "id": "char/scalper_specter/bad/0",
+    "role": "char:scalper_specter",
+    "file": "b2323b265ecedd3f.ogg",
+    "text": "Paid! Tickets? Boo! They vanished."
+  },
+  {
+    "id": "char/scalper_specter/bad/1",
+    "role": "char:scalper_specter",
+    "file": "1ab9c6061badabce.ogg",
+    "text": "Transfer fees are very real. For me."
+  },
+  {
+    "id": "char/scalper_specter/bad/2",
+    "role": "char:scalper_specter",
+    "file": "53c3fc650932130d.ogg",
+    "text": "I'll transfer your OTHER tickets to me. Thanks!"
+  },
+  {
+    "id": "char/scalper_specter/football_game/link",
+    "role": "char:scalper_specter",
+    "file": "87c4dd204df2813e.ogg",
+    "text": "My resale site! Unofficial means cheaper!"
+  },
+  {
+    "id": "char/scalper_specter/football_game/money",
+    "role": "char:scalper_specter",
+    "file": "6dbfe5d98d104904.ogg",
+    "text": "Sixty for two sold-out seats! Act now!"
+  },
+  {
+    "id": "char/scalper_specter/football_game/pressure",
+    "role": "char:scalper_specter",
+    "file": "4ee197e1e057bb1d.ogg",
+    "text": "Everyone wants them! Pay first!"
+  },
+  {
+    "id": "char/scalper_specter/football_game/sender",
+    "role": "char:scalper_specter",
+    "file": "919a9ddbe95b24c1.ogg",
+    "text": "I'm Chris! A different Chris. Ticket Chris!"
+  },
+  {
+    "id": "char/scalper_specter/football_game/verify",
+    "role": "char:scalper_specter",
+    "file": "697c47e92566e715.ogg",
+    "text": "The official app shows no transfer from me? Boo."
+  },
+  {
+    "id": "char/scalper_specter/concert/headers",
+    "role": "char:scalper_specter",
+    "file": "43f11e031a9e739a.ogg",
+    "text": "New account, all tickets. Specialized!"
+  },
+  {
+    "id": "char/scalper_specter/concert/money",
+    "role": "char:scalper_specter",
+    "file": "4f70b7e85651129c.ogg",
+    "text": "VIP for forty! By Zelle! Very VIP!"
+  },
+  {
+    "id": "char/scalper_specter/concert/pressure",
+    "role": "char:scalper_specter",
+    "file": "d7444dc0d0fa0dab.ogg",
+    "text": "Ten minutes! Tick tock!"
+  },
+  {
+    "id": "char/scalper_specter/concert/sender",
+    "role": "char:scalper_specter",
+    "file": "8d744803cc771d9d.ogg",
+    "text": "I'm Owl Life! With extra letters!"
+  },
+  {
+    "id": "char/scalper_specter/concert/verify",
+    "role": "char:scalper_specter",
+    "file": "31478e536716110e.ogg",
+    "text": "The real events account says tickets are only in the app? Drat."
+  },
+  {
+    "id": "char/scholarship_siren/opening",
+    "role": "char:scholarship_siren",
+    "file": "1bf579be80e3e9c7.ogg",
+    "text": "La la la! You WON! Just a tiny fee and it's all yours!"
+  },
+  {
+    "id": "char/scholarship_siren/spare",
+    "role": "char:scholarship_siren",
+    "file": "afea6979ffe015aa.ogg",
+    "text": "Fine. Go apply for real scholarships. With essays. Ugh."
+  },
+  {
+    "id": "takeaway/scholarship_siren/safe_move",
+    "role": "takeaway",
+    "file": "a730cf9356251bde.ogg",
+    "text": "Find awards through KSU's own scholarship search, and never pay a fee to receive one."
+  },
+  {
+    "id": "hoot/scholarship_siren/0",
+    "role": "hoot",
+    "file": "9515ff226c9fb57c.ogg",
+    "text": "Hoo, surprise awards are this floor's trap. If you never applied, you did not win."
+  },
+  {
+    "id": "hoot/scholarship_siren/1",
+    "role": "hoot",
+    "file": "d3e1cd5f646fc74c.ogg",
+    "text": "Hoo! Real scholarships never charge you a fee to pay you."
+  },
+  {
+    "id": "hoot/scholarship_siren/2",
+    "role": "hoot",
+    "file": "9457fa0736cb8a7a.ogg",
+    "text": "Hoo, look the award up yourself through the school, not through the email."
+  },
+  {
+    "id": "char/scholarship_siren/bad/0",
+    "role": "char:scholarship_siren",
+    "file": "92b3292614305492.ogg",
+    "text": "Seventy-nine dollars! Your award is... on its way. Eventually. Never."
+  },
+  {
+    "id": "char/scholarship_siren/bad/1",
+    "role": "char:scholarship_siren",
+    "file": "12b4e2cdcae9e2c9.ogg",
+    "text": "Now I can deposit... into MY account!"
+  },
+  {
+    "id": "char/scholarship_siren/bad/2",
+    "role": "char:scholarship_siren",
+    "file": "02b86ae9789627ec.ogg",
+    "text": "Thank you! I'll be you now. Scholarship and all."
+  },
+  {
+    "id": "char/scholarship_siren/national_award/link",
+    "role": "char:scholarship_siren",
+    "file": "1af8dbeaf7958b23.ogg",
+    "text": "Claim it at MY site. Much fancier!"
+  },
+  {
+    "id": "char/scholarship_siren/national_award/money",
+    "role": "char:scholarship_siren",
+    "file": "767c4e5c228448b3.ogg",
+    "text": "Seventy-nine to get five thousand. Basic math!"
+  },
+  {
+    "id": "char/scholarship_siren/national_award/pressure",
+    "role": "char:scholarship_siren",
+    "file": "5350067ec2155ae9.ogg",
+    "text": "Friday! Or someone else gets your money!"
+  },
+  {
+    "id": "char/scholarship_siren/national_award/secret",
+    "role": "char:scholarship_siren",
+    "file": "9922234d7bf039fb.ogg",
+    "text": "Just your SSN and bank login. Standard stuff!"
+  },
+  {
+    "id": "char/scholarship_siren/national_award/sender",
+    "role": "char:scholarship_siren",
+    "file": "79321855c505cbcb.ogg",
+    "text": "A national fund! You've totally heard of us. Probably."
+  },
+  {
+    "id": "char/scholarship_siren/national_award/verify",
+    "role": "char:scholarship_siren",
+    "file": "a2964777283a4ded.ogg",
+    "text": "The scholarship office never heard of me? Rude."
+  },
+  {
+    "id": "char/scholarship_siren/essay_contest/headers",
+    "role": "char:scholarship_siren",
+    "file": "1d344bb4e4a8cd0b.ogg",
+    "text": "Replies go to my free account. For speed!"
+  },
+  {
+    "id": "char/scholarship_siren/essay_contest/money",
+    "role": "char:scholarship_siren",
+    "file": "42c2cad1c5d8c3f2.ogg",
+    "text": "Shipping a check costs money. Everyone knows that!"
+  },
+  {
+    "id": "char/scholarship_siren/essay_contest/pressure",
+    "role": "char:scholarship_siren",
+    "file": "5cf6f93a00ee5a47.ogg",
+    "text": "Twenty-four hours! Hurry, hurry!"
+  },
+  {
+    "id": "char/scholarship_siren/essay_contest/sender",
+    "role": "char:scholarship_siren",
+    "file": "53870cdda8ba8ee9.ogg",
+    "text": "essay-awards-mail. I'm basically the Writing Center."
+  },
+  {
+    "id": "char/scholarship_siren/essay_contest/verify",
+    "role": "char:scholarship_siren",
+    "file": "839e165c70222a43.ogg",
+    "text": "You entered no contest? The Writing Center agrees? Drat."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/opening",
+    "role": "char:sweepstakes_sphinx",
+    "file": "84892dc38afa2997.ogg",
+    "text": "You won! Riddle me this: why must winners pay? Because I said so!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/spare",
+    "role": "char:sweepstakes_sphinx",
+    "file": "4109af9f030b4bfd.ogg",
+    "text": "Fine. Keep your money. Solve your own riddles."
+  },
+  {
+    "id": "takeaway/sweepstakes_sphinx/safe_move",
+    "role": "takeaway",
+    "file": "53ac361fc581f538.ogg",
+    "text": "Don't deposit unexpected prize checks or send money back; ask your bank and report the letter."
+  },
+  {
+    "id": "hoot/sweepstakes_sphinx/0",
+    "role": "hoot",
+    "file": "993d9083624336a8.ogg",
+    "text": "Hoo, fake prizes are this floor's trap. If you did not enter, you did not win."
+  },
+  {
+    "id": "hoot/sweepstakes_sphinx/1",
+    "role": "hoot",
+    "file": "4fa44185e178d75b.ogg",
+    "text": "Hoo! A real prize never asks you to pay taxes or fees up front."
+  },
+  {
+    "id": "hoot/sweepstakes_sphinx/2",
+    "role": "hoot",
+    "file": "e3ad3ec764ebf0c5.ogg",
+    "text": "Hoo, a check can look real for days before it bounces. Ask your bank first."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/bad/0",
+    "role": "char:sweepstakes_sphinx",
+    "file": "241384dafc0da1bd.ogg",
+    "text": "Riddle: what bounces? My check! Your money's gone."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/bad/1",
+    "role": "char:sweepstakes_sphinx",
+    "file": "3eeadf334037fdc3.ogg",
+    "text": "Taxes in gift cards! The IRS is so modern. Not."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/bad/2",
+    "role": "char:sweepstakes_sphinx",
+    "file": "75320aedf6654132.ogg",
+    "text": "Now I can wire... out of your account!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/sweepstakes_check/headers",
+    "role": "char:sweepstakes_sphinx",
+    "file": "35b978fcfc35b240.ogg",
+    "text": "Check numbers are creative writing!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/sweepstakes_check/money",
+    "role": "char:sweepstakes_sphinx",
+    "file": "5bb879428b69cc12.ogg",
+    "text": "Thirty-five hundred! Send most of it back! Easy!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/sweepstakes_check/pressure",
+    "role": "char:sweepstakes_sphinx",
+    "file": "5c8344bbda7398f2.ogg",
+    "text": "Forty-eight hours! Decide! Now!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/sweepstakes_check/sender",
+    "role": "char:sweepstakes_sphinx",
+    "file": "57a693c7fa287a68.ogg",
+    "text": "You never entered! But you WON anyway! Lucky!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/sweepstakes_check/verify",
+    "role": "char:sweepstakes_sphinx",
+    "file": "3fabc175e6df9769.ogg",
+    "text": "Your bank called the issuer and it's fake? My riddle fails."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/lottery_letter/money",
+    "role": "char:sweepstakes_sphinx",
+    "file": "b1b7b2ac211bc0ce.ogg",
+    "text": "Wire it back! Customs loves wires!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/lottery_letter/pressure",
+    "role": "char:sweepstakes_sphinx",
+    "file": "d4ee5166fb66b5b5.ogg",
+    "text": "Three days! Or charity gets it! Hurry!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/lottery_letter/secret",
+    "role": "char:sweepstakes_sphinx",
+    "file": "da489b8d859ed513.ogg",
+    "text": "Bank login and SSN! For the return form. Obviously."
+  },
+  {
+    "id": "char/sweepstakes_sphinx/lottery_letter/sender",
+    "role": "char:sweepstakes_sphinx",
+    "file": "a582e70b8ddeee1f.ogg",
+    "text": "An international lottery! You never played! Even better!"
+  },
+  {
+    "id": "char/sweepstakes_sphinx/lottery_letter/verify",
+    "role": "char:sweepstakes_sphinx",
+    "file": "07298e2a6685819f.ogg",
+    "text": "Foreign lotteries are illegal to play by mail? Oh no."
+  },
+  {
+    "id": "char/ticket_troll/opening",
+    "role": "char:ticket_troll",
+    "file": "ea69783b4c49b8e1.ogg",
+    "text": "You owe me! Probably! Pay first, ask never!"
+  },
+  {
+    "id": "char/ticket_troll/spare",
+    "role": "char:ticket_troll",
+    "file": "e92549268a2f1c22.ogg",
+    "text": "Fine. Go check your real citations. There aren't any. Rude."
+  },
+  {
+    "id": "takeaway/ticket_troll/safe_move",
+    "role": "takeaway",
+    "file": "aa46a0914b3c6968.ogg",
+    "text": "Check citations yourself on KSU Parking and Transportation's site; don't pay from a texted link."
+  },
+  {
+    "id": "hoot/ticket_troll/0",
+    "role": "hoot",
+    "file": "468f0c4b11b79654.ogg",
+    "text": "Hoo, this floor sends scary texts about tickets and tolls. Check your real account yourself before paying."
+  },
+  {
+    "id": "hoot/ticket_troll/1",
+    "role": "hoot",
+    "file": "4072ec4b150aeba1.ogg",
+    "text": "Hoo! Real parking notices come from the official short code and point to the official portal."
+  },
+  {
+    "id": "hoot/ticket_troll/2",
+    "role": "hoot",
+    "file": "70b3d6d42f086276.ogg",
+    "text": "Hoo, a tow threat tonight is designed to rush you. Breathe, then look it up."
+  },
+  {
+    "id": "char/ticket_troll/bad/0",
+    "role": "char:ticket_troll",
+    "file": "e92fca37d1ba95b6.ogg",
+    "text": "Paid! And now I have your card. Double win!"
+  },
+  {
+    "id": "char/ticket_troll/bad/1",
+    "role": "char:ticket_troll",
+    "file": "63479bdee2ad5f58.ogg",
+    "text": "Thanks! Now I know where you park. And who you are."
+  },
+  {
+    "id": "char/ticket_troll/bad/2",
+    "role": "char:ticket_troll",
+    "file": "716e5f7e1336efb7.ogg",
+    "text": "Hello, this is definitely KSU. What's your card number?"
+  },
+  {
+    "id": "char/ticket_troll/citation/link",
+    "role": "char:ticket_troll",
+    "file": "195bae52f87b5458.ogg",
+    "text": "ksu-parking-PAY. The pay is the important part."
+  },
+  {
+    "id": "char/ticket_troll/citation/money",
+    "role": "char:ticket_troll",
+    "file": "213976aa6b2685c1.ogg",
+    "text": "Forty-five now or a hundred fifty later! Math!"
+  },
+  {
+    "id": "char/ticket_troll/citation/pressure",
+    "role": "char:ticket_troll",
+    "file": "696319fe3cf9529f.ogg",
+    "text": "Towed tonight! Tow truck's already warming up!"
+  },
+  {
+    "id": "char/ticket_troll/citation/sender",
+    "role": "char:ticket_troll",
+    "file": "dea86e6ce659365c.ogg",
+    "text": "A New York number for Georgia parking. Very efficient!"
+  },
+  {
+    "id": "char/ticket_troll/citation/verify",
+    "role": "char:ticket_troll",
+    "file": "35db12a72f3761a0.ogg",
+    "text": "Your parking portal shows no citations? Must be a glitch. In me."
+  },
+  {
+    "id": "char/ticket_troll/toll/link",
+    "role": "char:ticket_troll",
+    "file": "3edb4cb45c2538f3.ogg",
+    "text": "peachpass-TOLLS. Totally the same thing."
+  },
+  {
+    "id": "char/ticket_troll/toll/money",
+    "role": "char:ticket_troll",
+    "file": "cdc113ce97349bc1.ogg",
+    "text": "Only six dollars! Plus your card number forever."
+  },
+  {
+    "id": "char/ticket_troll/toll/pressure",
+    "role": "char:ticket_troll",
+    "file": "c2b1a2e95df4ceb4.ogg",
+    "text": "Suspended! In a day! Scary, right?"
+  },
+  {
+    "id": "char/ticket_troll/toll/secret",
+    "role": "char:ticket_troll",
+    "file": "6bf848b26ffe81e8.ogg",
+    "text": "Card number and the code! The full set!"
+  },
+  {
+    "id": "char/ticket_troll/toll/sender",
+    "role": "char:ticket_troll",
+    "file": "9b0da75b96c217b0.ogg",
+    "text": "An email address texting you? Modern tolls!"
+  },
+  {
+    "id": "char/ticket_troll/toll/verify",
+    "role": "char:ticket_troll",
+    "file": "116e17ff0ac7624b.ogg",
+    "text": "You signed in to Peach Pass yourself and owe nothing? Spoilsport."
+  },
+  {
+    "id": "keeper/catfish_kelpie/0",
+    "role": "keeper",
+    "file": "75ca900f7160a4a6.ogg",
+    "text": "The Kelpie still waits by the lake. Tell me about that new match."
+  },
+  {
+    "id": "keeper/catfish_kelpie/1",
+    "role": "keeper",
+    "file": "5a5accf79f769dae.ogg",
+    "text": "A sudden emergency from someone you never met. What did you do?"
+  },
+  {
+    "id": "keeper/code_changeling/0",
+    "role": "keeper",
+    "file": "989b4771a9da7f39.ogg",
+    "text": "The Changeling still wears your friend's face. Tell me about that code."
+  },
+  {
+    "id": "keeper/code_changeling/1",
+    "role": "keeper",
+    "file": "c8131470c96abf61.ogg",
+    "text": "Six little digits, and the Changeling wanted them badly. Speak."
+  },
+  {
+    "id": "keeper/commute_chimera/0",
+    "role": "keeper",
+    "file": "c05df73dbcb848e7.ogg",
+    "text": "A car head, a bus head, and a stopwatch head, all hungry for your schedule. Let us talk."
+  },
+  {
+    "id": "keeper/commute_chimera/1",
+    "role": "keeper",
+    "file": "575493eeada670f9.ogg",
+    "text": "Kennesaw in the morning, Marietta by lunch. I want to hear about that trip."
+  },
+  {
+    "id": "keeper/commute_chimera/2",
+    "role": "keeper",
+    "file": "aaad769dd190327d.ogg",
+    "text": "The Chimera purrs whenever a trip goes unplanned. My question is about your day."
+  },
+  {
+    "id": "keeper/cram_lich/0",
+    "role": "keeper",
+    "file": "7aa6e9dc6f624633.ogg",
+    "text": "Finals week rattles even my old bones. Let us see what you did with the Lich's bargain."
+  },
+  {
+    "id": "keeper/cram_lich/1",
+    "role": "keeper",
+    "file": "6b21d4ad19b1442b.ogg",
+    "text": "Flashcards, energy drinks, and no sleep. The Lich throws quite a party. My question awaits."
+  },
+  {
+    "id": "keeper/cram_lich/2",
+    "role": "keeper",
+    "file": "50864f80fced65d2.ogg",
+    "text": "The library lights burn late on this floor. Tell me how you handled finals week."
+  },
+  {
+    "id": "keeper/crypto_kraken/0",
+    "role": "keeper",
+    "file": "170f25444520ec94.ogg",
+    "text": "The Kraken's charts still glow. Let us talk about that tip from your friend."
+  },
+  {
+    "id": "keeper/crypto_kraken/1",
+    "role": "keeper",
+    "file": "91b427ae3c3c2361.ogg",
+    "text": "Double your money in two days. What did you do with that offer?"
+  },
+  {
+    "id": "keeper/deadline_wraith/0",
+    "role": "keeper",
+    "file": "11adbc2d51254600.ogg",
+    "text": "The Wraith's paper pile still rustles behind you. I wonder what you did with it."
+  },
+  {
+    "id": "keeper/deadline_wraith/1",
+    "role": "keeper",
+    "file": "c9a00703afd6eeef.ogg",
+    "text": "Every due date shouted at once up there. Down here, only my question speaks."
+  },
+  {
+    "id": "keeper/deadline_wraith/2",
+    "role": "keeper",
+    "file": "a2f559cb7201ccad.ogg",
+    "text": "Ah, the stack of syllabi that hums all night. Let us talk about how you faced it."
+  },
+  {
+    "id": "keeper/default/0",
+    "role": "keeper",
+    "file": "b84c243baddd51bd.ogg",
+    "text": "So, you met my floor's trickster and lived. Let us see what you remember."
+  },
+  {
+    "id": "keeper/default/1",
+    "role": "keeper",
+    "file": "6bb568f03ac4063c.ogg",
+    "text": "Every Owl thinks they spotted the trap. Few can explain it to me."
+  },
+  {
+    "id": "keeper/default/2",
+    "role": "keeper",
+    "file": "20f87733512c2013.ogg",
+    "text": "The stairs are behind me, scholar. First, a question about your last choice."
+  },
+  {
+    "id": "keeper/echo_doppelganger/0",
+    "role": "keeper",
+    "file": "4bb42b8fef985465.ogg",
+    "text": "The Doppelganger still speaks in a voice you know. Tell me what you did."
+  },
+  {
+    "id": "keeper/echo_doppelganger/1",
+    "role": "keeper",
+    "file": "e5feedcf4d9ca002.ogg",
+    "text": "A family emergency, and a secret. What did you choose?"
+  },
+  {
+    "id": "keeper/gift_card_gargoyle/0",
+    "role": "keeper",
+    "file": "bfb0928a5c681cde.ogg",
+    "text": "Half-price books and a very strange way to pay. Tell me what you made of it."
+  },
+  {
+    "id": "keeper/gift_card_gargoyle/1",
+    "role": "keeper",
+    "file": "1053c1b233f1b249.ogg",
+    "text": "The Gargoyle's tower of textbooks wobbles behind you. I have a question about that deal."
+  },
+  {
+    "id": "keeper/gift_card_gargoyle/2",
+    "role": "keeper",
+    "file": "4502fcdc9993dd65.ogg",
+    "text": "Stone wings, cheap books, payment in plastic. Let us see what you remember."
+  },
+  {
+    "id": "keeper/inbox_mimic/0",
+    "role": "keeper",
+    "file": "a61fb82a7d39de23.ogg",
+    "text": "That chest with envelope teeth still chatters up there. Let us see what you remember about it."
+  },
+  {
+    "id": "keeper/inbox_mimic/1",
+    "role": "keeper",
+    "file": "2a4dba3418de948c.ogg",
+    "text": "The Mimic loves a shiny seal and a ticking clock. Tell me what you made of its treasure."
+  },
+  {
+    "id": "keeper/inbox_mimic/2",
+    "role": "keeper",
+    "file": "39d7ebe94bcdab43.ogg",
+    "text": "Treasure that arrives by email tends to bite. I have a question about yours."
+  },
+  {
+    "id": "keeper/internship_impostor/0",
+    "role": "keeper",
+    "file": "da0c7868b220403b.ogg",
+    "text": "A dream job, a shiny check, and a borrowed cloak. I have questions, recruit."
+  },
+  {
+    "id": "keeper/internship_impostor/1",
+    "role": "keeper",
+    "file": "b4c9a22aee1e28d7.ogg",
+    "text": "The Impostor's clipboard is still squeaking somewhere. Let us discuss that offer."
+  },
+  {
+    "id": "keeper/internship_impostor/2",
+    "role": "keeper",
+    "file": "abadf9dcc589a3d3.ogg",
+    "text": "Smooth talk, quick start, strange payroll. My question is about how you handled it."
+  },
+  {
+    "id": "keeper/listing_leech/0",
+    "role": "keeper",
+    "file": "a44a3a329882374d.ogg",
+    "text": "The Leech still clings to its FOR RENT sign. Tell me what you did about that listing."
+  },
+  {
+    "id": "keeper/listing_leech/1",
+    "role": "keeper",
+    "file": "5f86a17d3280dee4.ogg",
+    "text": "No tour, cheap rent, a deposit today. What did you decide?"
+  },
+  {
+    "id": "keeper/loan_phantom/0",
+    "role": "keeper",
+    "file": "c715923572e3599f.ogg",
+    "text": "The Phantom still waves its certificate. Let us see what you did about it."
+  },
+  {
+    "id": "keeper/loan_phantom/1",
+    "role": "keeper",
+    "file": "285eacc7d580444f.ogg",
+    "text": "Forgiveness for a fee. I am curious what you chose."
+  },
+  {
+    "id": "keeper/overpay_ogre/0",
+    "role": "keeper",
+    "file": "fe3b0c63f8ed14b1.ogg",
+    "text": "A check far too big and an oops far too quick. I have a question for you, scholar."
+  },
+  {
+    "id": "keeper/overpay_ogre/1",
+    "role": "keeper",
+    "file": "6c24466d769a40a0.ogg",
+    "text": "The Ogre still waves that oversized check around. Let us see what you did with it."
+  },
+  {
+    "id": "keeper/overpay_ogre/2",
+    "role": "keeper",
+    "file": "8f13918f8daab2f2.ogg",
+    "text": "Sublease deals with movers in a hurry are this floor's specialty. Tell me what you recall."
+  },
+  {
+    "id": "keeper/package_pixie/0",
+    "role": "keeper",
+    "file": "70639c3cab40a5f0.ogg",
+    "text": "The Pixie still buzzes about its parcels. What did you make of that text?"
+  },
+  {
+    "id": "keeper/package_pixie/1",
+    "role": "keeper",
+    "file": "b62a6bc7e6be2dc9.ogg",
+    "text": "A tiny fee to free a package. Let us see what you did."
+  },
+  {
+    "id": "keeper/password_hydra/0",
+    "role": "keeper",
+    "file": "18831f94edc3ad02.ogg",
+    "text": "One key, many heads, endless bickering. Let us see what you did about that key ring."
+  },
+  {
+    "id": "keeper/password_hydra/1",
+    "role": "keeper",
+    "file": "40fff29fe3869425.ogg",
+    "text": "I hear hissing from the vault behind you. Tell me how you handled all those doors."
+  },
+  {
+    "id": "keeper/password_hydra/2",
+    "role": "keeper",
+    "file": "4e90da1aaad1dab1.ogg",
+    "text": "The Hydra's heads are still arguing over a passphrase. My question is about yours."
+  },
+  {
+    "id": "keeper/push_poltergeist/0",
+    "role": "keeper",
+    "file": "2edd84778475429c.ogg",
+    "text": "Buzz, buzz, approve? The Poltergeist hopes you are sleepy. I hope you are awake."
+  },
+  {
+    "id": "keeper/push_poltergeist/1",
+    "role": "keeper",
+    "file": "2fb865b99806f4ef.ogg",
+    "text": "Pop-ups rattling at night are this floor's favorite trick. Let us talk about them."
+  },
+  {
+    "id": "keeper/push_poltergeist/2",
+    "role": "keeper",
+    "file": "c388ed34bbe6f890.ogg",
+    "text": "Your phone kept buzzing up there, Owl. My question is about that late-night alert."
+  },
+  {
+    "id": "keeper/scalper_specter/0",
+    "role": "keeper",
+    "file": "b52f944f6e4cb225.ogg",
+    "text": "The Specter still fans its tickets. Tell me about that deal."
+  },
+  {
+    "id": "keeper/scalper_specter/1",
+    "role": "keeper",
+    "file": "fbf08430debb338e.ogg",
+    "text": "Cheap seats to a sold-out game. What did you do?"
+  },
+  {
+    "id": "keeper/scholarship_siren/0",
+    "role": "keeper",
+    "file": "d380fd568fccc362.ogg",
+    "text": "The Siren still hums your name. Let us see what you did about that award."
+  },
+  {
+    "id": "keeper/scholarship_siren/1",
+    "role": "keeper",
+    "file": "eeb4ba2da069d1c3.ogg",
+    "text": "Free money with a fee attached. I wonder what you made of it."
+  },
+  {
+    "id": "keeper/sweepstakes_sphinx/0",
+    "role": "keeper",
+    "file": "129f0144392c00ee.ogg",
+    "text": "The Sphinx still guards its giant check. Answer me this about your prize."
+  },
+  {
+    "id": "keeper/sweepstakes_sphinx/1",
+    "role": "keeper",
+    "file": "6083d3a2646e118f.ogg",
+    "text": "A prize that asks for money back. What did you decide?"
+  },
+  {
+    "id": "keeper/ticket_troll/0",
+    "role": "keeper",
+    "file": "0c192542c65ac14d.ogg",
+    "text": "The Troll's paper tickets still flutter down the ramp. Let us see what you made of that text."
+  },
+  {
+    "id": "keeper/ticket_troll/1",
+    "role": "keeper",
+    "file": "9c520340f2dd93ff.ogg",
+    "text": "A fine that shows up by text with a ticking clock. I am curious what you did next."
+  },
+  {
+    "id": "keeper/ticket_troll/2",
+    "role": "keeper",
+    "file": "70d0ab5c2a697f8f.ogg",
+    "text": "Under the parking deck, the Troll counts its tickets. Tell me about yours."
+  },
+  {
+    "id": "hoot/hint/catfish_kelpie/0",
+    "role": "hoot",
+    "file": "a32716f0a1d8e1e4.ogg",
+    "text": "Hoo, you have never seen this person live. What does that tell you?"
+  },
+  {
+    "id": "hoot/hint/catfish_kelpie/1",
+    "role": "hoot",
+    "file": "42971929220353a9.ogg",
+    "text": "Hoo, notice how fast a new match turned to an emergency."
+  },
+  {
+    "id": "hoot/hint/code_changeling/0",
+    "role": "hoot",
+    "file": "6de7b9ab12b21550.ogg",
+    "text": "Hoo, whose account does that code actually unlock?"
+  },
+  {
+    "id": "hoot/hint/code_changeling/1",
+    "role": "hoot",
+    "file": "ad1fd7da3bd178e7.ogg",
+    "text": "Hoo, what does the code message itself say about sharing it?"
+  },
+  {
+    "id": "hoot/hint/commute_chimera/0",
+    "role": "hoot",
+    "file": "568a7c39e2dae20b.ogg",
+    "text": "Hoo, how long does the trip between campuses really take at lunchtime?"
+  },
+  {
+    "id": "hoot/hint/commute_chimera/1",
+    "role": "hoot",
+    "file": "351fd827ebceec88.ogg",
+    "text": "Hoo, where would you park, and how much wiggle room does your day have?"
+  },
+  {
+    "id": "hoot/hint/cram_lich/0",
+    "role": "hoot",
+    "file": "7b24d1ecc42943c5.ogg",
+    "text": "Hoo, finals are stacked close together. Is a sleepless night really the plan?"
+  },
+  {
+    "id": "hoot/hint/cram_lich/1",
+    "role": "hoot",
+    "file": "f9c4ad046e22e3e4.ogg",
+    "text": "Hoo, where do sleep and meals fit on your calendar this week?"
+  },
+  {
+    "id": "hoot/hint/crypto_kraken/0",
+    "role": "hoot",
+    "file": "c6d0fcaded48e714.ogg",
+    "text": "Hoo, is that really your friend typing, and how could you check another way?"
+  },
+  {
+    "id": "hoot/hint/crypto_kraken/1",
+    "role": "hoot",
+    "file": "f8d6dd2982e3eefa.ogg",
+    "text": "Hoo, money that doubles in two days is a story, not a plan."
+  },
+  {
+    "id": "hoot/hint/deadline_wraith/0",
+    "role": "hoot",
+    "file": "4b8f691729e3a9a8.ogg",
+    "text": "Hoo, everything looks due right now. Which one is actually due first?"
+  },
+  {
+    "id": "hoot/hint/deadline_wraith/1",
+    "role": "hoot",
+    "file": "106a28c54832ea70.ogg",
+    "text": "Hoo, does that big pile look smaller once you cut it into little pieces?"
+  },
+  {
+    "id": "hoot/hint/default/0",
+    "role": "hoot",
+    "file": "3fc778d228d788d5.ogg",
+    "text": "Hoo, take a breath. Who really sent this, and how could you check without replying?"
+  },
+  {
+    "id": "hoot/hint/default/1",
+    "role": "hoot",
+    "file": "ed29632e3d9596e3.ogg",
+    "text": "Hoo! Look for pressure, a strange sender, or a request for money or logins."
+  },
+  {
+    "id": "hoot/hint/default/2",
+    "role": "hoot",
+    "file": "6e203a5568fe4956.ogg",
+    "text": "Hoo, ask yourself what an official office would actually ask you to do."
+  },
+  {
+    "id": "hoot/hint/echo_doppelganger/0",
+    "role": "hoot",
+    "file": "bfd12eb7b2b51237.ogg",
+    "text": "Hoo, a voice can be copied. How could you reach your family another way?"
+  },
+  {
+    "id": "hoot/hint/echo_doppelganger/1",
+    "role": "hoot",
+    "file": "f6f2732a63f702ad.ogg",
+    "text": "Hoo, why would someone in trouble ask you to keep it secret?"
+  },
+  {
+    "id": "hoot/hint/gift_card_gargoyle/0",
+    "role": "hoot",
+    "file": "7a3802f51fd78818.ogg",
+    "text": "Hoo, why would an honest seller only take one odd way to pay, and only right now?"
+  },
+  {
+    "id": "hoot/hint/gift_card_gargoyle/1",
+    "role": "hoot",
+    "file": "a0f70ee3c4f7b803.ogg",
+    "text": "Hoo, is there somewhere on campus where this book might already be waiting?"
+  },
+  {
+    "id": "hoot/hint/inbox_mimic/0",
+    "role": "hoot",
+    "file": "b0e44422f1197e4b.ogg",
+    "text": "Hoo, did you ask for this message, or did it just show up wanting your login?"
+  },
+  {
+    "id": "hoot/hint/inbox_mimic/1",
+    "role": "hoot",
+    "file": "f60364ccbe557967.ogg",
+    "text": "Hoo, would a real aid office ever need your password in a reply?"
+  },
+  {
+    "id": "hoot/hint/internship_impostor/0",
+    "role": "hoot",
+    "file": "09fb937259b70343.ogg",
+    "text": "Hoo, why would a real employer want your bank details before you even start?"
+  },
+  {
+    "id": "hoot/hint/internship_impostor/1",
+    "role": "hoot",
+    "file": "cf32882ca22144ee.ogg",
+    "text": "Hoo, did you ever apply for this job? Who could tell you if the company is real?"
+  },
+  {
+    "id": "hoot/hint/listing_leech/0",
+    "role": "hoot",
+    "file": "57cb4e45144e00ef.ogg",
+    "text": "Hoo, has anyone actually shown you this place?"
+  },
+  {
+    "id": "hoot/hint/listing_leech/1",
+    "role": "hoot",
+    "file": "f445946a72622510.ogg",
+    "text": "Hoo, why would a landlord be unable to meet you at all?"
+  },
+  {
+    "id": "hoot/hint/loan_phantom/0",
+    "role": "hoot",
+    "file": "124325cf02dc6a29.ogg",
+    "text": "Hoo, would a real loan program charge you to sign up?"
+  },
+  {
+    "id": "hoot/hint/loan_phantom/1",
+    "role": "hoot",
+    "file": "545e43f125824eb6.ogg",
+    "text": "Hoo, who actually needs your aid login, and who should never get it?"
+  },
+  {
+    "id": "hoot/hint/overpay_ogre/0",
+    "role": "hoot",
+    "file": "991e30a23c7aa2f7.ogg",
+    "text": "Hoo, why would someone overpay and then ask you to send the extra back fast?"
+  },
+  {
+    "id": "hoot/hint/overpay_ogre/1",
+    "role": "hoot",
+    "file": "955071a0b2be3166.ogg",
+    "text": "Hoo, if that check bounces later, whose money did you send away?"
+  },
+  {
+    "id": "hoot/hint/package_pixie/0",
+    "role": "hoot",
+    "file": "90c9896762a0aed7.ogg",
+    "text": "Hoo, were you even expecting a package right now?"
+  },
+  {
+    "id": "hoot/hint/package_pixie/1",
+    "role": "hoot",
+    "file": "7512a55af8755ebb.ogg",
+    "text": "Hoo, where does that text really want to take you?"
+  },
+  {
+    "id": "hoot/hint/password_hydra/0",
+    "role": "hoot",
+    "file": "17861a5772acde75.ogg",
+    "text": "Hoo, if one key leaks, how many of your doors does it open?"
+  },
+  {
+    "id": "hoot/hint/password_hydra/1",
+    "role": "hoot",
+    "file": "3c637f05afd68c8d.ogg",
+    "text": "Hoo, how could you keep a different key for every door without memorizing them all?"
+  },
+  {
+    "id": "hoot/hint/push_poltergeist/0",
+    "role": "hoot",
+    "file": "4550a88045e49954.ogg",
+    "text": "Hoo, did you start that sign-in? If not, who did, and who should know?"
+  },
+  {
+    "id": "hoot/hint/push_poltergeist/1",
+    "role": "hoot",
+    "file": "8edd3f6d4e7c676d.ogg",
+    "text": "Hoo, would a real help desk text you to tap yes just to stop the buzzing?"
+  },
+  {
+    "id": "hoot/hint/scalper_specter/0",
+    "role": "hoot",
+    "file": "d12202e979c33d5b.ogg",
+    "text": "Hoo, sold-out seats for less than face value? Why might that be?"
+  },
+  {
+    "id": "hoot/hint/scalper_specter/1",
+    "role": "hoot",
+    "file": "fdba27900bfc7e6d.ogg",
+    "text": "Hoo, what protects you if the seats never arrive?"
+  },
+  {
+    "id": "hoot/hint/scholarship_siren/0",
+    "role": "hoot",
+    "file": "313a316d15eac414.ogg",
+    "text": "Hoo, did you ever apply for this award, or did it find you?"
+  },
+  {
+    "id": "hoot/hint/scholarship_siren/1",
+    "role": "hoot",
+    "file": "088555990ca3f0c7.ogg",
+    "text": "Hoo, would a real award ask you to pay before it pays you?"
+  },
+  {
+    "id": "hoot/hint/sweepstakes_sphinx/0",
+    "role": "hoot",
+    "file": "4bddcb657d4df57b.ogg",
+    "text": "Hoo, did you enter any contest at all?"
+  },
+  {
+    "id": "hoot/hint/sweepstakes_sphinx/1",
+    "role": "hoot",
+    "file": "48d327810113177f.ogg",
+    "text": "Hoo, why would a real prize ever cost you anything?"
+  },
+  {
+    "id": "hoot/hint/ticket_troll/0",
+    "role": "hoot",
+    "file": "71428477eee9df4d.ogg",
+    "text": "Hoo, would a real parking office send a pay link with a countdown in a text?"
+  },
+  {
+    "id": "hoot/hint/ticket_troll/1",
+    "role": "hoot",
+    "file": "6ed3e01cd3a22834.ogg",
+    "text": "Hoo, did you ask for this text, or did a pay link just show up on its own?"
+  },
+  {
+    "id": "keeper/default",
+    "role": "keeper",
+    "file": "08eb8b6d9b6ecf05.ogg",
+    "text": "So, you survived my floor. Let us see what you learned."
+  },
+  {
+    "id": "hoot/default",
+    "role": "hoot",
+    "file": "46a4d1e73f58bf31.ogg",
+    "text": "Hoo, slow down. Who sent this, and what are they asking you to do?"
+  },
+  {
+    "id": "keeper/right/0",
+    "role": "keeper",
+    "file": "4f4b376c59028d3c.ogg",
+    "text": "Sharp eyes, Owl. You listened down here, so the stairs are yours."
+  },
+  {
+    "id": "keeper/wrong/0",
+    "role": "keeper",
+    "file": "9fc0f151b72d38b9.ogg",
+    "text": "Not quite. That isn't the safer move. My two wardens will test you instead."
+  },
+  {
+    "id": "keeper/right/1",
+    "role": "keeper",
+    "file": "adba39cf4d7c6d80.ogg",
+    "text": "That is the move. Few who pass me know it. Go on, and mind the next floor."
+  },
+  {
+    "id": "keeper/wrong/1",
+    "role": "keeper",
+    "file": "a311c725c52fb24f.ogg",
+    "text": "No, that's the risky road. Wardens, if you please."
+  },
+  {
+    "id": "keeper/right/2",
+    "role": "keeper",
+    "file": "ab342ef52a381947.ogg",
+    "text": "Correct. I'll step aside; my wardens can stay asleep tonight."
+  },
+  {
+    "id": "keeper/wrong/2",
+    "role": "keeper",
+    "file": "88690a1bc708aded.ogg",
+    "text": "Wrong answer, and a risky one. Survive my wardens, then the stairs are yours."
+  },
+  {
+    "id": "keeper/right/3",
+    "role": "keeper",
+    "file": "5488997177cf0b6f.ogg",
+    "text": "Well answered, scholar. Take the stairs, and take that habit with you."
+  },
+  {
+    "id": "keeper/wrong/3",
+    "role": "keeper",
+    "file": "cc1fa16b1e0b4ab9.ogg",
+    "text": "That's the move the trap is hoping for. Two wardens, then we'll talk."
+  },
+  {
+    "id": "warden/THE TOW TRUCK TYRANT",
+    "role": "warden:THE TOW TRUCK TYRANT",
+    "file": "120a2e870277a073.ogg",
+    "text": "Its beacon flashes and a red line points at you... then it CHARGES. Sidestep."
+  },
+  {
+    "id": "warden/THE FINALS WEEK GOLEM",
+    "role": "warden:THE FINALS WEEK GOLEM",
+    "file": "9f1f8c9c45b049e7.ogg",
+    "text": "A red ring grows on the floor, then exam pages fly out in every direction."
+  },
+  {
+    "id": "warden/THE NIGHT OWL QUEEN",
+    "role": "warden:THE NIGHT OWL QUEEN",
+    "file": "98d1f44f05abbf2c.ogg",
+    "text": "She sprays club flyers and calls Spam Owls. Clear the owls, then chase her."
+  },
+  {
+    "id": "warden/THE LIBRARY STACKS LICH",
+    "role": "warden:THE LIBRARY STACKS LICH",
+    "file": "6e0c43e250ccac49.ogg",
+    "text": "It fades into the stacks, then spins padlock bolts. Hit it while it's solid."
+  },
+  {
+    "id": "warden/THE VENDING MACHINE MIMIC",
+    "role": "warden:THE VENDING MACHINE MIMIC",
+    "file": "fe984d4e28c25352.ogg",
+    "text": "It rattles, then fires soda cans in bursts. Strafe sideways between bursts."
+  },
+  {
+    "id": "warden/THE E-SCOOTER SPECTER",
+    "role": "warden:THE E-SCOOTER SPECTER",
+    "file": "51eb19656634784e.ogg",
+    "text": "A short red line, then a dash, three times in a row. Sidestep each, then hit it."
+  },
+  {
+    "id": "warden/THE DEAD WI-FI WRAITH",
+    "role": "warden:THE DEAD WI-FI WRAITH",
+    "file": "e57f238a9fb0b0ec.ogg",
+    "text": "Signal rings pulse, then it spins out a spiral. Circle with the spiral and shoot."
+  },
+  {
+    "id": "warden/THE PRINTER POLTERGEIST",
+    "role": "warden:THE PRINTER POLTERGEIST",
+    "file": "05826f451cf60cd8.ogg",
+    "text": "It jams out walls of paper. Find the green gap and slip through it."
+  },
+  {
+    "id": "warden/THE FIRE DRILL BANSHEE",
+    "role": "warden:THE FIRE DRILL BANSHEE",
+    "file": "90233e256bcd8b0a.ogg",
+    "text": "Red circles mark sprinklers around you. Step out before they burst."
+  },
+  {
+    "id": "warden/THE DINING HALL HYDRA",
+    "role": "warden:THE DINING HALL HYDRA",
+    "file": "0de72a055c618f50.ogg",
+    "text": "Its three heads glow, then fire a stream of meatballs. Keep moving sideways."
+  },
+  {
+    "id": "warden/THE ALL-NIGHTER GARGOYLE",
+    "role": "warden:THE ALL-NIGHTER GARGOYLE",
+    "file": "bd3065b79dda6583.ogg",
+    "text": "It leaps, and a shadow shows where it lands. Get out of the shadow."
+  },
+  {
+    "id": "warden/THE TUITION TROLL",
+    "role": "warden:THE TUITION TROLL",
+    "file": "d4ecfd86a038a5d5.ogg",
+    "text": "Its coin sacks chase you for a moment. Keep running until they stop turning."
+  },
+  {
+    "id": "warden/THE GROUP CHAT GORGON",
+    "role": "warden:THE GROUP CHAT GORGON",
+    "file": "a4502b4bc0c7d34e.ogg",
+    "text": "Its gaze locks onto a line, then pings fire down it. Step off the line."
+  },
+  {
+    "id": "warden/THE SYLLABUS SERPENT",
+    "role": "warden:THE SYLLABUS SERPENT",
+    "file": "c20007bbc5413cdb.ogg",
+    "text": "It leaves ink puddles behind it. Stay off the ink and shoot from clean floor."
+  },
+  {
+    "id": "hoot/bank/0",
+    "role": "hoot",
+    "file": "1475fca999523225.ogg",
+    "text": "Hoo! Slow down when a message says act now. A real office can wait a day while you check."
+  },
+  {
+    "id": "hoot/bank/1",
+    "role": "hoot",
+    "file": "6b8d1dcd7bf7e5ba.ogg",
+    "text": "Hoo! Look at who actually sent it, not just the name on top. Names are easy to fake."
+  },
+  {
+    "id": "hoot/bank/2",
+    "role": "hoot",
+    "file": "f1fdd8fc0b25e813.ogg",
+    "text": "Hoo, if a message asks for a password, close it. A real office does not ask for those by message."
+  },
+  {
+    "id": "hoot/bank/3",
+    "role": "hoot",
+    "file": "28277cb686cf3faa.ogg",
+    "text": "Hoo! Unsure about a link? Open the site yourself from a bookmark instead of using theirs."
+  },
+  {
+    "id": "hoot/bank/4",
+    "role": "hoot",
+    "file": "09bcf310d62238b9.ogg",
+    "text": "Hoo, a prize you never entered for is bait. Ask what they want from you in return."
+  },
+  {
+    "id": "hoot/bank/5",
+    "role": "hoot",
+    "file": "5930e76d55a4a888.ogg",
+    "text": "Hoo! Pressure is a tell. A real deadline is still real after you call the office to check."
+  },
+  {
+    "id": "hoot/bank/6",
+    "role": "hoot",
+    "file": "565b6f0202346a82.ogg",
+    "text": "Hoo, a quick second opinion is free. Show a friend or the help desk before you reply."
+  },
+  {
+    "id": "hoot/bank/7",
+    "role": "hoot",
+    "file": "1596f3c59a90edfd.ogg",
+    "text": "Hoo! If it sounds too good to be true, take five minutes and ask someone you trust."
+  },
+  {
+    "id": "hoot/bank/8",
+    "role": "hoot",
+    "file": "3c257f5bc1260596.ogg",
+    "text": "Hoo, typos, odd greetings and strange timing are small clues. Add them up before you trust a message."
+  },
+  {
+    "id": "hoot/bank/9",
+    "role": "hoot",
+    "file": "2818034fb269f948.ogg",
+    "text": "Hoo! Use a different password for every account, so one lost key does not open every door."
+  },
+  {
+    "id": "hoot/bank/10",
+    "role": "hoot",
+    "file": "0599a1391f86a9f8.ogg",
+    "text": "Hoo, never share a verification code with anyone. It is meant for your eyes only."
+  },
+  {
+    "id": "hoot/bank/11",
+    "role": "hoot",
+    "file": "b114c5e53743935f.ogg",
+    "text": "Hoo! A job offer with no interview deserves a closer look. Real employers want to meet you first."
+  },
+  {
+    "id": "hoot/bank/12",
+    "role": "hoot",
+    "file": "b37bf52d62291c54.ogg",
+    "text": "Hoo, check details yourself using contact info you already trust, not what the message gives you."
+  },
+  {
+    "id": "hoot/bank/13",
+    "role": "hoot",
+    "file": "a3ce460b41881063.ogg",
+    "text": "Hoo! If you feel rushed, stop. Scammers love a hurried owl, and a short pause costs you nothing."
+  },
+  {
+    "id": "hoot/bank/14",
+    "role": "hoot",
+    "file": "5d117548b743dbd1.ogg",
+    "text": "Hoo, keep a screenshot of anything suspicious. Showing it to the help desk helps everyone."
+  },
+  {
+    "id": "hoot/bank/15",
+    "role": "hoot",
+    "file": "543d3a411f957f12.ogg",
+    "text": "Hoo! A big deadline feels smaller in steps. Pick the smallest piece and start it now."
+  },
+  {
+    "id": "hoot/bank/16",
+    "role": "hoot",
+    "file": "055b9f3d2bed6776.ogg",
+    "text": "Hoo, a short email to your professor beats a panicked shortcut. Most people appreciate an early heads-up."
+  },
+  {
+    "id": "hoot/bank/17",
+    "role": "hoot",
+    "file": "e664f14728ccbc95.ogg",
+    "text": "Hoo! Take a breath before you tap. One slow look at the sender takes only a few seconds."
+  },
+  {
+    "id": "hoot/bank/18",
+    "role": "hoot",
+    "file": "c33ab792a4106aef.ogg",
+    "text": "Hoo, treat surprise attachments like unlabeled potions. Ask before you open them."
+  },
+  {
+    "id": "hoot/bank/19",
+    "role": "hoot",
+    "file": "7dd181b9830cbde3.ogg",
+    "text": "Hoo! Write down what is due and when. A clear list makes pressure tricks easier to spot."
+  },
+  {
+    "id": "hoot/bank/20",
+    "role": "hoot",
+    "file": "4272442b8222466e.ogg",
+    "text": "Hoo! Nice move. Next time, keep the same habit: pause, check the sender, then decide."
+  },
+  {
+    "id": "hoot/bank/21",
+    "role": "hoot",
+    "file": "0c8d65173ad44280.ogg",
+    "text": "Hoo, well done. Carry that calm pause onto the next floor, because the traps get sneakier."
+  },
+  {
+    "id": "hoot/bank/22",
+    "role": "hoot",
+    "file": "316a5fad8c064cb7.ogg",
+    "text": "Hoo! Good instincts. Say your reasoning out loud next time and it will stick even better."
+  },
+  {
+    "id": "hoot/bank/23",
+    "role": "hoot",
+    "file": "7917bc059b5d0eb7.ogg",
+    "text": "Hoo, you spotted the trick. Tell a friend about it this week, since explaining makes it stronger."
+  },
+  {
+    "id": "hoot/bank/24",
+    "role": "hoot",
+    "file": "b1321d47c9c39245.ogg",
+    "text": "Hoo! Sharp work. Keep checking details yourself, even when a message looks friendly."
+  },
+  {
+    "id": "hoot/bank/25",
+    "role": "hoot",
+    "file": "66e96be32e52160e.ogg",
+    "text": "Hoo! Everyone gets tricked sometimes. Next time, pause and look for the pressure first."
+  },
+  {
+    "id": "hoot/bank/26",
+    "role": "hoot",
+    "file": "7c0ce3d585cac593.ogg",
+    "text": "Hoo, no shame in that one. Next time, check the sender and ask a second person before you act."
+  },
+  {
+    "id": "hoot/bank/27",
+    "role": "hoot",
+    "file": "ed5178e481a03ccc.ogg",
+    "text": "Hoo! That trap is built to be tempting. Next time, take five minutes and verify it another way."
+  },
+  {
+    "id": "hoot/bank/28",
+    "role": "hoot",
+    "file": "a24ec0e93fde1178.ogg",
+    "text": "Hoo, learn it and move on. Next time, look for what they want you to hurry or hand over."
+  },
+  {
+    "id": "hoot/bank/29",
+    "role": "hoot",
+    "file": "d1761535b85cac6f.ogg",
+    "text": "Hoo! Reread the warning signs once more. Spotting them early is the whole trick."
+  },
+  {
+    "id": "hoot/bank/30",
+    "role": "hoot",
+    "file": "35c030589382c543.ogg",
+    "text": "Hoo! A decent move, and there is a stronger one. Reread the warning signs and aim for the safest path next time."
+  },
+  {
+    "id": "hoot/bank/31",
+    "role": "hoot",
+    "file": "432334808e0c1a4e.ogg",
+    "text": "Hoo, half right is a start. Next time, add one more check before you act."
+  },
+  {
+    "id": "hoot/bank/32",
+    "role": "hoot",
+    "file": "7e9c1f47a3c9f081.ogg",
+    "text": "Hoo! You were close. Next time, ask a second person before you commit."
+  },
+  {
+    "id": "hoot/bank/33",
+    "role": "hoot",
+    "file": "c0548d101a489ad6.ogg",
+    "text": "Hoo, not bad. Pausing a little longer next time would make this one a clean win."
+  },
+  {
+    "id": "char/takeaway/sender",
+    "role": "char:trap",
+    "file": "e9d2ed446e6beb4a.ogg",
+    "text": "You read who I was, letter by letter. Hardly anyone does."
+  },
+  {
+    "id": "hoot/nudge/sender/email",
+    "role": "hoot",
+    "file": "cd56bcc4c22cf7f8.ogg",
+    "text": "Hoo, who is this really from? Read the address letter by letter."
+  },
+  {
+    "id": "hoot/nudge/sender/text",
+    "role": "hoot",
+    "file": "f77749710bb6ecd0.ogg",
+    "text": "Hoo, who sent this text? Look at the number itself, not the name."
+  },
+  {
+    "id": "hoot/nudge/sender/message",
+    "role": "hoot",
+    "file": "41cf8ae29f8188cf.ogg",
+    "text": "Hoo, who is behind this profile? Look closer at who they really are."
+  },
+  {
+    "id": "hoot/nudge/sender/web page",
+    "role": "hoot",
+    "file": "d08d1a5ca70f8fc7.ogg",
+    "text": "Hoo, whose site is this really? Read its name carefully."
+  },
+  {
+    "id": "hoot/nudge/sender/sign-in request",
+    "role": "hoot",
+    "file": "23512dd0842157d7.ogg",
+    "text": "Hoo, where is this request coming from? Check the app and the place."
+  },
+  {
+    "id": "hoot/nudge/sender/check",
+    "role": "hoot",
+    "file": "56c67604cb94d96b.ogg",
+    "text": "Hoo, who actually wrote this check? Read the name on it."
+  },
+  {
+    "id": "char/takeaway/headers",
+    "role": "char:trap",
+    "file": "f1a264aed21110e4.ogg",
+    "text": "You checked the fine details. Sneaky. Effective."
+  },
+  {
+    "id": "hoot/nudge/headers/email",
+    "role": "hoot",
+    "file": "09d7967a606c623c.ogg",
+    "text": "Hoo, if you hit reply, where would it really go?"
+  },
+  {
+    "id": "hoot/nudge/headers/text",
+    "role": "hoot",
+    "file": "1da75609ca508ec5.ogg",
+    "text": "Hoo, look past the obvious parts. The small details underneath can disagree."
+  },
+  {
+    "id": "hoot/nudge/headers/message",
+    "role": "hoot",
+    "file": "1da75609ca508ec5.ogg",
+    "text": "Hoo, look past the obvious parts. The small details underneath can disagree."
+  },
+  {
+    "id": "hoot/nudge/headers/web page",
+    "role": "hoot",
+    "file": "1da75609ca508ec5.ogg",
+    "text": "Hoo, look past the obvious parts. The small details underneath can disagree."
+  },
+  {
+    "id": "hoot/nudge/headers/sign-in request",
+    "role": "hoot",
+    "file": "1da75609ca508ec5.ogg",
+    "text": "Hoo, look past the obvious parts. The small details underneath can disagree."
+  },
+  {
+    "id": "hoot/nudge/headers/check",
+    "role": "hoot",
+    "file": "1da75609ca508ec5.ogg",
+    "text": "Hoo, look past the obvious parts. The small details underneath can disagree."
+  },
+  {
+    "id": "char/takeaway/link",
+    "role": "char:trap",
+    "file": "f97c49b78141c5e5.ogg",
+    "text": "You looked before you clicked. Ugh."
+  },
+  {
+    "id": "hoot/nudge/link/email",
+    "role": "hoot",
+    "file": "2747942de824b953.ogg",
+    "text": "Hoo, where does that link really go? Look before you tap."
+  },
+  {
+    "id": "hoot/nudge/link/text",
+    "role": "hoot",
+    "file": "2747942de824b953.ogg",
+    "text": "Hoo, where does that link really go? Look before you tap."
+  },
+  {
+    "id": "hoot/nudge/link/message",
+    "role": "hoot",
+    "file": "2747942de824b953.ogg",
+    "text": "Hoo, where does that link really go? Look before you tap."
+  },
+  {
+    "id": "hoot/nudge/link/web page",
+    "role": "hoot",
+    "file": "568379afc39562ab.ogg",
+    "text": "Hoo, what does the address bar say? The page can copy everything but that."
+  },
+  {
+    "id": "hoot/nudge/link/sign-in request",
+    "role": "hoot",
+    "file": "2747942de824b953.ogg",
+    "text": "Hoo, where does that link really go? Look before you tap."
+  },
+  {
+    "id": "hoot/nudge/link/check",
+    "role": "hoot",
+    "file": "2747942de824b953.ogg",
+    "text": "Hoo, where does that link really go? Look before you tap."
+  },
+  {
+    "id": "char/takeaway/secret",
+    "role": "char:trap",
+    "file": "6be6f0ae990f5263.ogg",
+    "text": "You noticed what I was really asking for."
+  },
+  {
+    "id": "hoot/nudge/secret/email",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "hoot/nudge/secret/text",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "hoot/nudge/secret/message",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "hoot/nudge/secret/web page",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "hoot/nudge/secret/sign-in request",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "hoot/nudge/secret/check",
+    "role": "hoot",
+    "file": "0380e3d7020e9e6f.ogg",
+    "text": "Hoo, read exactly what it wants you to hand over."
+  },
+  {
+    "id": "char/takeaway/money",
+    "role": "char:trap",
+    "file": "4684eebd7dc181f9.ogg",
+    "text": "You followed the money, and it led straight to me."
+  },
+  {
+    "id": "hoot/nudge/money/email",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "hoot/nudge/money/text",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "hoot/nudge/money/message",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "hoot/nudge/money/web page",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "hoot/nudge/money/sign-in request",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "hoot/nudge/money/check",
+    "role": "hoot",
+    "file": "b9bc35c7e4d79adc.ogg",
+    "text": "Hoo, follow the money. Who pays whom, and how?"
+  },
+  {
+    "id": "char/takeaway/pressure",
+    "role": "char:trap",
+    "file": "2177c15c3b452756.ogg",
+    "text": "You ignored my clock. The deadline was the trap."
+  },
+  {
+    "id": "hoot/nudge/pressure/email",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "hoot/nudge/pressure/text",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "hoot/nudge/pressure/message",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "hoot/nudge/pressure/web page",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "hoot/nudge/pressure/sign-in request",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "hoot/nudge/pressure/check",
+    "role": "hoot",
+    "file": "1494bd0eec6f34a8.ogg",
+    "text": "Hoo, why the rush? A ticking clock is a classic trick."
+  },
+  {
+    "id": "char/takeaway/verify",
+    "role": "char:trap",
+    "file": "3893780c2634dfc7.ogg",
+    "text": "You went around me to the real office. So unsporting. So effective."
+  },
+  {
+    "id": "hoot/nudge/verify/email",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/nudge/verify/text",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/nudge/verify/message",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/nudge/verify/web page",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/nudge/verify/sign-in request",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/nudge/verify/check",
+    "role": "hoot",
+    "file": "6aa2d8369a8a5696.ogg",
+    "text": "Hoo, you can always go around it. Find the official contact yourself and ask."
+  },
+  {
+    "id": "hoot/spare-ready",
+    "role": "hoot",
+    "file": "3050eb29266a390a.ogg",
+    "text": "Hoo, you've caught every red flag. You can SPARE it now."
+  },
+  {
+    "id": "char/deleted-unread",
+    "role": "char:trap",
+    "file": "8db66da5928204ec.ogg",
+    "text": "Deleted without one look? Then you never learned my tricks. Wardens!"
+  },
+  {
+    "id": "char/argument-lost",
+    "role": "char:trap",
+    "file": "6cd780f591281a5e.ogg",
+    "text": "Ha! You did everything I asked. Wardens, they're all yours."
+  }
+]

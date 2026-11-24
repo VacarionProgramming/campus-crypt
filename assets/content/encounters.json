@@ -8,7 +8,7 @@
         "name": "The Inbox Mimic",
         "portrait_hint": "A grinning treasure chest with envelope teeth and a peeling fake Federal Student Aid seal."
       },
-      "scenario": "URGENT, brave Owl! Your leftover Federal Student Aid grant of $3,450 expires at midnight. Reply with your StudentAid.gov password and tap this portal to claim your treasure now!\n\n- Office of Student Treasure\naid-office@ksu-grants-secure.net",
+      "scenario": "URGENT, brave Owl! Your leftover Federal Student Aid grant of $3,450 expires at midnight. Reply with your StudentAid.gov password and tap this portal to claim your treasure now!\n\n- Office of Student Treasure\naid-office@ksu-grants-secure.example",
       "choices": [
         {
           "id": "inspect_sender",
@@ -27,7 +27,7 @@
           ],
           "safer_next_move": "Open StudentAid.gov or official KSU channels yourself instead of using a link or address from the message.",
           "keeper": {
-            "question": "You checked the sender: aid-office@ksu-grants-secure.net. What's your next move?",
+            "question": "You checked the sender: aid-office@ksu-grants-secure.example. What's your next move?",
             "answer": "Go to StudentAid.gov or KSU yourself and report the message, without using its link.",
             "wrong": [
               "Reply with your password, since the email mentions KSU so it's probably fine.",
@@ -301,7 +301,7 @@
         "name": "The Internship Impostor",
         "portrait_hint": "A too-polished recruiter in a borrowed company cloak, holding a clipboard and a shiny fake check."
       },
-      "scenario": "Congratulations! You've been selected for a remote internship at $45/hour, starting today. Send your Social Security number and bank details so we can deposit your welcome check. Deposit it, wire us the equipment fee, and you're hired!\n\n- Talent Desk, jobs@owl-interns-careers.com",
+      "scenario": "Congratulations! You've been selected for a remote internship at $45/hour, starting today. Send your Social Security number and bank details so we can deposit your welcome check. Deposit it, wire us the equipment fee, and you're hired!\n\n- Talent Desk, jobs@owl-interns-careers.example",
       "choices": [
         {
           "id": "comply",
@@ -394,7 +394,7 @@
         "name": "The Ticket Troll",
         "portrait_hint": "A stubby troll in a neon safety vest, clutching a fan of fake parking tickets and a glowing phone."
       },
-      "scenario": "CAMPUS PARKING NOTICE: Unpaid citation on your vehicle. Pay $35 within 24 hours or a $95 late fee is added and your permit is suspended. Pay now: campus-parking-pay.info/owl\n\nReply STOP to opt out.",
+      "scenario": "CAMPUS PARKING NOTICE: Unpaid citation on your vehicle. Pay $35 within 24 hours or a $95 late fee is added and your permit is suspended. Pay now: campus-parking-pay.example/owl\n\nReply STOP to opt out.",
       "choices": [
         {
           "id": "tap_pay_link",
@@ -889,6 +889,856 @@
             "wrong": [
               "Leave the other two exams for the morning of each test and hope it works out.",
               "Swap all your sleep for study time on the other two, since rest can wait until break."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "scholarship_siren",
+      "name": "The Scholarship Siren",
+      "room_intro": "Deep in the crypt, a mermaid perched on a stack of award certificates sings your name. Your phone lights up with an email about free money.",
+      "character": {
+        "name": "The Scholarship Siren",
+        "portrait_hint": "A sparkly siren holding a giant cardboard check and a tiny fee invoice."
+      },
+      "scenario": "CONGRATULATIONS! You were selected for the $5,000 National Owl Achievement Scholarship. No essay needed. To release your award, pay a one-time $79 processing fee by Friday. Claim now: owl-scholar-awards.example/claim",
+      "choices": [
+        {
+          "id": "pay_fee",
+          "label": "Pay the $79 fee",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "La la la! Seventy-nine dollars, and the five thousand is... somewhere out at sea. Thank you, darling!",
+          "warning_signs": [
+            "You never applied, yet you 'won'.",
+            "A real scholarship never charges a fee to pay you.",
+            "A Friday deadline rushes you past checking."
+          ],
+          "safer_next_move": "Don't pay; look the scholarship up yourself and ask KSU's scholarship office before sharing anything.",
+          "keeper": {
+            "question": "You paid the fee and now they want your bank login to deposit the award. What now?",
+            "answer": "Stop, share nothing, and call your bank.",
+            "wrong": [
+              "Send the login they asked for so the award can arrive faster.",
+              "Pay the second fee too, since it unlocks the bigger award tier."
+            ]
+          }
+        },
+        {
+          "id": "ask_for_details",
+          "label": "Reply asking for details",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Ooh, a reply! Now I know your inbox is listening. More songs coming your way!",
+          "warning_signs": [
+            "Replying confirms your address is active.",
+            "Anything they send back can be just as fake."
+          ],
+          "safer_next_move": "Don't reply; look the award up yourself and check with KSU's scholarship office.",
+          "keeper": {
+            "question": "They answered with a 'certificate' and a new deadline. What do you do?",
+            "answer": "Ignore it; check with the scholarship office.",
+            "wrong": [
+              "Pay now, since sending a certificate shows the award is genuine.",
+              "Forward your student ID so they can finish verifying your eligibility."
+            ]
+          }
+        },
+        {
+          "id": "check_with_office",
+          "label": "Check with KSU",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You asked the real scholarship office? And they never heard of me? My song falls flat.",
+          "warning_signs": [
+            "Unexpected awards you never applied for are a classic hook.",
+            "Legit scholarships never charge to pay you."
+          ],
+          "safer_next_move": "Find awards through KSU's own scholarship search and report fee-for-award emails.",
+          "keeper": {
+            "question": "The office says the award isn't real. What's your next step?",
+            "answer": "Report the email as phishing and delete it.",
+            "wrong": [
+              "Pay the fee anyway, just in case the award turns out to be real.",
+              "Reply to tell them you know it's fake so they stop emailing you."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "listing_leech",
+      "name": "The Listing Leech",
+      "room_intro": "A slimy leech curls around a FOR RENT sign at the crypt's edge. A listing glows on a cracked screen: two bedrooms, steps from campus, half the usual price.",
+      "character": {
+        "name": "The Listing Leech",
+        "portrait_hint": "A green leech wearing a realtor badge, clutching a set of fake keys."
+      },
+      "scenario": "2BR apartment, 5 min from KSU Marietta, $650/month, utilities included! I'm out of the country for work, so no tours. Send the $650 deposit by Zelle today to hold it and I'll mail you the keys.",
+      "choices": [
+        {
+          "id": "send_deposit",
+          "label": "Send the deposit",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Slurp! Deposit received. The keys are in the mail. The mail is imaginary.",
+          "warning_signs": [
+            "No tour, and the owner is conveniently away.",
+            "Far below the area's usual rent.",
+            "A deposit by Zelle before you've seen anything."
+          ],
+          "safer_next_move": "Never pay before a tour; verify the owner through property records or the leasing office.",
+          "keeper": {
+            "question": "You sent the deposit and they now want first month's rent too. What now?",
+            "answer": "Send nothing more and contact your bank right away.",
+            "wrong": [
+              "Pay the rent too so you don't lose the apartment to someone else.",
+              "Send a photo of your ID so they can process the lease paperwork."
+            ]
+          }
+        },
+        {
+          "id": "ask_for_video",
+          "label": "Ask for a video tour",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "A video? I'll send one! Of a different apartment. You'll never know!",
+          "warning_signs": [
+            "A video can be copied from a real listing.",
+            "It doesn't prove they own the place."
+          ],
+          "safer_next_move": "Tour in person or through a known leasing office, and verify ownership first.",
+          "keeper": {
+            "question": "They sent a video and still want the deposit first. What do you do?",
+            "answer": "Don't pay; verify ownership and tour in person first.",
+            "wrong": [
+              "Pay the deposit now, since the video tour looked real enough.",
+              "Send half of the deposit now as a compromise to hold the unit."
+            ]
+          }
+        },
+        {
+          "id": "tour_in_person",
+          "label": "Insist on a tour",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "In person? With a real landlord? I'm... busy. Forever. Bye!",
+          "warning_signs": [
+            "Real landlords show the place before taking money.",
+            "Pressure to skip a tour is the scam."
+          ],
+          "safer_next_move": "Use KSU's off-campus housing resources and never pay before touring and signing a lease.",
+          "keeper": {
+            "question": "The 'landlord' stopped answering when you asked to tour. What now?",
+            "answer": "Report the listing to the site and move on.",
+            "wrong": [
+              "Send the deposit after all to win the landlord back over.",
+              "Give them your SSN so they can run the credit check first."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "crypto_kraken",
+      "name": "The Crypto Kraken",
+      "room_intro": "Tentacles of glowing charts rise from a crypt pool. A message from a friend's account flashes: they just doubled their money, and you can too.",
+      "character": {
+        "name": "The Crypto Kraken",
+        "portrait_hint": "A purple kraken juggling shiny coins, with a chart that only goes up."
+      },
+      "scenario": "omg I just turned $200 into $1,900 in two days with this crypto trading coach!! He's taking 3 more students. Send $250 in Bitcoin to his wallet and he'll trade for you. Screenshots attached. Hurry!!",
+      "choices": [
+        {
+          "id": "send_crypto",
+          "label": "Send the $250",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Glub glub! Your coins swim into my ocean. They don't swim back.",
+          "warning_signs": [
+            "Guaranteed big returns fast.",
+            "Payment in crypto, which can't be reversed.",
+            "A friend's account can be hacked."
+          ],
+          "safer_next_move": "Don't send money; call your friend another way to check, and report the account.",
+          "keeper": {
+            "question": "The 'coach' says you need to pay a withdrawal fee to get your profit. What now?",
+            "answer": "Pay nothing more and report it.",
+            "wrong": [
+              "Pay the withdrawal fee so you can finally cash out your profit.",
+              "Recruit a classmate too so you both earn the referral bonus."
+            ]
+          }
+        },
+        {
+          "id": "ask_friend_in_dm",
+          "label": "Ask in the DM",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Of course it's me, your friend! Totally me. The one who types like a kraken.",
+          "warning_signs": [
+            "If the account is hacked, the scammer answers.",
+            "Asking in the same chat proves nothing."
+          ],
+          "safer_next_move": "Contact your friend by phone or in person to check.",
+          "keeper": {
+            "question": "The 'friend' replied 'yes it's me, hurry.' What now?",
+            "answer": "Call your friend another way before doing anything.",
+            "wrong": [
+              "Send the money now, since they confirmed it's really them in the chat.",
+              "Send your own exchange login so they can show you how it works."
+            ]
+          }
+        },
+        {
+          "id": "call_friend",
+          "label": "Call your friend",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You CALLED them? And they were hacked? My tentacles are tangled.",
+          "warning_signs": [
+            "Hacked accounts spread investment scams to friends.",
+            "Real investing has no guaranteed doubling."
+          ],
+          "safer_next_move": "Tell your friend their account was hacked and report the messages.",
+          "keeper": {
+            "question": "Your friend says they were hacked. What should they do?",
+            "answer": "Change the password, add two-factor, warn friends.",
+            "wrong": [
+              "Pay the hacker the ransom they ask for to get the account back.",
+              "Keep the same password, since changing it might lock them out."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catfish_kelpie",
+      "name": "The Catfish Kelpie",
+      "room_intro": "A charming water horse with a perfect profile photo waits by a misty crypt lake. Your phone buzzes: your new match wants to talk.",
+      "character": {
+        "name": "The Catfish Kelpie",
+        "portrait_hint": "A sleek water horse holding a phone with a too-perfect selfie."
+      },
+      "scenario": "Hey you :) Sorry I can't video chat, my camera's broken. I'm stuck overseas and my card got frozen. Could you send $300 in gift cards so I can get home? I'll pay you back the second I land. You're the only one I trust.",
+      "choices": [
+        {
+          "id": "send_gift_cards",
+          "label": "Send the cards",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Neigh-ice! The cards are mine. The trip home is... still overseas.",
+          "warning_signs": [
+            "Never video chats.",
+            "Quickly asks for money in an emergency.",
+            "Wants gift cards."
+          ],
+          "safer_next_move": "Don't send money to someone you haven't met; report the profile.",
+          "keeper": {
+            "question": "They need $500 more for a 'customs fee'. What now?",
+            "answer": "Stop, send nothing, and report the profile.",
+            "wrong": [
+              "Send it, since you've already helped and they promised to repay.",
+              "Share your bank details so they can pay you back once they land."
+            ]
+          }
+        },
+        {
+          "id": "ask_for_photo",
+          "label": "Ask for a new selfie",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Here's a selfie! It's someone else's. Shh.",
+          "warning_signs": [
+            "Photos can be stolen from other profiles.",
+            "It doesn't change the money request."
+          ],
+          "safer_next_move": "Try a live video call, and never send money to someone you haven't met.",
+          "keeper": {
+            "question": "They sent a selfie but still won't video call. What now?",
+            "answer": "Treat it as a scam and don't send money.",
+            "wrong": [
+              "Send a smaller amount first just to see if they're trustworthy.",
+              "Give them your address so they can come visit when they're back."
+            ]
+          }
+        },
+        {
+          "id": "refuse_and_report",
+          "label": "Refuse and report",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "No money? You reported me? I'm swimming back into the mist.",
+          "warning_signs": [
+            "Romance scams build trust, then invent emergencies.",
+            "Gift cards for help are always a scam."
+          ],
+          "safer_next_move": "Report the profile to the app and talk to someone you trust about it.",
+          "keeper": {
+            "question": "Another match asks for money the same way. What do you do?",
+            "answer": "Refuse and report that profile too.",
+            "wrong": [
+              "Send money this time, since it's a different person asking.",
+              "Ask a friend to send the money for you so it isn't your account."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "loan_phantom",
+      "name": "The Loan Forgiveness Phantom",
+      "room_intro": "A ghost in a cap and gown drifts through the financial aid wing, waving a stamped FORGIVEN certificate. An email floats your way.",
+      "character": {
+        "name": "The Loan Forgiveness Phantom",
+        "portrait_hint": "A translucent ghost in a graduation gown with a FORGIVEN stamp."
+      },
+      "scenario": "Good news! You qualify for 100% Student Loan Forgiveness under a new program. Act before enrollment closes Monday. Pay a $199 enrollment fee and share your FSA ID so our team can file for you.",
+      "choices": [
+        {
+          "id": "pay_enrollment",
+          "label": "Pay and share FSA ID",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Boo-hoo-hooray! Your FSA ID is mine. Your loans, sadly, are still yours.",
+          "warning_signs": [
+            "A fee to apply for forgiveness.",
+            "Asks for your FSA ID.",
+            "A made-up closing deadline."
+          ],
+          "safer_next_move": "Never share your FSA ID; check forgiveness options only on the official federal student aid site yourself.",
+          "keeper": {
+            "question": "You shared your FSA ID. What should you do now?",
+            "answer": "Change your FSA ID password; call Federal Student Aid.",
+            "wrong": [
+              "Wait a few weeks and see whether the loans really get forgiven.",
+              "Pay the second-stage fee they just sent so the paperwork finishes."
+            ]
+          }
+        },
+        {
+          "id": "call_their_number",
+          "label": "Call their number",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You called ME! I'll tell you it's real. Very convincingly.",
+          "warning_signs": [
+            "The number in the email reaches the scammers.",
+            "They'll pressure you on the phone."
+          ],
+          "safer_next_move": "Look up your loan servicer yourself and call that number.",
+          "keeper": {
+            "question": "The 'agent' on their number says to pay today. What now?",
+            "answer": "Hang up and call your real loan servicer yourself.",
+            "wrong": [
+              "Pay by card right away while the agent is still on the phone.",
+              "Give the agent your SSN so they can check your eligibility."
+            ]
+          }
+        },
+        {
+          "id": "check_servicer",
+          "label": "Check your servicer",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You checked with your real servicer? And it's free to apply there? I'm fading away.",
+          "warning_signs": [
+            "Applying for real forgiveness is free.",
+            "Nobody legit needs your FSA ID."
+          ],
+          "safer_next_move": "Use only your loan servicer and the official federal aid site, and report the email.",
+          "keeper": {
+            "question": "Your servicer says the program is fake. What's next?",
+            "answer": "Report the email and delete it.",
+            "wrong": [
+              "Pay the fee anyway to keep your place in line for the program.",
+              "Forward the email to your friends so they can qualify too."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "scalper_specter",
+      "name": "The Scalper Specter",
+      "room_intro": "A ghostly figure fans out tickets by the stadium gates of the crypt. A DM offers seats to the sold-out game for cheap.",
+      "character": {
+        "name": "The Scalper Specter",
+        "portrait_hint": "A grinning ghost in a team jersey fanning out shimmering tickets."
+      },
+      "scenario": "Got 2 tickets for Saturday's sold-out KSU game, $60 for both (paid $150). Can't go anymore. Send it on Cash App now and I'll transfer them right after. Lots of people asking!",
+      "choices": [
+        {
+          "id": "pay_cash_app",
+          "label": "Pay on Cash App",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Paid! The tickets are... floating away. Like me. Boo!",
+          "warning_signs": [
+            "A great deal on a sold-out event.",
+            "Pay first, tickets 'later'.",
+            "Payment with no buyer protection."
+          ],
+          "safer_next_move": "Buy only through the official ticket platform or KSU's box office transfer.",
+          "keeper": {
+            "question": "They want $20 more for a 'transfer fee'. What now?",
+            "answer": "Stop paying and report the account.",
+            "wrong": [
+              "Pay the transfer fee so the tickets finally come through to you.",
+              "Give them your ticket app login so they can transfer the seats."
+            ]
+          }
+        },
+        {
+          "id": "ask_for_screenshot",
+          "label": "Ask for a screenshot",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Here's a screenshot! Of tickets I sold to ten other people.",
+          "warning_signs": [
+            "Screenshots can be faked or resold many times.",
+            "It doesn't prove the tickets are theirs."
+          ],
+          "safer_next_move": "Only accept a transfer through the official ticket app before paying.",
+          "keeper": {
+            "question": "They sent a screenshot and still want payment first. What now?",
+            "answer": "Only buy through an official transfer, or walk away.",
+            "wrong": [
+              "Pay now, since the screenshot of the tickets looks real enough.",
+              "Send half the money now and the other half after the game."
+            ]
+          }
+        },
+        {
+          "id": "use_official_resale",
+          "label": "Use official resale",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "The official resale with buyer protection? My spooky deal is dead.",
+          "warning_signs": [
+            "Official resale verifies real tickets.",
+            "Ticket scams spike for big games."
+          ],
+          "safer_next_move": "Use the official ticket platform and report scam DMs.",
+          "keeper": {
+            "question": "Another DM offers even cheaper tickets. What do you do?",
+            "answer": "Ignore it and stick with official resale.",
+            "wrong": [
+              "Buy from whichever stranger offers the cheapest seats.",
+              "Pay the new seller right away before someone else grabs them."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "package_pixie",
+      "name": "The Package Pixie",
+      "room_intro": "A tiny pixie in a delivery cap buzzes around a pile of crypt parcels. Your phone chirps: your package couldn't be delivered.",
+      "character": {
+        "name": "The Package Pixie",
+        "portrait_hint": "A tiny winged pixie in a delivery uniform holding a soggy box."
+      },
+      "scenario": "Parcel Notice: your package is on hold due to an incomplete address. Pay a $1.99 redelivery fee within 12 hours or it will be returned: parcel-redelivery-help.example",
+      "choices": [
+        {
+          "id": "pay_redelivery",
+          "label": "Pay the $1.99",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Just $1.99! And your whole card number. Delivered to me!",
+          "warning_signs": [
+            "A tiny fee to get your card.",
+            "A lookalike delivery link.",
+            "A 12-hour countdown."
+          ],
+          "safer_next_move": "Check tracking only on the carrier's site with your real tracking number, typed in yourself.",
+          "keeper": {
+            "question": "You entered your card. What now?",
+            "answer": "Call your bank to block the card.",
+            "wrong": [
+              "Wait a few days to see whether the package shows up anyway.",
+              "Pay again on the 'retry' page in case the first payment failed."
+            ]
+          }
+        },
+        {
+          "id": "reply_address",
+          "label": "Reply with your address",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Thanks for your address! I'll keep it. Next text coming soon!",
+          "warning_signs": [
+            "Replying confirms your number.",
+            "Carriers don't ask for your address by text."
+          ],
+          "safer_next_move": "Don't reply; check tracking on the carrier's site yourself.",
+          "keeper": {
+            "question": "They text back asking for the fee now. What do you do?",
+            "answer": "Don't pay; check tracking yourself and delete the text.",
+            "wrong": [
+              "Pay the fee now, since you already replied to them anyway.",
+              "Send your card's security code so the fee can go through."
+            ]
+          }
+        },
+        {
+          "id": "check_tracking",
+          "label": "Check real tracking",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You checked the real tracking? And there's no problem? My wings droop.",
+          "warning_signs": [
+            "Delivery texts are a top smishing trick.",
+            "Real carriers don't charge redelivery by text link."
+          ],
+          "safer_next_move": "Forward the text to 7726 (SPAM) and delete it.",
+          "keeper": {
+            "question": "Tracking shows your package is fine. What now?",
+            "answer": "Report the text as spam and delete it.",
+            "wrong": [
+              "Pay the small fee anyway just to be on the safe side.",
+              "Tap the link once to see what the delivery page says."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "sweepstakes_sphinx",
+      "name": "The Sweepstakes Sphinx",
+      "room_intro": "A sphinx sits on a pile of oversized prize checks and asks riddles about your luck. An envelope with a check slides under your door.",
+      "character": {
+        "name": "The Sweepstakes Sphinx",
+        "portrait_hint": "A smug sphinx balancing a giant prize check on one paw."
+      },
+      "scenario": "WINNER! You won $25,000 in the National Student Sweepstakes. Enclosed is a $3,500 advance check. Deposit it, then send $3,200 back by gift card to cover taxes and processing so we can release the full prize.",
+      "choices": [
+        {
+          "id": "deposit_and_send",
+          "label": "Deposit and send back",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Riddle me this: what bounces in a week? My check! And your gift cards are mine.",
+          "warning_signs": [
+            "You didn't enter any sweepstakes.",
+            "Pay taxes or fees to get a prize.",
+            "Send money back from a check."
+          ],
+          "safer_next_move": "Don't deposit or send anything; real prizes don't ask you to pay.",
+          "keeper": {
+            "question": "The check bounced and your bank wants the money back. What now?",
+            "answer": "Talk to your bank and report the scam.",
+            "wrong": [
+              "Send more money to 'unlock' the rest of the prize money.",
+              "Deposit the second check they mailed to cover the first one."
+            ]
+          }
+        },
+        {
+          "id": "call_number_on_letter",
+          "label": "Call the letter's number",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Ring ring! This is the prize office. Yes, it's real. Very real. Pay up!",
+          "warning_signs": [
+            "The number on the letter reaches the scammers.",
+            "They'll insist it's real."
+          ],
+          "safer_next_move": "Ask your bank about the check, using the number on your own card.",
+          "keeper": {
+            "question": "The 'prize office' says deposit it today. What now?",
+            "answer": "Don't; ask your bank about the check first.",
+            "wrong": [
+              "Deposit it now while the prize office waits on the phone.",
+              "Give them your account number so they can send the rest."
+            ]
+          }
+        },
+        {
+          "id": "ask_bank",
+          "label": "Ask your bank",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "Your bank says the check is fake? My riddle is solved. Drat.",
+          "warning_signs": [
+            "Fake checks look real for days.",
+            "Real prizes never cost you money."
+          ],
+          "safer_next_move": "Report the letter and shred the check.",
+          "keeper": {
+            "question": "Your bank confirms it's fake. What's next?",
+            "answer": "Report it and destroy the check.",
+            "wrong": [
+              "Deposit it anyway at another bank to see what happens.",
+              "Cash it at a check-cashing store so it clears faster."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "code_changeling",
+      "name": "The Code Changeling",
+      "room_intro": "A shapeshifter wearing your friend's face waits by a buzzing phone. A login code arrives, then a message: 'oops, sent it to you by mistake'.",
+      "character": {
+        "name": "The Code Changeling",
+        "portrait_hint": "A shapeshifting creature mid-transformation, holding up a phone."
+      },
+      "scenario": "Hey!! I accidentally put your number for my login code, can you send me the 6 digits you just got? Need it ASAP, I'm locked out lol",
+      "choices": [
+        {
+          "id": "send_the_code",
+          "label": "Send the code",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Thanks, friend! That code unlocked YOUR account. I'll take it from here.",
+          "warning_signs": [
+            "The code was for your account.",
+            "A 'friend' urgently asks for it.",
+            "Nobody needs your login code."
+          ],
+          "safer_next_move": "Never share login codes; change your password and turn on two-factor.",
+          "keeper": {
+            "question": "You sent the code and got logged out. What now?",
+            "answer": "Recover the account, reset the password, warn friends.",
+            "wrong": [
+              "Send them the next code too so they can fix the account.",
+              "Wait for them to give your account back once they're done."
+            ]
+          }
+        },
+        {
+          "id": "ask_whats_it_for",
+          "label": "Ask what it's for",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "It's for my game account! Totally not yours. Send it, bestie!",
+          "warning_signs": [
+            "The answer can be a lie.",
+            "The code itself says don't share it."
+          ],
+          "safer_next_move": "Don't share it; check your friend another way and secure your account.",
+          "keeper": {
+            "question": "They say 'it's for my game, promise.' What now?",
+            "answer": "Don't send it; call your friend to check.",
+            "wrong": [
+              "Send it, since they explained the code is for their game.",
+              "Send just half of the digits so it's safe to share."
+            ]
+          }
+        },
+        {
+          "id": "keep_the_code",
+          "label": "Keep it, call friend",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "You called the real friend? They were hacked? My disguise is ruined.",
+          "warning_signs": [
+            "Codes are keys to your account.",
+            "Hacked friends' accounts ask for codes."
+          ],
+          "safer_next_move": "Tell your friend they were hacked and report the account.",
+          "keeper": {
+            "question": "Your friend says they never sent it. What should you do?",
+            "answer": "Report the account and check your security settings.",
+            "wrong": [
+              "Send the code to the real friend instead, just in case.",
+              "Ignore it completely, since nothing bad happened yet."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "echo_doppelganger",
+      "name": "The Echo Doppelganger",
+      "room_intro": "At the bottom of the crypt, a mirror creature speaks in a voice you know by heart. Your phone shows a voicemail from family, sobbing.",
+      "character": {
+        "name": "The Echo Doppelganger",
+        "portrait_hint": "A mirror-faced figure holding a phone that glows with a familiar caller ID."
+      },
+      "scenario": "Voicemail (transcribed): 'It's me, I'm in trouble, I got arrested and need $1,500 for bail. Please don't tell Mom. A lawyer will text you how to pay with gift cards. Please hurry.'",
+      "choices": [
+        {
+          "id": "pay_bail",
+          "label": "Send the bail",
+          "outcome": "risky",
+          "effects": {
+            "health": -2,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "Thank you, dear! The voice was mine. The bail was imaginary.",
+          "warning_signs": [
+            "AI can clone a voice from a short clip.",
+            "'Don't tell anyone' cuts off checking.",
+            "Bail paid in gift cards."
+          ],
+          "safer_next_move": "Hang up and call the family member, or another relative, on a number you know.",
+          "keeper": {
+            "question": "The 'lawyer' now wants more for court fees. What now?",
+            "answer": "Stop and call family on a number you know.",
+            "wrong": [
+              "Pay it right away so they're released from jail sooner.",
+              "Keep it secret like they asked so nobody else worries."
+            ]
+          }
+        },
+        {
+          "id": "call_back_number",
+          "label": "Call back the number",
+          "outcome": "mixed",
+          "effects": {
+            "health": 0,
+            "focus": -1,
+            "knowledge": 1
+          },
+          "fallback_reaction": "You called my number! I'll answer. In their voice. Spooky, right?",
+          "warning_signs": [
+            "Caller ID and numbers can be spoofed.",
+            "Calling them back reaches the scammer."
+          ],
+          "safer_next_move": "Call your family on a number you already know, or ask a family code word.",
+          "keeper": {
+            "question": "The voice on their number begs you to hurry. What now?",
+            "answer": "Hang up and call family on a number you already have.",
+            "wrong": [
+              "Pay while they're still on the line so they don't hang up.",
+              "Give the lawyer your card number so they can take the fee."
+            ]
+          }
+        },
+        {
+          "id": "verify_with_family",
+          "label": "Call family directly",
+          "outcome": "safe",
+          "effects": {
+            "health": 0,
+            "focus": 1,
+            "knowledge": 2
+          },
+          "fallback_reaction": "They're safe at home? You called them yourself? My echo fades.",
+          "warning_signs": [
+            "Voice-clone scams invent emergencies.",
+            "A family code word beats any voice."
+          ],
+          "safer_next_move": "Set up a family code word and report the scam call.",
+          "keeper": {
+            "question": "Your family is fine. What's a good next step?",
+            "answer": "Agree on a family code word for emergencies.",
+            "wrong": [
+              "Share more voice clips online so family can recognize you.",
+              "Call the scammer back to confront them about the trick."
             ]
           }
         }

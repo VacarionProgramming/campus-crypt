@@ -1,4 +1,4 @@
-//! Player settings kept between launches: master and music volume, music on/off,
+//! Player settings kept between launches: master, music, and voice volume, music and voices on/off,
 //! reduced motion, Hoot's hints, the AI extras and the Arduino status display.
 //!
 //! * native: a small text file, `key=value` per line, at
@@ -16,9 +16,13 @@
 pub struct Settings {
     pub master: f32,
     pub music: f32,
+    /// spoken lines, times the master volume
+    pub voice: f32,
     pub reduced_motion: bool,
     /// N: music on/off (sound effects stay)
     pub music_on: bool,
+    /// spoken lines on/off (subtitles stay)
+    pub voices_on: bool,
     /// H: Hoot's hints on the encounter screen
     pub hints: bool,
     /// the AI extras and AI voices (off = scripted lines, no network calls)
@@ -28,10 +32,21 @@ pub struct Settings {
 }
 
 pub const DEFAULT_MASTER: f32 = 1.0;
+pub const DEFAULT_VOICE: f32 = 0.9;
 
 impl Default for Settings {
     fn default() -> Settings {
-        Settings { master: DEFAULT_MASTER, music: crate::music::DEFAULT_VOLUME, reduced_motion: false, music_on: true, hints: true, ai: true, arduino: true }
+        Settings {
+            master: DEFAULT_MASTER,
+            music: crate::music::DEFAULT_VOLUME,
+            voice: DEFAULT_VOICE,
+            reduced_motion: false,
+            music_on: true,
+            voices_on: true,
+            hints: true,
+            ai: true,
+            arduino: true,
+        }
     }
 }
 
@@ -46,8 +61,10 @@ impl Settings {
             match k.trim() {
                 "master" => s.master = v.parse::<f32>().ok().filter(|x| x.is_finite()).map_or(s.master, |x| x.clamp(0.0, 1.0)),
                 "music" => s.music = v.parse::<f32>().ok().filter(|x| x.is_finite()).map_or(s.music, |x| x.clamp(0.0, 1.0)),
+                "voice" => s.voice = v.parse::<f32>().ok().filter(|x| x.is_finite()).map_or(s.voice, |x| x.clamp(0.0, 1.0)),
                 "reduced_motion" => s.reduced_motion = flag(v),
                 "music_on" => s.music_on = flag(v),
+                "voices_on" => s.voices_on = flag(v),
                 "hints" => s.hints = flag(v),
                 "ai" => s.ai = flag(v),
                 "arduino" => s.arduino = flag(v),
@@ -59,11 +76,13 @@ impl Settings {
 
     pub fn to_text(self) -> String {
         format!(
-            "master={:.2}\nmusic={:.2}\nreduced_motion={}\nmusic_on={}\nhints={}\nai={}\narduino={}\n",
+            "master={:.2}\nmusic={:.2}\nvoice={:.2}\nreduced_motion={}\nmusic_on={}\nvoices_on={}\nhints={}\nai={}\narduino={}\n",
             self.master,
             self.music,
+            self.voice,
             u8::from(self.reduced_motion),
             u8::from(self.music_on),
+            u8::from(self.voices_on),
             u8::from(self.hints),
             u8::from(self.ai),
             u8::from(self.arduino)
@@ -137,10 +156,13 @@ pub fn load() -> Settings {
     if let Some(v) = get(1) {
         s.music = v;
     }
+    if let Some(v) = get(7) {
+        s.voice = v;
+    }
     if let Some(v) = get(2) {
         s.reduced_motion = v >= 0.5;
     }
-    for (id, field) in [(3, &mut s.music_on), (4, &mut s.hints), (5, &mut s.ai), (6, &mut s.arduino)] {
+    for (id, field) in [(3, &mut s.music_on), (8, &mut s.voices_on), (4, &mut s.hints), (5, &mut s.ai), (6, &mut s.arduino)] {
         if let Some(v) = get(id) {
             *field = v >= 0.5;
         }
@@ -154,8 +176,9 @@ pub fn save(s: Settings) {
     unsafe {
         cc_setting_set(0, s.master);
         cc_setting_set(1, s.music);
+        cc_setting_set(7, s.voice);
         cc_setting_set(2, if s.reduced_motion { 1.0 } else { 0.0 });
-        for (id, on) in [(3, s.music_on), (4, s.hints), (5, s.ai), (6, s.arduino)] {
+        for (id, on) in [(3, s.music_on), (8, s.voices_on), (4, s.hints), (5, s.ai), (6, s.arduino)] {
             cc_setting_set(id, if on { 1.0 } else { 0.0 });
         }
     }
@@ -167,14 +190,17 @@ mod tests {
 
     #[test]
     fn round_trips_and_ignores_junk() {
-        let s = Settings { master: 0.35, music: 0.8, reduced_motion: true, music_on: false, hints: false, ai: false, arduino: false };
+        let s = Settings { master: 0.35, music: 0.8, voice: 0.4, reduced_motion: true, music_on: false, voices_on: false, hints: false, ai: false, arduino: false };
         assert_eq!(Settings::parse(&s.to_text()), s);
         let d = Settings::parse("master=loud\nmusic=7\n# hi\nreduced_motion=0\nother=1");
         assert_eq!((d.master, d.music, d.reduced_motion), (DEFAULT_MASTER, 1.0, false));
         assert_eq!(Settings::parse(""), Settings::default());
         // a settings file from before the toggles existed keeps them on
         let old = Settings::parse("master=0.50\nmusic=0.25\nreduced_motion=1\n");
-        assert!(old.music_on && old.hints && old.ai && old.arduino);
+        assert!(old.music_on && old.voices_on && old.hints && old.ai && old.arduino);
+        assert_eq!(old.voice, DEFAULT_VOICE);
+        assert!(old.reduced_motion);
+        assert_eq!(old.voice, Settings { reduced_motion: false, ..old }.voice, "reduced motion does not change the voice level");
     }
 
     #[test]

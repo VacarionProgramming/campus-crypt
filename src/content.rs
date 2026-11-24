@@ -533,4 +533,69 @@ mod tests {
         assert!(parse("").is_err());
         assert!(parse("[]").is_err());
     }
+
+    /// Real offices the lessons may name. Anything else in the content JSON that
+    /// looks like a domain has to be a reserved suffix (`.example`, `.test`, `.invalid`).
+    const OFFICIAL_SITES: [&str; 3] = ["studentaid.gov", "kennesaw.edu", "ftc.gov"];
+
+    fn domain_hosts(text: &str) -> Vec<String> {
+        let mut out = Vec::new();
+        for raw in text.split(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | '(' | ')' | ',' | ';' | '[' | ']' | '{' | '}')) {
+            let tok = raw.trim_matches(|c: char| !c.is_ascii_alphanumeric());
+            let host = tok.split(['/', '?', '#']).next().unwrap_or("");
+            let host = host.rsplit_once('@').map(|(_, h)| h).unwrap_or(host);
+            let host = host.trim_matches('.').to_ascii_lowercase();
+            let Some((name, tld)) = host.rsplit_once('.') else { continue };
+            if name.is_empty() || tld.len() < 2 || !tld.bytes().all(|b| b.is_ascii_alphabetic()) {
+                continue;
+            }
+            if !host.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-')) || name.ends_with('.') {
+                continue;
+            }
+            out.push(host);
+        }
+        out
+    }
+
+    fn domain_allowed(host: &str) -> bool {
+        let tld = host.rsplit_once('.').map(|(_, t)| t).unwrap_or("");
+        if matches!(tld, "example" | "test" | "invalid") {
+            return true;
+        }
+        OFFICIAL_SITES.iter().any(|site| host == *site || host.ends_with(&format!(".{site}")))
+    }
+
+    #[test]
+    fn scam_domains_in_content_json_are_example_or_official() {
+        assert!(!domain_allowed("ksu-grants-secure.net"));
+        assert!(!domain_allowed("owl-interns-careers.com"));
+        assert!(!domain_allowed("campus-parking-pay.info"));
+        assert!(!domain_allowed("notkennesaw.edu"));
+        assert!(domain_allowed("kenesaw-aid.example"));
+        assert!(domain_allowed("lookalike.test"));
+        assert!(domain_allowed("gone.invalid"));
+        assert!(domain_allowed("studentaid.gov"));
+        assert!(domain_allowed("noreply.studentaid.gov"));
+        assert!(domain_allowed("kennesaw.edu"));
+        assert!(domain_allowed("reportfraud.ftc.gov"));
+
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/content");
+        let mut bad = Vec::new();
+        for ent in std::fs::read_dir(&root).unwrap() {
+            let path = ent.unwrap().path();
+            if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                continue;
+            }
+            let text = std::fs::read_to_string(&path).unwrap();
+            let name = path.file_name().unwrap().to_string_lossy();
+            for host in domain_hosts(&text) {
+                if !domain_allowed(&host) {
+                    bad.push(format!("{name}: {host}"));
+                }
+            }
+        }
+        bad.sort();
+        bad.dedup();
+        assert!(bad.is_empty(), "registrable fake domains (use .example, .test, or .invalid):\n{}", bad.join("\n"));
+    }
 }
