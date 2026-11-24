@@ -143,6 +143,14 @@ pub struct Encounter {
     /// floor 1 only: the Keeper's battle-box round (replaces the quiz there)
     #[serde(default)]
     pub keeper_box: Option<KeeperBox>,
+    /// "scripted" or "ai". Older content files omit it and stay scripted.
+    /// Daily runs never swap in an AI encounter, so this stays "scripted".
+    #[serde(default = "source_scripted")]
+    pub source: String,
+}
+
+fn source_scripted() -> String {
+    "scripted".into()
 }
 
 #[derive(Clone, Debug, Deserialize)]

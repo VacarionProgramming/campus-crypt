@@ -2,11 +2,23 @@
 
 **A dungeon crawler of scams, deadlines, and split-second choices.**
 
-**Version 0.4.5.**
+**Version 0.5.0-dev.**
 
 ### ▶ [Play in your browser](https://vacarionprogramming.github.io/campus-crypt/)
 
 The browser build uses scripted lines. Live AI lines are in the desktop build, and the web client ships with no API key.
+
+## Daily Crypt
+
+**Daily Crypt** on the title screen is the same crypt for everyone that day. The date is the calendar date in America/New_York (the day rolls over at local midnight, daylight saving included). The seed is the first 8 bytes of SHA-256(`campus-crypt:YYYY-MM-DD`). That seed drives dungeon layout and encounter placement only: rooms, corridors, enemies, coffees, side props, and the Keeper's question picks. Particles, screen shake, and combat rolls stay on a separate stream, so a phone and a desktop build of the same date still walk the same crypt.
+
+A daily run uses scripted Keeper lines and the written character lines. It does not call the live AI or live text-to-speech. Pre-recorded voice clips still play. Each encounter and Keeper question carries a `source` of `scripted` or `ai`; a daily run stays `scripted`.
+
+At the end you get a spoiler-free share card: the date, floors reached, time, a row of colored squares (green cleared, gold missed, red died, black not reached), and the play link `https://vacarionprogramming.github.io/campus-crypt/?daily=YYYY-MM-DD`. The web build copies that card. The desktop build shows it on screen. Opening the link starts that day's crypt when the date is today or yesterday in New York; any other date starts today.
+
+The board is optional. `web/api.js` talks to `GET /v1/daily/today`, `POST /v1/daily/:date/scores`, and `GET /v1/daily/:date/leaderboard`. `DAILY_API_BASE` in that file is empty until the Worker is deployed, and an empty base or any failure shows **Board offline - your run still counts on your share card**. The run never waits on the network: if `/today` has not answered in 3 seconds, the game starts from the local New York date. A score is posted once, with one retry on a network error or a 5xx, and never retried on a 4xx. `nickname_taken` and `bad_nickname` ask for another name. Nickname, club, and an anonymous install id live in `localStorage` only. The contract is [docs/DAILY_API_CONTRACT.md](docs/DAILY_API_CONTRACT.md). Native builds skip the network and keep the share card.
+
+On a phone, hold it upright or sideways. Portrait uses a taller canvas, a joystick, and FIRE / ROLL / TALK / HOOT. Landscape and desktop stay on the 1280x720 layout.
 
 Campus Crypt is a funny pixel-art dungeon crawler for KSU students. You play a student fighting your way down through **20 floors** of a candlelit crypt under the Kennesaw and Marietta campuses. Each floor hides a trap that looks like real campus life: a fake financial-aid message, a pile-up of deadlines, a password shortcut, an internship offer that's too good to be true, a fake parking-ticket text, the Kennesaw-Marietta commute, a textbook seller who wants gift cards, sign-in approvals you didn't start, a sublease overpayment check, and finals-week cramming. Find the floor's character, choose what to do, and the game shows you the warning signs and a safer next move. Then the **Floor Keeper** at the stairs checks what you learned: answer right and the stairs open; answer wrong and you fight its **two wardens** first.
 
@@ -82,7 +94,7 @@ The full state diagram is in [docs/FLOWCHART.md](docs/FLOWCHART.md). The engine 
 | Reduced motion (floor 1 fight: no attacks; saved) | R |
 | Settings (master / music volume, reduced motion) | Title: arrows or mouse, top right. On a floor or in the arena: Esc or O pauses and opens them |
 
-**On a phone or tablet** (the web version): turn the phone sideways. Touch controls appear the first time you touch the screen: a joystick on the left (put your thumb anywhere there and drag), and on the right **FIRE** (hold; aim assist picks the nearest monster), **ROLL**, **TALK** (talk, answer, confirm), **HOOT** and a pause button. They show only while you move or fight; on every other screen, tap what you want. Screens that only Esc closes get a **BACK** button. Code: `src/touch.rs`.
+**On a phone or tablet** (the web version): play upright or sideways. Touch controls appear the first time you touch the screen. In landscape, a joystick sits on the left (put your thumb anywhere there and drag) and the right has **FIRE** (hold; aim assist picks the nearest monster), **ROLL**, **TALK** (talk, answer, confirm), **HOOT** and a pause button. Upright, those controls sit along the bottom and the crypt uses a taller layout so the text stays readable. They show only while you move or fight; on every other screen, tap what you want. Screens that only Esc closes get a **BACK** button. Code: `src/touch.rs`.
 | Mute everything | M |
 | Music on/off (sound effects stay) | N |
 | Screenshot (native) | F12 → `screenshots/manual_NN.png` |

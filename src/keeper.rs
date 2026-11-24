@@ -52,6 +52,8 @@ pub struct Quiz {
     pub id: u32,
     /// this floor's investigation (None = the plain quiz)
     pub case: Option<Case>,
+    /// "scripted" or "ai". Questions are chosen by code; daily runs are always scripted.
+    pub source: &'static str,
 }
 
 impl Quiz {
@@ -123,6 +125,7 @@ pub fn build(content: &Content, floor: usize, picked: Option<usize>, seed: u32) 
         warning: ch.warning_signs.first().cloned(),
         id,
         case: None,
+        source: "scripted",
     }
 }
 
@@ -144,6 +147,7 @@ pub fn build_for_floor(content: &Content, cases: &Cases, floor: usize, picked: O
         warning: case.planted.first().map(|f| case.tell(*f).to_string()),
         id,
         case: Some(case),
+        source: "scripted",
     }
 }
 

@@ -249,11 +249,15 @@ impl RiskIt {
 // ---------------------------------------------------------------- drawing
 
 use crate::art::{centered, draw_sprite_centered, draw_text, heart, panel, BOX_OWL, DIM, INK, KSU_GOLD, PAPER, RISKY, SAFE};
-use crate::keeper_fight::{draw_pattern, BOX_X, BOX_Y};
+use crate::keeper_fight::{draw_pattern, draw_pattern_scaled, BOX_X, BOX_Y};
 
 impl RiskIt {
     /// The round below the HUD: header, the box, hearts and the timer.
     pub fn draw(&self, keeper_name: &str, t: f32) {
+        if crate::art::portrait() {
+            self.draw_phone(keeper_name, t);
+            return;
+        }
         // header
         panel(40.0, 76.0, VW_PANEL, 170.0, RISKY);
         draw_text("RISK IT", 64.0, 120.0, 40.0, RISKY);
@@ -313,6 +317,50 @@ impl RiskIt {
 }
 
 const VW_PANEL: f32 = 1200.0;
+
+impl RiskIt {
+    /// The round stacked for a phone: header, then the box scaled to the width.
+    fn draw_phone(&self, keeper_name: &str, t: f32) {
+        let w = crate::art::vw();
+        panel(12.0, 68.0, w - 24.0, 96.0, RISKY);
+        draw_text("RISK IT", 24.0, 100.0, 28.0, RISKY);
+        draw_text(keeper_name, 160.0, 100.0, 18.0, PAPER);
+        for i in 0..FLAGS_TO_WIN {
+            let left = i >= self.flags;
+            draw_rectangle(24.0 + i as f32 * 48.0, 118.0, 40.0, 16.0, if left { RISKY } else { Color::new(0.3, 0.12, 0.12, 1.0) });
+        }
+        let scale = (w - 16.0) / BOX_W;
+        let o = vec2(8.0, 180.0);
+        draw_rectangle(o.x, o.y, BOX_W * scale, BOX_H * scale, BLACK);
+        match self.outcome {
+            None => {
+                draw_pattern_scaled(&self.dodge, o, scale);
+                if let Some(f) = self.flag {
+                    draw_red_flag(o + f * scale, t);
+                }
+                let blink = self.invuln > 0.0 && (t * 18.0).sin() < 0.0;
+                if !blink {
+                    draw_sprite_centered(&BOX_OWL, o.x + self.owl.x * scale, o.y + self.owl.y * scale, 1.6 * scale, self.facing_left, WHITE);
+                }
+            }
+            Some(out) => {
+                let col = match out {
+                    Outcome::Defeated => KSU_GOLD,
+                    Outcome::KnockedOut => RISKY,
+                    Outcome::TimeUp => PAPER,
+                };
+                centered(out.title(), o.x + BOX_W * scale * 0.5, o.y + 70.0 * scale, 28.0, col);
+                centered(&self.reward, o.x + BOX_W * scale * 0.5, o.y + 110.0 * scale, 16.0, PAPER);
+            }
+        }
+        draw_rectangle_lines(o.x - 2.0, o.y - 2.0, BOX_W * scale + 4.0, BOX_H * scale + 4.0, 3.0, RISKY);
+        let hy = o.y + BOX_H * scale + 28.0;
+        draw_text("BOX HP", o.x, hy, 16.0, DIM);
+        for i in 0..BOX_HEARTS {
+            heart(o.x + 70.0 + i as f32 * 24.0, hy - 16.0, 2.4, i < self.hearts);
+        }
+    }
+}
 
 /// A small red flag on a pole, waving.
 pub fn draw_red_flag(p: Vec2, t: f32) {

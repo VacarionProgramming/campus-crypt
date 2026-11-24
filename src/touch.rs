@@ -26,6 +26,22 @@ const DEADZONE: f32 = 0.18;
 /// Where the joystick is drawn while no thumb is on it.
 const STICK_HOME: Vec2 = Vec2::new(190.0, 520.0);
 
+fn stick_home() -> Vec2 {
+    if crate::art::portrait() {
+        vec2(100.0, crate::art::vh() - 120.0)
+    } else {
+        STICK_HOME
+    }
+}
+
+fn stick_zone(p: Vec2) -> bool {
+    if crate::art::portrait() {
+        p.y > crate::art::vh() - 240.0 && p.x < crate::art::vw() * 0.5
+    } else {
+        p.x < STICK_ZONE_X && p.y > 150.0
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Button {
     Fire,
@@ -38,8 +54,18 @@ pub enum Button {
 pub const BUTTONS: [Button; 5] = [Button::Fire, Button::Roll, Button::Talk, Button::Hoot, Button::Pause];
 
 impl Button {
-    /// Centre and radius in virtual (1280x720) coordinates.
+    /// Centre and radius. Landscape keeps the 1280x720 spots.
     pub fn circle(self) -> (Vec2, f32) {
+        if crate::art::portrait() {
+            let h = crate::art::vh();
+            return match self {
+                Button::Fire => (vec2(450.0, h - 110.0), 62.0),
+                Button::Roll => (vec2(330.0, h - 78.0), 44.0),
+                Button::Talk => (vec2(450.0, h - 210.0), 44.0),
+                Button::Hoot => (vec2(330.0, h - 170.0), 34.0),
+                Button::Pause => (vec2(492.0, 88.0), 26.0),
+            };
+        }
         match self {
             Button::Fire => (vec2(1150.0, 590.0), 78.0),
             Button::Roll => (vec2(990.0, 640.0), 52.0),
@@ -151,7 +177,7 @@ impl TouchPad {
                     }
                     held[b as usize] = true;
                 }
-                (TouchPhase::Started, None) if t.pos.x < STICK_ZONE_X && t.pos.y > 150.0 => {
+                (TouchPhase::Started, None) if stick_zone(t.pos) => {
                     out.on_controls = true;
                     self.stick = Some((t.id, t.pos, t.pos));
                 }
@@ -212,14 +238,19 @@ impl TouchPad {
                 let d = (now - origin).clamp_length_max(STICK_RADIUS);
                 (origin, origin + d)
             }
-            None => (STICK_HOME, STICK_HOME),
+            None => {
+                let home = stick_home();
+                (home, home)
+            }
         };
         let active = self.stick.is_some();
         draw_circle(base.x, base.y, STICK_RADIUS, Color::new(1.0, 1.0, 1.0, if active { 0.12 } else { 0.07 }));
         draw_circle_lines(base.x, base.y, STICK_RADIUS, 3.0, Color::new(1.0, 0.77, 0.16, if active { 0.7 } else { 0.35 }));
         draw_circle(knob.x, knob.y, 36.0, Color::new(1.0, 0.77, 0.16, if active { 0.75 } else { 0.4 }));
         if !active {
-            centered("MOVE", STICK_HOME.x, STICK_HOME.y + STICK_RADIUS + 30.0, 22.0, Color::new(1.0, 1.0, 1.0, 0.55));
+            let home = stick_home();
+            let (dy, size) = if crate::art::portrait() { (22.0, 18.0) } else { (30.0, 22.0) };
+            centered("MOVE", home.x, home.y + STICK_RADIUS + dy, size, Color::new(1.0, 1.0, 1.0, 0.55));
         }
         for b in BUTTONS {
             let (c, r) = b.circle();
