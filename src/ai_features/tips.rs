@@ -101,6 +101,11 @@ const NEXT_RISKY: [&str; 5] = [
     "Hoo! Reread the warning signs once more. Spotting them early is the whole trick.",
 ];
 
+/// Every written tip the offline bank can say. The voice generator records these.
+pub fn bank_lines() -> Vec<&'static str> {
+    GENERAL.into_iter().chain(NEXT_SAFE).chain(NEXT_RISKY).chain(NEXT_MIXED).collect()
+}
+
 /// After a mixed choice.
 const NEXT_MIXED: [&str; 4] = [
     "Hoo! A decent move, and there is a stronger one. Reread the warning signs and aim for the safest path next time.",

@@ -34,6 +34,7 @@ mod settings;
 mod music;
 mod state;
 mod touch;
+mod voice;
 
 use ai::{LineSource, ReactionRequest, Reactor};
 use ai_features::{scamgen, tips, AiFeatures, ScamMessage, SpotRound, TierChange};
@@ -275,7 +276,9 @@ const MENU_ITEMS: &[&str] = &["ENTER THE CRYPT", "OPTIONS", "HOW TO PLAY"];
 enum Opt {
     Master,
     Music,
+    Voice,
     MusicOn,
+    VoicesOn,
     Motion,
     Hints,
     Ai,
@@ -284,7 +287,19 @@ enum Opt {
     Back,
 }
 
-const OPTS: [Opt; 8] = [Opt::Master, Opt::Music, Opt::MusicOn, Opt::Motion, Opt::Hints, Opt::Ai, Opt::Arduino, Opt::Back];
+const OPT_ROW: f32 = 40.0;
+const OPTS: [Opt; 10] = [
+    Opt::Master,
+    Opt::Music,
+    Opt::Voice,
+    Opt::MusicOn,
+    Opt::VoicesOn,
+    Opt::Motion,
+    Opt::Hints,
+    Opt::Ai,
+    Opt::Arduino,
+    Opt::Back,
+];
 
 /// A small flickering flame (the title menu's cursor).
 fn flame(x: f32, y: f32, t: f32, seed: f32) {
@@ -617,6 +632,14 @@ struct App {
     music_volume: f32,
     /// one looping track per screen / floor, loaded lazily (music.rs)
     music: Music,
+    /// spoken lines on/off (subtitles stay either way)
+    voices_on: bool,
+    /// voice volume 0..1, times the master volume
+    voice_volume: f32,
+    voices: voice::Voices,
+    /// last investigation line already spoken, so a held bubble is not replayed
+    voiced_said: String,
+    voiced_hoot: String,
     auto: Auto,
     hw_timer: f32,
     quit: bool,
@@ -717,6 +740,11 @@ impl App {
             music_on: saved.music_on,
             music_volume: saved.music,
             music: Music::new(),
+            voices_on: saved.voices_on,
+            voice_volume: saved.voice,
+            voices: voice::Voices::new(),
+            voiced_said: String::new(),
+            voiced_hoot: String::new(),
             auto,
             hw_timer: 0.0,
             quit: false,
@@ -743,8 +771,10 @@ impl App {
         settings::save(settings::Settings {
             master: self.master_volume,
             music: self.music_volume,
+            voice: self.voice_volume,
             reduced_motion: self.reduced_motion,
             music_on: self.music_on,
+            voices_on: self.voices_on,
             hints: self.ai_fx.hints.enabled,
             ai: self.ai_on,
             arduino: self.arduino_on,
@@ -775,7 +805,11 @@ impl App {
                 self.arduino_on = !self.arduino_on;
                 self.hw.set_enabled(self.arduino_on);
             }
-            Opt::Master | Opt::Music | Opt::Back => return,
+            Opt::VoicesOn => {
+                self.voices_on = !self.voices_on;
+                self.voices.set_enabled(self.voices_on);
+            }
+            Opt::Master | Opt::Music | Opt::Voice | Opt::Back => return,
         }
         self.settings_dirty = true;
     }
@@ -786,7 +820,7 @@ impl App {
     /// Returns (mouse over the panel, BACK chosen).
     fn options_panel(&mut self, inp: &Input, x: f32, y: f32, w: f32, with_back: bool) -> (bool, bool) {
         let n = if with_back { OPTS.len() } else { OPTS.len() - 1 };
-        let row_h = 44.0;
+        let row_h = OPT_ROW;
         let area = Rect::new(x, y, w, row_h * n as f32);
         self.settings_sel = self.settings_sel.min(n - 1);
         if inp.up {
@@ -815,7 +849,9 @@ impl App {
             let label = match o {
                 Opt::Master => "MASTER VOLUME",
                 Opt::Music => "MUSIC VOLUME",
+                Opt::Voice => "VOICE VOLUME",
                 Opt::MusicOn => "MUSIC  (N)",
+                Opt::VoicesOn => "VOICES",
                 Opt::Motion => "REDUCED MOTION  (R)",
                 Opt::Hints => "HOOT'S HINTS  (H)",
                 Opt::Ai => "AI EXTRAS",
@@ -824,10 +860,14 @@ impl App {
             };
             draw_text(label, x + 26.0, ry + 29.0, 22.0, col);
             match o {
-                Opt::Master | Opt::Music => {
+                Opt::Master | Opt::Music | Opt::Voice => {
                     let bar = Rect::new(bx, ry + 15.0, bw, 14.0);
                     let grab = Rect::new(bar.x - 6.0, ry, bar.w + 12.0, row_h);
-                    let v = if o == Opt::Master { &mut self.master_volume } else { &mut self.music_volume };
+                    let v = match o {
+                        Opt::Master => &mut self.master_volume,
+                        Opt::Music => &mut self.music_volume,
+                        _ => &mut self.voice_volume,
+                    };
                     let mut nv = *v;
                     if on && step != 0.0 {
                         nv = ((nv + step) * 20.0).round() / 20.0;
@@ -862,6 +902,7 @@ impl App {
                     }
                     let value = match o {
                         Opt::MusicOn => self.music_on,
+                        Opt::VoicesOn => self.voices_on,
                         Opt::Motion => self.reduced_motion,
                         Opt::Hints => self.ai_fx.hints.enabled,
                         Opt::Ai => self.ai_on,
@@ -897,6 +938,39 @@ impl App {
     fn sfx(&mut self, s: Sfx) {
         let v = if self.muted { 0.0 } else { 0.6 * self.master_volume };
         self.audio.play(s, v);
+    }
+
+    /// Voice level. Muted and the voices toggle silence it. Reduced motion does not.
+    fn voice_level(&self) -> f32 {
+        if self.muted || !self.voices_on { 0.0 } else { self.voice_volume * self.master_volume }
+    }
+
+    fn char_role(&self) -> String {
+        format!("char:{}", enc_at(&self.loaded, self.run.room).id)
+    }
+
+    /// Speak a line that is about to be shown. Scripted lines use their file.
+    /// A live AI line is only sent after the game has already accepted the text.
+    fn speak(&mut self, role: &str, text: &str, source: LineSource) {
+        self.voices.say(role, text, source, self.voice_level(), get_time());
+    }
+
+    fn voice_fight(&mut self) {
+        let (said, hoot) = match &self.fight {
+            Some(f) => (f.said.clone(), f.hoot.clone()),
+            None => return,
+        };
+        if !said.is_empty() && said != self.voiced_said {
+            self.voiced_said = said.clone();
+            let role = self.char_role();
+            self.speak(&role, &said, LineSource::Fallback("the trap"));
+        }
+        if let Some(h) = hoot {
+            if h != self.voiced_hoot {
+                self.voiced_hoot = h.clone();
+                self.speak("hoot", &h, LineSource::Fallback("hoot"));
+            }
+        }
     }
 
     /// This floor's place on the difficulty curve, with the skill tier's pacing.
@@ -965,6 +1039,7 @@ impl App {
         self.txt.notes_key = None;
         // resets the AI extras and prefetches floor 1's banter, the 3 scam bodies and the tier lines
         self.ai_fx.begin_run(&self.loaded.content, self.run_seed, get_time());
+        self.voices.begin_run();
         self.tip_wait = None;
         self.tip_log_open = false;
         self.plan_sides();
@@ -1100,6 +1175,8 @@ impl App {
             && (self.pending_floor || (self.run.phase == Phase::BossFight && self.arena.is_none()));
         let allow_upload = self.screen == Screen::Title || black;
         self.music.update(Some(track), Some(next), vol, dt, allow_upload);
+        self.voices.set_volume(self.voice_level());
+        self.voices.update(get_time());
         if self.auto.on {
             self.autopilot(&mut inp, dt);
             self.trace();
@@ -1147,9 +1224,9 @@ impl App {
             TitleView::Main => self.title_menu(&inp),
             TitleView::Options => {
                 let (x, y, w) = (cx - 330.0, 196.0, 660.0);
-                panel(x - 20.0, y - 26.0, w + 40.0, 44.0 * OPTS.len() as f32 + 70.0, KSU_GOLD);
+                panel(x - 20.0, y - 26.0, w + 40.0, OPT_ROW * OPTS.len() as f32 + 70.0, KSU_GOLD);
                 let (_, back) = self.options_panel(&inp, x, y, w, true);
-                centered("Up/Down pick  -  Left/Right or Enter change  -  Esc: back", cx, y + 44.0 * OPTS.len() as f32 + 28.0, 18.0, DIM);
+                centered("Up/Down pick  -  Left/Right or Enter change  -  Esc: back", cx, y + OPT_ROW * OPTS.len() as f32 + 28.0, 18.0, DIM);
                 if back || inp.back {
                     self.title_view = TitleView::Main;
                     self.sfx(Sfx::Click);
@@ -1317,7 +1394,7 @@ impl App {
             self.draw_hud();
             draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.55));
             let rows = OPTS.len() as f32 - 1.0;
-            panel(VW * 0.5 - 350.0, 140.0, 700.0, rows * 44.0 + 130.0, KSU_GOLD);
+            panel(VW * 0.5 - 350.0, 140.0, 700.0, rows * OPT_ROW + 130.0, KSU_GOLD);
             centered("PAUSED - OPTIONS", VW * 0.5, 186.0, 32.0, KSU_GOLD);
             if opening {
                 // the Enter/Esc that opened it must not also flip a row
@@ -1326,7 +1403,7 @@ impl App {
                 return;
             }
             self.options_panel(&inp, VW * 0.5 - 330.0, 206.0, 660.0, false);
-            centered("Up/Down pick  -  Left/Right or Enter change  -  Esc / O: resume", VW * 0.5, 206.0 + rows * 44.0 + 36.0, 18.0, DIM);
+            centered("Up/Down pick  -  Left/Right or Enter change  -  Esc / O: resume", VW * 0.5, 206.0 + rows * OPT_ROW + 36.0, 18.0, DIM);
             if toggle || !can_pause {
                 self.settings_open = false;
             }
@@ -1335,6 +1412,8 @@ impl App {
         // poll the AI while waiting for a character's line (the Keeper's lines are scripted)
         if self.run.phase == Phase::Reaction && self.line.is_none() {
             if let Some((text, source)) = self.reactor.poll(get_time()) {
+                let role = self.char_role();
+                self.speak(&role, &text, source.clone());
                 self.line = Some(Line::new(text, source));
             }
         }
@@ -1485,6 +1564,8 @@ impl App {
                 WorldEvent::BossEntered(kind) => {
                     let n = self.arena.as_ref().map_or(1, |a| a.boss_number());
                     let total = self.arena.as_ref().map_or(2, |a| a.bosses_total);
+                    let role = format!("warden:{}", kind.name());
+                    self.speak(&role, kind.tell(), LineSource::Fallback("warden"));
                     self.show_banner(format!("WARDEN {n} OF {total}: {}", kind.name()), kind.tell().to_string(), kind.color());
                 }
                 WorldEvent::BossDown(kind) => {
@@ -1595,6 +1676,8 @@ impl App {
                     // floor 1: the Inbox Mimic fight (the message comes with the quiz);
                     // its lines are scripted, so it skips the AI taunt
                     self.fight = q.case.clone().map(|c| Fight::new(c, q.id, self.reduced_motion));
+                    self.voiced_said.clear();
+                    self.voiced_hoot.clear();
                     if let (true, Some(c)) = (self.auto.on, &q.case) {
                         println!("[auto] investigation: {} ({:?}, variant {}), planted {:?}", c.name, c.medium, c.variant, c.planted);
                     }
@@ -1603,6 +1686,7 @@ impl App {
                     if !fight {
                         // the Keeper's opening taunt: AI-voiced if its floor pack arrived, else scripted
                         let (t, src) = self.ai_fx.keeper_taunt(self.run.room);
+                        self.speak("keeper", &t, src.clone());
                         if self.auto.on {
                             println!("[auto] keeper taunt ({}): {t}", source_tag(&src, "line"));
                         }
@@ -2121,6 +2205,7 @@ impl App {
                 if self.auto.on {
                     println!("[auto] owl hint ({}): {hint}", source_tag(&src, "line"));
                 }
+                self.speak("hoot", &hint, src.clone());
                 self.owl = Some(Line::new(hint, src));
                 self.owl_t = 0.0;
                 self.sfx(Sfx::Equip);
@@ -2271,6 +2356,7 @@ impl App {
         if self.auto.on {
             println!("[auto] hoot tip ({}): {}", source_tag(&t.source, "line"), t.text);
         }
+        self.speak("hoot", &t.text, t.source.clone());
         self.owl = Some(Line::new(t.text, t.source));
         self.owl_t = 0.0;
         self.sfx(Sfx::Equip);
@@ -2698,12 +2784,14 @@ impl App {
                 self.quiz = Some(Rc::new(summary));
                 self.quiz_pick = Some(if right { 0 } else { 1 });
                 self.verdict_ready = false;
-                self.line = Some(Line::new(takeaway.to_string(), ai::LineSource::Fallback("the trap's takeaway")));
+                self.speak("char:trap", &takeaway, LineSource::Fallback("the trap's takeaway"));
+                self.line = Some(Line::new(takeaway, LineSource::Fallback("the trap's takeaway")));
                 self.fight = None;
                 self.sfx(Sfx::Click);
             }
             _ => {}
         }
+        self.voice_fight();
     }
 
     fn answer_keeper(&mut self, q: &Quiz, i: usize) {
@@ -2725,6 +2813,7 @@ impl App {
         if self.auto.on {
             println!("[auto] keeper verdict {} ({}): {t}", if correct { "right" } else { "wrong" }, source_tag(&src, "line"));
         }
+        self.speak("keeper", &t, src.clone());
         self.line = Some(Line::new(t, src));
         self.sfx(Sfx::Click);
     }

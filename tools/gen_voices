@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""Generate the pre-recorded character voices.
+
+Reads the catalog from `cargo test --release voice_lines_json -- --ignored --nocapture`
+and writes one mono 16 kHz Vorbis `.ogg` per line (shared when the role and words
+match). Pitch and speed come from the catalog, so each character is distinct
+from the one Piper voice.
+
+Voice: Piper `en_US-hifi_tts_92-medium` (Cori Samuel, Hi-Fi TTS, CC BY 4.0,
+trained from scratch). The model is downloaded on demand and is not committed.
+Requires `piper` on PATH and `ffmpeg`.
+
+    tools/gen_voices
+
+Existing files are kept. Clips that no longer match a line are removed.
+Outputs: assets/voices/ and web/assets/voices/ (same bytes; the web build
+fetches them next to the page).
+"""
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+MODEL = os.environ.get("PIPER_MODEL", "/tmp/piper-voices/en_US-hifi_tts_92-medium.onnx")
+VOICE = "en_US-hifi_tts_92-medium"
+DIRS = [ROOT / "assets" / "voices", ROOT / "web" / "assets" / "voices"]
+
+
+def catalog():
+    env = os.environ.copy()
+    proc = subprocess.run(
+        ["cargo", "test", "--release", "voice_lines_json", "--", "--ignored", "--nocapture"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        sys.stderr.write(proc.stderr)
+        sys.stderr.write(proc.stdout)
+        raise SystemExit(f"catalog test failed ({proc.returncode})")
+    lines = []
+    for raw in proc.stdout.splitlines():
+        if raw.startswith("{"):
+            lines.append(json.loads(raw))
+    if not lines:
+        raise SystemExit("catalog was empty")
+    return lines
+
+
+def ensure_model():
+    if Path(MODEL).is_file():
+        return
+    dest = str(Path(MODEL).parent)
+    subprocess.check_call([sys.executable, "-m", "piper.download_voices", "--download-dir", dest, VOICE])
+
+
+def render(job):
+    file, text, pitch, speed = job
+    wav = Path(tempfile.gettempdir()) / f"cc-voice-{os.getpid()}-{file}.wav"
+    ogg = Path(tempfile.gettempdir()) / f"cc-voice-{os.getpid()}-{file}.ogg"
+    try:
+        subprocess.run(
+            ["piper", "-m", MODEL, "-f", str(wav), "--sentence-silence", "0.05"],
+            input=text.strip() + "\n",
+            text=True,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        atempo = max(0.5, min(2.0, speed / pitch))
+        af = f"asetrate=22050*{pitch:.5f},aresample=16000,atempo={atempo:.5f}"
+        subprocess.check_call(
+            [
+                "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                "-i", str(wav), "-af", af, "-ac", "1",
+                "-c:a", "libvorbis", "-b:a", "16k", str(ogg),
+            ]
+        )
+        data = ogg.read_bytes()
+        if not data.startswith(b"OggS"):
+            raise SystemExit(f"{file} is not ogg")
+        return file, data
+    finally:
+        wav.unlink(missing_ok=True)
+        ogg.unlink(missing_ok=True)
+
+
+def main():
+    if shutil.which("piper") is None or shutil.which("ffmpeg") is None:
+        raise SystemExit("piper and ffmpeg must be on PATH")
+    ensure_model()
+    lines = catalog()
+    jobs = {}
+    for line in lines:
+        jobs.setdefault(line["file"], (line["file"], line["text"], line["pitch"], line["speed"]))
+    for d in DIRS:
+        d.mkdir(parents=True, exist_ok=True)
+    todo = [job for job in jobs.values() if not (DIRS[0] / job[0]).is_file()]
+    print(f"{len(lines)} lines, {len(jobs)} clips, {len(todo)} to generate", flush=True)
+    workers = min(4, os.cpu_count() or 1)
+    done = 0
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futs = [pool.submit(render, job) for job in todo]
+        for fut in as_completed(futs):
+            file, data = fut.result()
+            for d in DIRS:
+                (d / file).write_bytes(data)
+            done += 1
+            if done % 25 == 0 or done == len(todo):
+                print(f"  {done}/{len(todo)}", flush=True)
+    keep = set(jobs)
+    for d in DIRS:
+        for path in d.glob("*.ogg"):
+            if path.name not in keep:
+                path.unlink()
+        # a fresh tree should match even if this run generated nothing
+        for name in keep:
+            src = DIRS[0] / name
+            dst = d / name
+            if not dst.is_file():
+                shutil.copyfile(src, dst)
+    manifest = [{"id": l["id"], "role": l["role"], "file": l["file"], "text": l["text"]} for l in lines]
+    for d in DIRS:
+        (d / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    total = sum((DIRS[0] / name).stat().st_size for name in keep)
+    print(f"voice audio: {len(keep)} files, {total} bytes in {DIRS[0]}")
+
+
+if __name__ == "__main__":
+    main()
