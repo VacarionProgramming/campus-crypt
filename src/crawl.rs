@@ -11,6 +11,7 @@ use crate::art::*;
 use crate::audio::Sfx;
 use macroquad::prelude::*;
 use macroquad::rand::gen_range;
+use crate::layout_rng::gen_range as layout_rand;
 use std::collections::VecDeque;
 
 pub const TILE: f32 = 40.0;
@@ -247,7 +248,7 @@ impl Room {
         self.x - margin < o.x + o.w && self.x + self.w + margin > o.x && self.y - margin < o.y + o.h && self.y + self.h + margin > o.y
     }
     fn random_tile(&self) -> (i32, i32) {
-        (gen_range(self.x + 1, self.x + self.w - 1), gen_range(self.y + 1, self.y + self.h - 1))
+        (layout_rand(self.x + 1, self.x + self.w - 1), layout_rand(self.y + 1, self.y + self.h - 1))
     }
 }
 
@@ -336,9 +337,9 @@ impl Map {
             if m.rooms.len() >= target_rooms {
                 break;
             }
-            let w = gen_range(6, 11);
-            let h = gen_range(5, 9);
-            let r = Room { x: gen_range(1, m.w - w - 1), y: gen_range(1, m.h - h - 1), w, h };
+            let w = layout_rand(6, 11);
+            let h = layout_rand(5, 9);
+            let r = Room { x: layout_rand(1, m.w - w - 1), y: layout_rand(1, m.h - h - 1), w, h };
             if m.rooms.iter().any(|o| r.intersects(o, 2)) {
                 continue;
             }
@@ -348,7 +349,7 @@ impl Map {
                 }
             }
             // a pillar pair in big rooms gives line of sight something to do
-            if r.w >= 9 && r.h >= 7 && gen_range(0, 2) == 0 {
+            if r.w >= 9 && r.h >= 7 && layout_rand(0, 2) == 0 {
                 let (cx, cy) = r.center();
                 let (a, b) = (m.idx(cx - 2, cy - 1), m.idx(cx + 2, cy + 1));
                 m.tiles[a] = Tile::Wall;
@@ -357,8 +358,8 @@ impl Map {
             if let Some(prev) = m.rooms.last().copied() {
                 let (ax, ay) = prev.center();
                 let (bx, by) = r.center();
-                let wide = gen_range(0, 2) == 0;
-                if gen_range(0, 2) == 0 {
+                let wide = layout_rand(0, 2) == 0;
+                if layout_rand(0, 2) == 0 {
                     m.h_corridor(ax, bx, ay, wide);
                     m.v_corridor(ay, by, bx, wide);
                 } else {
@@ -374,8 +375,8 @@ impl Map {
             if n < 4 {
                 break;
             }
-            let a = m.rooms[gen_range(0, n)].center();
-            let b = m.rooms[gen_range(0, n)].center();
+            let a = m.rooms[layout_rand(0, n)].center();
+            let b = m.rooms[layout_rand(0, n)].center();
             m.h_corridor(a.0, b.0, a.1, false);
             m.v_corridor(a.1, b.1, b.0, false);
         }
@@ -744,7 +745,7 @@ pub fn enemy_mix(depth: f32) -> [u32; 7] {
 fn roll_enemy(depth: f32) -> EnemyKind {
     let mix = enemy_mix(depth);
     let total: u32 = mix.iter().sum();
-    let mut roll = gen_range(0, total);
+    let mut roll = layout_rand(0, total);
     for (k, w) in EnemyKind::ALL.iter().zip(mix) {
         if roll < w {
             return *k;
@@ -1333,7 +1334,7 @@ impl World {
                 field[self.map.idx(c.0, c.1)] != UNREACHED
             })
             .collect();
-        let room = if ok.is_empty() { self.map.rooms[self.map.rooms.len().min(2) - 1] } else { ok[gen_range(0, ok.len())] };
+        let room = if ok.is_empty() { self.map.rooms[self.map.rooms.len().min(2) - 1] } else { ok[layout_rand(0, ok.len())] };
         let mut t = self.map.random_floor_in(&room);
         if t == npc_t || t == stairs_t {
             t = room.center();
@@ -1362,7 +1363,7 @@ impl World {
         let count = tier.paced_enemy_count();
         let rooms = self.map.rooms.clone();
         let npc_t = tile_of(self.npc);
-        let pick_room = |n: usize| rooms[gen_range(1, n.max(2)).min(n - 1)];
+        let pick_room = |n: usize| rooms[layout_rand(1, n.max(2)).min(n - 1)];
         let mut placed = 0;
         let mut tries = 0;
         while placed < count && tries < 400 {
@@ -1410,24 +1411,35 @@ impl World {
                 power.can_heal = false; // one coffee per frame is plenty
             }
         }
-        // the camera follows the player (the arena is static)
-        if !self.arena {
-            let view = vec2(VW, VH - 56.0);
-            let world = vec2(self.map.w as f32, self.map.h as f32) * TILE;
-            self.cam = self.cam.lerp(self.player.pos, (dt * 8.0).min(1.0));
-            self.cam.x = self.cam.x.clamp(view.x * 0.5, (world.x - view.x * 0.5).max(view.x * 0.5));
-            self.cam.y = self.cam.y.clamp(view.y * 0.5, (world.y - view.y * 0.5).max(view.y * 0.5));
-        }
+        self.follow_camera(dt, false);
     }
 
     /// Snap the camera onto the player (new floor / back from the arena).
     pub fn snap_camera(&mut self) {
-        if self.arena {
+        self.follow_camera(0.0, true);
+    }
+
+    /// The playfield under the HUD (and, on a phone held upright, above the touch dock).
+    fn view_size(&self) -> Vec2 {
+        let dock = if crate::art::portrait() { 190.0 } else { 0.0 };
+        vec2(crate::art::vw(), (crate::art::vh() - 56.0 - dock).max(200.0))
+    }
+
+    /// Follow the player. The landscape arena already fits on screen, and its
+    /// camera is the one `arena()` placed in the middle, so this leaves it
+    /// alone. A portrait phone crops that room, and then the camera follows.
+    fn follow_camera(&mut self, dt: f32, snap: bool) {
+        let view = self.view_size();
+        let world = vec2(self.map.w as f32, self.map.h as f32) * TILE;
+        if self.arena && view.x + 8.0 >= world.x && view.y + 8.0 >= world.y {
             return;
         }
-        let view = vec2(VW, VH - 56.0);
-        let world = vec2(self.map.w as f32, self.map.h as f32) * TILE;
-        self.cam = self.player.pos;
+        let target = self.player.pos;
+        if snap {
+            self.cam = target;
+        } else {
+            self.cam = self.cam.lerp(target, (dt * 8.0).min(1.0));
+        }
         self.cam.x = self.cam.x.clamp(view.x * 0.5, (world.x - view.x * 0.5).max(view.x * 0.5));
         self.cam.y = self.cam.y.clamp(view.y * 0.5, (world.y - view.y * 0.5).max(view.y * 0.5));
     }
@@ -2567,7 +2579,9 @@ impl World {
     /// Screen offset: world point + offset = virtual-canvas point.
     pub fn offset(&self) -> Vec2 {
         let shake = if self.shake > 0.0 { vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)) * self.shake * 10.0 } else { Vec2::ZERO };
-        (vec2(VW * 0.5, 56.0 + (VH - 56.0) * 0.5) - self.cam + shake).round()
+        let dock = if crate::art::portrait() { 190.0 } else { 0.0 };
+        let play_h = (crate::art::vh() - 56.0 - dock).max(200.0);
+        (vec2(crate::art::vw() * 0.5, 56.0 + play_h * 0.5) - self.cam + shake).round()
     }
 
     // ------------------------------------------------------------ drawing
@@ -2789,8 +2803,9 @@ impl World {
         if !self.arena {
             let x0 = ((-off.x) / TILE).floor().max(0.0) as i32;
             let y0 = ((56.0 - off.y) / TILE).floor().max(0.0) as i32;
-            let x1 = (((VW - off.x) / TILE).ceil() as i32 + 1).min(self.map.w);
-            let y1 = (((VH - off.y) / TILE).ceil() as i32 + 1).min(self.map.h);
+            let (vw, vh) = crate::art::canvas();
+            let x1 = (((vw - off.x) / TILE).ceil() as i32 + 1).min(self.map.w);
+            let y1 = (((vh - off.y) / TILE).ceil() as i32 + 1).min(self.map.h);
             for y in y0..y1 {
                 for x in x0..x1 {
                     let i = self.map.idx(x, y);
@@ -2928,6 +2943,54 @@ mod tests {
                 assert!(w.enemies.iter().all(|e| !w.map.solid_at(e.pos)));
             }
         }
+    }
+
+    /// The layout stream, not macroquad's global RNG, decides rooms and enemies.
+    /// Reseeding the global RNG between two builds must not change the crypt.
+    fn layout_fingerprint(floors: u32) -> u64 {
+        let mut h = 0xcbf29ce484222325u64;
+        for f in 0..floors {
+            let w = World::floor(tier20(f));
+            for t in &w.map.tiles {
+                h = (h ^ u64::from(*t == Tile::Floor)).wrapping_mul(0x100000001b3);
+            }
+            h = (h ^ w.map.rooms.len() as u64).wrapping_mul(0x100000001b3);
+            let mix = |h: &mut u64, p: Vec2| {
+                let (x, y) = tile_of(p);
+                *h = (*h ^ (x as u64).wrapping_mul(131).wrapping_add(y as u64)).wrapping_mul(0x100000001b3);
+            };
+            mix(&mut h, w.npc);
+            mix(&mut h, w.stairs);
+            for e in &w.enemies {
+                h = (h ^ e.kind as u64).wrapping_mul(0x100000001b3);
+                mix(&mut h, e.pos);
+            }
+            for p in &w.pickups {
+                mix(&mut h, p.pos);
+            }
+        }
+        h
+    }
+
+    #[test]
+    fn the_same_layout_seed_builds_the_same_crypt_twice() {
+        let _rng = rng_lock();
+        let once = |seed: u64, cosmetic: u64| {
+            let _g = crate::layout_rng::guard(seed);
+            macroquad::rand::srand(cosmetic);
+            layout_fingerprint(4)
+        };
+        let a = once(0xB4A8_4055_CEA0_C3D1, 1);
+        let b = once(0xB4A8_4055_CEA0_C3D1, 99);
+        assert_eq!(a, b, "cosmetic RNG must not move rooms or enemies");
+        let c = once(0x1111, 1);
+        assert_ne!(a, c, "a different daily seed is a different crypt");
+        // and with the layout stream off, the global seed still drives the floor
+        macroquad::rand::srand(3);
+        let left = layout_fingerprint(1);
+        macroquad::rand::srand(3);
+        let right = layout_fingerprint(1);
+        assert_eq!(left, right);
     }
 
     #[test]

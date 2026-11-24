@@ -16,28 +16,45 @@
     /* touches go to the game, never to scrolling, zooming or text selection */
     html, body, canvas { touch-action: none; -webkit-user-select: none; user-select: none;
       -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-    #rotate { display: none; }
-    /* a phone held upright: ask for landscape (the game is 16:9) */
-    @media (orientation: portrait) and (pointer: coarse) {
-      #rotate { display: flex; position: fixed; inset: 0; z-index: 10; background: #08060c; color: #EDE6D1;
-        flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px;
-        font: 600 20px/1.4 system-ui, -apple-system, sans-serif; text-align: center; }
-      #rotate b { color: #FFC529; font: 800 28px ui-monospace, Menlo, monospace; letter-spacing: .06em; }
-      #rotate span { font-size: 56px; }
-    }
     #ai-note { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; margin: 0; padding: 6px 16px;
       background: rgba(8, 6, 12, 0.88); color: #EDE6D1; text-align: center; pointer-events: none;
       font: 600 14px/1.35 system-ui, -apple-system, sans-serif; }
+    /* the game lays itself out for a phone held upright, so the note must not cover the buttons */
+    @media (orientation: portrait) and (pointer: coarse) {
+      #ai-note { display: none; }
+    }
+    #daily-name { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(8, 6, 12, 0.92);
+      align-items: center; justify-content: center; padding: 24px; }
+    #daily-name form { width: min(420px, 100%); display: flex; flex-direction: column; gap: 12px;
+      font: 600 18px/1.4 system-ui, -apple-system, sans-serif; color: #EDE6D1; }
+    #daily-name h2 { margin: 0; color: #FFC529; font: 800 28px ui-monospace, Menlo, monospace; }
+    #daily-name p { margin: 0; font-weight: 500; }
+    #daily-name .err { color: #ff6b5a; min-height: 1.2em; }
+    #daily-name label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; letter-spacing: .04em; }
+    #daily-name input { font: 600 20px/1.2 ui-monospace, Menlo, monospace; padding: 12px; border: 2px solid #FFC529;
+      background: #141018; color: #EDE6D1; border-radius: 4px; }
+    #daily-name button { font: 800 18px/1 ui-monospace, Menlo, monospace; padding: 14px; border: 0;
+      background: #FFC529; color: #141018; }
   </style>
 </head>
 <body>
   <canvas id="glcanvas" tabindex="1"></canvas>
-  <div id="rotate"><b>CAMPUS CRYPT</b><span aria-hidden="true">↻</span>Turn your phone sideways to play.<br>Joystick on the left, buttons on the right.<br>Live AI lines are in the desktop build. This page uses scripted lines.</div>
-  <p id="ai-note">Live AI lines are in the desktop build. This web version uses scripted lines.</p>
+  <p id="ai-note">Live AI lines are in the desktop build. This web version uses scripted lines. Daily Crypt plays upright.</p>
+  <div id="daily-name">
+    <form id="daily-name-form" autocomplete="off">
+      <h2>DAILY CRYPT</h2>
+      <p>A nickname for today's board. A club is optional. Nothing else is stored.</p>
+      <p class="err" id="daily-name-err"></p>
+      <label>NICKNAME<input id="daily-nick" maxlength="16" autocapitalize="off" spellcheck="false"></label>
+      <label>CLUB<input id="daily-club" maxlength="12" autocapitalize="characters" spellcheck="false" placeholder="optional"></label>
+      <button type="submit">SAVE</button>
+    </form>
+  </div>
   <!-- miniquad loader + quad-snd web audio plugin (copied from their crates) -->
   <script src="gl.js"></script>
   <script src="audio.js"></script>
   <script src="settings.js"></script>
+  <script src="api.js"></script>
   <script>load("campus_crypt.wasm");</script>
 </body>
 </html>

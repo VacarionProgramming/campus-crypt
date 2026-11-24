@@ -368,6 +368,8 @@ struct LiveJob {
 
 pub struct Voices {
     on: bool,
+    /// Daily runs never call live TTS. Pre-recorded clips still play.
+    block_live: bool,
     volume: f32,
     token: u64,
     current: Option<Sound>,
@@ -387,6 +389,7 @@ impl Voices {
     pub fn new() -> Voices {
         Voices {
             on: true,
+            block_live: false,
             volume: 1.0,
             token: 0,
             current: None,
@@ -407,6 +410,11 @@ impl Voices {
         if !on {
             self.stop();
         }
+    }
+
+    /// Daily Crypt: scripted clips only. A live AI line stays silent instead of calling the speech API.
+    pub fn set_block_live(&mut self, on: bool) {
+        self.block_live = on;
     }
 
     pub fn set_volume(&mut self, volume: f32) {
@@ -439,6 +447,7 @@ impl Voices {
         let token = self.token;
         match source {
             LineSource::Fallback(_) => self.play_file(&key, token),
+            LineSource::Ai if self.block_live => {}
             LineSource::Ai => self.play_live(role, text, &key, token, now),
         }
     }

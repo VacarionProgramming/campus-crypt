@@ -20,18 +20,21 @@
 mod ai;
 mod ai_features;
 mod art;
-mod perf;
-mod risk_it;
 mod audio;
 mod content;
 mod crawl;
+mod daily;
+mod daily_api;
 mod display_live;
 mod hardware;
-mod keeper;
 mod investigate;
+mod keeper;
 mod keeper_fight;
-mod settings;
+mod layout_rng;
 mod music;
+mod perf;
+mod risk_it;
+mod settings;
 mod state;
 mod touch;
 mod voice;
@@ -42,14 +45,14 @@ use art::*;
 // crisp text: these shadow macroquad's versions from the prelude glob
 use art::{draw_text, measure_text};
 use audio::{Audio, Sfx};
-use music::{Music, Track};
 use content::{Effects, Encounter, Loaded, Outcome};
 use crawl::{wardens_for, Control, Pace, Power, Tier, World, WorldEvent, TILE};
 use hardware::{Hardware, HwEvent, HwState};
 use keeper::Quiz;
 use keeper_fight::{Fight, FightEvent, FightInput, Stage as FightStage};
-use risk_it::{RiskEvent, RiskIt};
 use macroquad::prelude::*;
+use music::{Music, Track};
+use risk_it::{RiskEvent, RiskIt};
 use state::{Ending, Phase, Run, MAX_FOCUS, MAX_HEALTH};
 use std::fmt::Write as _;
 use std::rc::Rc;
@@ -122,9 +125,18 @@ impl Input {
         } else {
             mv = hw.move_vec();
         }
-        let digit = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3, KeyCode::Key4, KeyCode::Key5, KeyCode::Key6, KeyCode::Key7, KeyCode::Key8]
-            .iter()
-            .position(|&k| p(k));
+        let digit = [
+            KeyCode::Key1,
+            KeyCode::Key2,
+            KeyCode::Key3,
+            KeyCode::Key4,
+            KeyCode::Key5,
+            KeyCode::Key6,
+            KeyCode::Key7,
+            KeyCode::Key8,
+        ]
+        .iter()
+        .position(|&k| p(k));
         Input {
             up: p(KeyCode::Up) || p(KeyCode::W) || nav.up,
             down: p(KeyCode::Down) || p(KeyCode::S) || nav.down,
@@ -134,9 +146,15 @@ impl Input {
             confirm: p(KeyCode::Enter) || p(KeyCode::KpEnter) || p(KeyCode::E) || nav.select,
             back: p(KeyCode::Escape),
             interact: p(KeyCode::E) || p(KeyCode::Enter) || p(KeyCode::KpEnter) || nav.select,
-            attack: d(KeyCode::Space) || d(KeyCode::J) || is_mouse_button_down(MouseButton::Left) || hw.button_held(),
+            attack: d(KeyCode::Space)
+                || d(KeyCode::J)
+                || is_mouse_button_down(MouseButton::Left)
+                || hw.button_held(),
             mouse_attack: is_mouse_button_down(MouseButton::Left),
-            dodge: p(KeyCode::LeftShift) || p(KeyCode::RightShift) || p(KeyCode::K) || is_mouse_button_pressed(MouseButton::Right),
+            dodge: p(KeyCode::LeftShift)
+                || p(KeyCode::RightShift)
+                || p(KeyCode::K)
+                || is_mouse_button_pressed(MouseButton::Right),
             aim_world: None,
             digit,
             mouse: view.to_virtual(mouse_position().into()),
@@ -163,21 +181,37 @@ struct View {
 
 impl View {
     fn new() -> View {
+        // A window taller than it is wide (a phone held upright) uses the
+        // portrait canvas. Desktop and landscape stay on 1280x720.
+        let portrait = screen_height() > screen_width() * 1.02;
+        let (vw, vh) = if portrait {
+            (art::PHONE_W, art::PHONE_H)
+        } else {
+            (VW, VH)
+        };
+        art::set_canvas(vw, vh);
         let dpi = screen_dpi_scale().max(0.01);
-        let (pw, ph) = ((screen_width() * dpi).max(1.0), (screen_height() * dpi).max(1.0));
-        let s = (pw / VW).min(ph / VH);
-        let (w, h) = ((VW * s).round().max(1.0), (VH * s).round().max(1.0));
+        let (pw, ph) = (
+            (screen_width() * dpi).max(1.0),
+            (screen_height() * dpi).max(1.0),
+        );
+        let s = (pw / vw).min(ph / vh);
+        let (w, h) = ((vw * s).round().max(1.0), (vh * s).round().max(1.0));
         let (x, y) = (((pw - w) * 0.5).floor(), ((ph - h) * 0.5).floor());
-        let mut cam = Camera2D::from_display_rect(Rect::new(0.0, VH, VW, -VH));
+        let mut cam = Camera2D::from_display_rect(Rect::new(0.0, vh, vw, -vh));
         cam.viewport = Some((x as i32, y as i32, w as i32, h as i32));
         // text is rasterized at this many screen pixels per canvas pixel
-        art::set_text_scale(w / VW);
-        View { cam, rect: Rect::new(x / dpi, y / dpi, w / dpi, h / dpi) }
+        art::set_text_scale(w / vw);
+        View {
+            cam,
+            rect: Rect::new(x / dpi, y / dpi, w / dpi, h / dpi),
+        }
     }
 
     fn to_virtual(&self, p: Vec2) -> Vec2 {
         let r = self.rect;
-        vec2((p.x - r.x) / r.w * VW, (p.y - r.y) / r.h * VH)
+        let (vw, vh) = art::canvas();
+        vec2((p.x - r.x) / r.w * vw, (p.y - r.y) / r.h * vh)
     }
 }
 
@@ -202,7 +236,9 @@ impl Cached {
 
 /// Pack small counters into one cache key.
 fn key(parts: &[usize]) -> u64 {
-    parts.iter().fold(0xcbf2_9ce4_8422_2325u64, |h, &p| (h ^ p as u64).wrapping_mul(0x100_0000_01b3))
+    parts.iter().fold(0xcbf2_9ce4_8422_2325u64, |h, &p| {
+        (h ^ p as u64).wrapping_mul(0x100_0000_01b3)
+    })
 }
 
 #[derive(Default)]
@@ -263,13 +299,28 @@ enum TitleView {
     Main,
     Options,
     HowTo,
+    /// today's leaderboard
+    Board,
 }
 
 /// The title's crypt door list (the web build can't quit).
 #[cfg(not(target_arch = "wasm32"))]
-const MENU_ITEMS: &[&str] = &["ENTER THE CRYPT", "OPTIONS", "HOW TO PLAY", "QUIT"];
+const MENU_ITEMS: &[&str] = &[
+    "ENTER THE CRYPT",
+    "DAILY CRYPT",
+    "TODAY'S BOARD",
+    "OPTIONS",
+    "HOW TO PLAY",
+    "QUIT",
+];
 #[cfg(target_arch = "wasm32")]
-const MENU_ITEMS: &[&str] = &["ENTER THE CRYPT", "OPTIONS", "HOW TO PLAY"];
+const MENU_ITEMS: &[&str] = &[
+    "ENTER THE CRYPT",
+    "DAILY CRYPT",
+    "TODAY'S BOARD",
+    "OPTIONS",
+    "HOW TO PLAY",
+];
 
 /// One row of the Options menu (title and pause screen).
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -305,8 +356,20 @@ const OPTS: [Opt; 10] = [
 fn flame(x: f32, y: f32, t: f32, seed: f32) {
     let fl = 1.0 + 0.15 * (t * 11.0 + seed).sin() + 0.08 * (t * 27.0 + seed * 3.0).sin();
     glow(x, y, 46.0 * fl, Color::new(1.0, 0.6, 0.2, 1.0), 1.2);
-    draw_rectangle(x - 5.0, y - 6.0 - 4.0 * fl, 10.0, 14.0 + 4.0 * fl, Color::new(1.0, 0.55, 0.12, 1.0));
-    draw_rectangle(x - 2.5, y - 2.0 - 2.0 * fl, 5.0, 8.0 + 2.0 * fl, Color::new(1.0, 0.92, 0.55, 1.0));
+    draw_rectangle(
+        x - 5.0,
+        y - 6.0 - 4.0 * fl,
+        10.0,
+        14.0 + 4.0 * fl,
+        Color::new(1.0, 0.55, 0.12, 1.0),
+    );
+    draw_rectangle(
+        x - 2.5,
+        y - 2.0 - 2.0 * fl,
+        5.0,
+        8.0 + 2.0 * fl,
+        Color::new(1.0, 0.92, 0.55, 1.0),
+    );
 }
 
 /// The reaction line for the current choice, once decided.
@@ -324,7 +387,13 @@ impl Line {
     fn new(text: String, source: LineSource) -> Line {
         let tag = source_tag(&source, "line");
         let tag_w = measure_text(&tag, None, 18, 1.0).width;
-        Line { len: text.chars().count(), text, tag, tag_w, shown: 0.0 }
+        Line {
+            len: text.chars().count(),
+            text,
+            tag,
+            tag_w,
+            shown: 0.0,
+        }
     }
 }
 
@@ -363,7 +432,8 @@ fn plan_sides(data: &ai_features::data::FeatureData, seed: u32, rooms: usize) ->
     let mut next = scamgen::POOL_SIZE;
     let templates = data.scam_templates.len().max(1);
     for &f in &SPOT_FLOORS {
-        let pick = (next..scamgen::POOL_SIZE + templates * 2).find(|&s| !used.contains(&template(s)));
+        let pick =
+            (next..scamgen::POOL_SIZE + templates * 2).find(|&s| !used.contains(&template(s)));
         if let (Some(slot), true) = (pick, f < rooms) {
             sides[f] = Some(Side::Spot(slot));
             used.push(template(slot));
@@ -385,11 +455,25 @@ struct Msg {
 
 impl Msg {
     fn of_scam(m: &ScamMessage) -> Msg {
-        Msg { channel: m.channel.clone(), from: m.from.clone(), subject: m.subject.clone(), body: m.body.clone(), link: m.link, sign_off: m.sign_off.clone() }
+        Msg {
+            channel: m.channel.clone(),
+            from: m.from.clone(),
+            subject: m.subject.clone(),
+            body: m.body.clone(),
+            link: m.link,
+            sign_off: m.sign_off.clone(),
+        }
     }
     fn of_spot(r: &SpotRound, i: usize) -> Msg {
         let c = &r.cards[i];
-        Msg { channel: c.channel.clone(), from: c.from.clone(), subject: c.subject.clone(), body: c.body.clone(), link: c.link, sign_off: c.sign_off.clone() }
+        Msg {
+            channel: c.channel.clone(),
+            from: c.from.clone(),
+            subject: c.subject.clone(),
+            body: c.body.clone(),
+            link: c.link,
+            sign_off: c.sign_off.clone(),
+        }
     }
 }
 
@@ -428,7 +512,15 @@ enum MiniStep {
 /// the channel, sender and subject, the body, the link placeholder drawn as a
 /// link that goes nowhere, and the sign-off. `stamp` marks it FAKE / REAL / SCAM.
 /// Returns the bottom y. Sized from the whole text, so it never jumps.
-fn message_card(m: &Msg, x: f32, y: f32, w: f32, size: f32, border: Color, stamp: Option<&str>) -> f32 {
+fn message_card(
+    m: &Msg,
+    x: f32,
+    y: f32,
+    w: f32,
+    size: f32,
+    border: Color,
+    stamp: Option<&str>,
+) -> f32 {
     let pad = 18.0;
     let lh = size * 1.15;
     let tw = w - 2.0 * pad;
@@ -436,7 +528,11 @@ fn message_card(m: &Msg, x: f32, y: f32, w: f32, size: f32, border: Color, stamp
     let from = format!("From: {}", m.from);
     let subj = format!("Subject: {}", m.subject);
     let n_from = wrap(&from, small, tw).len() as f32;
-    let n_subj = if m.subject.is_empty() { 0.0 } else { wrap(&subj, small, tw).len() as f32 };
+    let n_subj = if m.subject.is_empty() {
+        0.0
+    } else {
+        wrap(&subj, small, tw).len() as f32
+    };
     let n_body = wrap(&m.body, size, tw - 16.0).len() as f32;
     let extra = f32::from(u8::from(m.link.is_some())) + f32::from(u8::from(!m.sign_off.is_empty()));
     let h = 38.0 + (n_from + n_subj) * small * 1.15 + 14.0 + n_body * lh + 16.0 + extra * lh + pad;
@@ -447,7 +543,13 @@ fn message_card(m: &Msg, x: f32, y: f32, w: f32, size: f32, border: Color, stamp
         "dm" => ("DIRECT MESSAGE", Color::new(0.75, 0.55, 1.0, 1.0)),
         _ => ("EMAIL", KSU_GOLD),
     };
-    draw_rectangle(x + 3.0, y + 3.0, w - 6.0, 30.0, Color::new(col.r * 0.28, col.g * 0.28, col.b * 0.28, 1.0));
+    draw_rectangle(
+        x + 3.0,
+        y + 3.0,
+        w - 6.0,
+        30.0,
+        Color::new(col.r * 0.28, col.g * 0.28, col.b * 0.28, 1.0),
+    );
     // a tiny envelope / phone / bubble icon
     let (ix, iy) = (x + pad, y + 9.0);
     match m.channel.as_str() {
@@ -457,7 +559,12 @@ fn message_card(m: &Msg, x: f32, y: f32, w: f32, size: f32, border: Color, stamp
         }
         "dm" => {
             draw_rectangle_lines(ix, iy, 20.0, 13.0, 2.0, col);
-            draw_triangle(vec2(ix + 4.0, iy + 13.0), vec2(ix + 10.0, iy + 13.0), vec2(ix + 3.0, iy + 19.0), col);
+            draw_triangle(
+                vec2(ix + 4.0, iy + 13.0),
+                vec2(ix + 10.0, iy + 13.0),
+                vec2(ix + 3.0, iy + 19.0),
+                col,
+            );
         }
         _ => {
             draw_rectangle_lines(ix, iy, 22.0, 15.0, 2.0, col);
@@ -476,18 +583,38 @@ fn message_card(m: &Msg, x: f32, y: f32, w: f32, size: f32, border: Color, stamp
     if n_subj > 0.0 {
         yy = text_block(&subj, x + pad, yy, small, tw, PAPER);
     }
-    draw_line(x + pad, yy - small * 0.6, x + w - pad, yy - small * 0.6, 1.0, Color::new(border.r, border.g, border.b, 0.3));
+    draw_line(
+        x + pad,
+        yy - small * 0.6,
+        x + w - pad,
+        yy - small * 0.6,
+        1.0,
+        Color::new(border.r, border.g, border.b, 0.3),
+    );
     yy += 14.0;
     // texts and DMs read as a chat bubble; emails as a page
     if m.channel != "email" {
         let bh = n_body * lh + 10.0;
-        draw_rectangle(x + pad - 6.0, yy - size - 2.0, tw + 12.0, bh, Color::new(1.0, 1.0, 1.0, 0.06));
+        draw_rectangle(
+            x + pad - 6.0,
+            yy - size - 2.0,
+            tw + 12.0,
+            bh,
+            Color::new(1.0, 1.0, 1.0, 0.06),
+        );
     }
     yy = text_block(&m.body, x + pad + 8.0, yy, size, tw - 16.0, PAPER) + 8.0;
     if let Some(link) = m.link {
         let lw = measure_text(link, None, size as u16, 1.0).width;
         draw_text(link, x + pad + 8.0, yy, size, FOCUS);
-        draw_line(x + pad + 8.0, yy + 3.0, x + pad + 8.0 + lw, yy + 3.0, 1.5, FOCUS);
+        draw_line(
+            x + pad + 8.0,
+            yy + 3.0,
+            x + pad + 8.0 + lw,
+            yy + 3.0,
+            1.5,
+            FOCUS,
+        );
         yy += lh;
     }
     if !m.sign_off.is_empty() {
@@ -675,6 +802,81 @@ struct App {
     debrief_logged: bool,
     /// font size that fits this run's study guide in the ending panel (picked once)
     debrief_size: Option<f32>,
+    /// the daily run in progress, plus the name and the last board reply
+    daily: DailyPlay,
+    net: daily_api::Net,
+}
+
+/// Client state for one Daily Crypt. Normal runs leave `active` false.
+struct DailyPlay {
+    active: bool,
+    /// waiting on GET /v1/daily/today, at most 3 s
+    waiting: bool,
+    wait_start: f64,
+    /// `?daily=` from the page, already checked to be a real date
+    query: Option<String>,
+    date: String,
+    seed_hex: String,
+    seed: u64,
+    started: f64,
+    reported: bool,
+    share: String,
+    floors_reached: usize,
+    floor_count: usize,
+    time_ms: u64,
+    glyphs: String,
+    nickname: String,
+    club: String,
+    install_id: String,
+    /// 0 = nickname, 1 = club, while the native name fields are up.
+    /// The web build uses the page's text box instead.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+    name_field: usize,
+    name_error: String,
+    need_name: bool,
+    notice: String,
+    retries_left: u8,
+    posting: bool,
+    board: Option<daily::Board>,
+    board_note: String,
+    board_scroll: usize,
+    copied: bool,
+}
+
+impl DailyPlay {
+    fn new() -> DailyPlay {
+        let (nickname, club, install_id) = daily_api::load_profile();
+        let query = daily_api::page_query();
+        DailyPlay {
+            active: false,
+            waiting: false,
+            wait_start: 0.0,
+            query,
+            date: String::new(),
+            seed_hex: String::new(),
+            seed: 0,
+            started: 0.0,
+            reported: false,
+            share: String::new(),
+            floors_reached: 0,
+            floor_count: 0,
+            time_ms: 0,
+            glyphs: String::new(),
+            nickname,
+            club,
+            install_id,
+            name_field: 0,
+            name_error: String::new(),
+            need_name: false,
+            notice: String::new(),
+            retries_left: 1,
+            posting: false,
+            board: None,
+            board_note: String::new(),
+            board_scroll: 0,
+            copied: false,
+        }
+    }
 }
 
 impl App {
@@ -691,6 +893,8 @@ impl App {
         #[cfg(target_arch = "wasm32")]
         let hw_on = false;
         let run = new_run(&loaded);
+        let daily = DailyPlay::new();
+        let menu_sel = usize::from(daily.query.is_some());
         App {
             orig_loaded: loaded.clone(),
             gen_note: None,
@@ -717,9 +921,10 @@ impl App {
             title_view: match auto.title_view.as_deref() {
                 Some("options") => TitleView::Options,
                 Some("howto") => TitleView::HowTo,
+                Some("board") => TitleView::Board,
                 _ => TitleView::Main,
             },
-            menu_sel: 0,
+            menu_sel,
             ai_on: saved.ai,
             arduino_on: hw_on,
             display_live: display_live::DisplayLive::new(),
@@ -764,6 +969,8 @@ impl App {
             ending_tab: 0,
             debrief_logged: false,
             debrief_size: None,
+            daily,
+            net: daily_api::Net::new(),
         }
     }
 
@@ -818,8 +1025,19 @@ impl App {
     /// then (on the title) BACK. Up/Down pick a row, Left/Right adjust or flip,
     /// Enter flips, the mouse drags a bar or clicks a switch.
     /// Returns (mouse over the panel, BACK chosen).
-    fn options_panel(&mut self, inp: &Input, x: f32, y: f32, w: f32, with_back: bool) -> (bool, bool) {
-        let n = if with_back { OPTS.len() } else { OPTS.len() - 1 };
+    fn options_panel(
+        &mut self,
+        inp: &Input,
+        x: f32,
+        y: f32,
+        w: f32,
+        with_back: bool,
+    ) -> (bool, bool) {
+        let n = if with_back {
+            OPTS.len()
+        } else {
+            OPTS.len() - 1
+        };
         let row_h = OPT_ROW;
         let area = Rect::new(x, y, w, row_h * n as f32);
         self.settings_sel = self.settings_sel.min(n - 1);
@@ -831,19 +1049,34 @@ impl App {
             self.settings_sel = (self.settings_sel + 1) % n;
             self.sfx(Sfx::Click);
         }
-        let step = if inp.right { 0.05 } else if inp.left { -0.05 } else { 0.0 };
+        let step = if inp.right {
+            0.05
+        } else if inp.left {
+            -0.05
+        } else {
+            0.0
+        };
         let (bx, bw) = (x + 250.0, w - 340.0);
         let mut back = false;
         for (row, &o) in OPTS.iter().take(n).enumerate() {
             let ry = y + row as f32 * row_h;
             let hit = Rect::new(x, ry, w, row_h);
-            if inp.mouse_moved && hit.contains(inp.mouse) && !is_mouse_button_down(MouseButton::Left) {
+            if inp.mouse_moved
+                && hit.contains(inp.mouse)
+                && !is_mouse_button_down(MouseButton::Left)
+            {
                 self.settings_sel = row;
             }
             let on = self.settings_sel == row;
             let col = if on { KSU_GOLD } else { PAPER };
             if on {
-                draw_rectangle(x, ry + 2.0, w, row_h - 4.0, Color::new(1.0, 0.77, 0.16, 0.10));
+                draw_rectangle(
+                    x,
+                    ry + 2.0,
+                    w,
+                    row_h - 4.0,
+                    Color::new(1.0, 0.77, 0.16, 0.10),
+                );
                 draw_text(">", x + 6.0, ry + 29.0, 24.0, KSU_GOLD);
             }
             let label = match o {
@@ -885,10 +1118,25 @@ impl App {
                     draw_rectangle(bar.x, bar.y, bar.w, bar.h, Color::new(0.2, 0.17, 0.1, 1.0));
                     draw_rectangle(bar.x, bar.y, bar.w * v, bar.h, col);
                     draw_rectangle_lines(bar.x, bar.y, bar.w, bar.h, 1.0, DIM);
-                    draw_rectangle(bar.x + bar.w * v - 3.0, bar.y - 4.0, 6.0, bar.h + 8.0, WHITE);
+                    draw_rectangle(
+                        bar.x + bar.w * v - 3.0,
+                        bar.y - 4.0,
+                        6.0,
+                        bar.h + 8.0,
+                        WHITE,
+                    );
                     let pct = (v * 100.0).round() as usize;
-                    let t = ["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%"];
-                    draw_text(t.get((pct + 2) / 5).copied().unwrap_or("100%"), bar.x + bar.w + 14.0, ry + 29.0, 22.0, col);
+                    let t = [
+                        "0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%",
+                        "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%",
+                    ];
+                    draw_text(
+                        t.get((pct + 2) / 5).copied().unwrap_or("100%"),
+                        bar.x + bar.w + 14.0,
+                        ry + 29.0,
+                        22.0,
+                        col,
+                    );
                 }
                 Opt::Back => {
                     if (on && inp.confirm) || (inp.click && hit.contains(inp.mouse)) {
@@ -896,7 +1144,9 @@ impl App {
                     }
                 }
                 _ => {
-                    if (on && (step != 0.0 || inp.confirm)) || (inp.click && hit.contains(inp.mouse)) {
+                    if (on && (step != 0.0 || inp.confirm))
+                        || (inp.click && hit.contains(inp.mouse))
+                    {
                         self.toggle_opt(o);
                         self.sfx(Sfx::Click);
                     }
@@ -910,23 +1160,47 @@ impl App {
                     };
                     // the switch: a pill with the knob on the right when ON
                     let (sx, sy) = (bx, ry + 11.0);
-                    let fill = if value { Color::new(0.40, 0.86, 0.48, 0.85) } else { Color::new(0.25, 0.22, 0.2, 1.0) };
+                    let fill = if value {
+                        Color::new(0.40, 0.86, 0.48, 0.85)
+                    } else {
+                        Color::new(0.25, 0.22, 0.2, 1.0)
+                    };
                     draw_rectangle(sx, sy, 56.0, 22.0, fill);
                     draw_rectangle_lines(sx, sy, 56.0, 22.0, 1.5, col);
-                    draw_rectangle(if value { sx + 34.0 } else { sx + 4.0 }, sy + 3.0, 18.0, 16.0, PAPER);
-                    draw_text(if value { "ON" } else { "OFF" }, sx + 68.0, ry + 29.0, 22.0, col);
+                    draw_rectangle(
+                        if value { sx + 34.0 } else { sx + 4.0 },
+                        sy + 3.0,
+                        18.0,
+                        16.0,
+                        PAPER,
+                    );
+                    draw_text(
+                        if value { "ON" } else { "OFF" },
+                        sx + 68.0,
+                        ry + 29.0,
+                        22.0,
+                        col,
+                    );
                     // what it means right now
                     let note: std::borrow::Cow<str> = match o {
-                        Opt::Ai if cfg!(target_arch = "wasm32") => "web build: scripted lines".into(),
+                        Opt::Ai if cfg!(target_arch = "wasm32") => {
+                            "web build: scripted lines".into()
+                        }
                         Opt::Ai if !self.ai_fx.has_key() => "no API key: scripted".into(),
                         Opt::Ai if self.ai_on => "live AI lines".into(),
                         Opt::Ai => "scripted lines only".into(),
-                        Opt::Arduino if *self.hw.status() == hardware::HwStatus::Disabled => "".into(),
+                        Opt::Arduino if *self.hw.status() == hardware::HwStatus::Disabled => {
+                            "".into()
+                        }
                         Opt::Arduino => self.hw.status().label(),
                         _ => "".into(),
                     };
                     if !note.is_empty() {
-                        let c = if o == Opt::Arduino && self.hw.status().connected() { SAFE } else { DIM };
+                        let c = if o == Opt::Arduino && self.hw.status().connected() {
+                            SAFE
+                        } else {
+                            DIM
+                        };
                         draw_text(&note, sx + 120.0, ry + 28.0, 18.0, c);
                     }
                 }
@@ -936,13 +1210,21 @@ impl App {
     }
 
     fn sfx(&mut self, s: Sfx) {
-        let v = if self.muted { 0.0 } else { 0.6 * self.master_volume };
+        let v = if self.muted {
+            0.0
+        } else {
+            0.6 * self.master_volume
+        };
         self.audio.play(s, v);
     }
 
     /// Voice level. Muted and the voices toggle silence it. Reduced motion does not.
     fn voice_level(&self) -> f32 {
-        if self.muted || !self.voices_on { 0.0 } else { self.voice_volume * self.master_volume }
+        if self.muted || !self.voices_on {
+            0.0
+        } else {
+            self.voice_volume * self.master_volume
+        }
     }
 
     fn char_role(&self) -> String {
@@ -952,7 +1234,8 @@ impl App {
     /// Speak a line that is about to be shown. Scripted lines use their file.
     /// A live AI line is only sent after the game has already accepted the text.
     fn speak(&mut self, role: &str, text: &str, source: LineSource) {
-        self.voices.say(role, text, source, self.voice_level(), get_time());
+        self.voices
+            .say(role, text, source, self.voice_level(), get_time());
     }
 
     fn voice_fight(&mut self) {
@@ -1005,7 +1288,14 @@ impl App {
     /// (`ai_features::genenc`); otherwise the scripted encounter stays.
     fn apply_generated(&mut self) {
         self.gen_note = None;
-        let Some(res) = self.ai_fx.generated_encounter(self.run.room) else { return };
+        if self.daily.active {
+            // daily encounters stay the ones in the content file
+            self.gen_note = Some("SCRIPTED");
+            return;
+        }
+        let Some(res) = self.ai_fx.generated_encounter(self.run.room) else {
+            return;
+        };
         match res {
             Ok(enc) => {
                 let mut encounters = self.loaded.content.encounters.clone();
@@ -1020,17 +1310,39 @@ impl App {
                 self.txt = Texts::default();
                 self.gen_note = Some("AI-WRITTEN");
             }
-            Err(why) => eprintln!("floor {}: scripted encounter (AI-written one skipped: {why})", self.run.room),
+            Err(why) => eprintln!(
+                "floor {}: scripted encounter (AI-written one skipped: {why})",
+                self.run.room
+            ),
         }
     }
 
     fn start_run(&mut self) {
+        self.launch(None);
+    }
+
+    /// `daily_seed` is the low 32 bits of the daily u64. `None` is a normal run,
+    /// which keeps using `macroquad::rand` for the layout and the live AI.
+    fn launch(&mut self, daily_seed: Option<u32>) {
+        let daily = daily_seed.is_some();
+        if daily {
+            // scripted Keeper lines, scripted reactions, no live speech
+            self.reactor.set_enabled(false);
+            self.ai_fx.set_enabled(false);
+            self.voices.set_block_live(true);
+        } else {
+            layout_rng::clear();
+            self.daily.active = false;
+            self.reactor.set_enabled(self.ai_on);
+            self.ai_fx.set_enabled(self.ai_on);
+            self.voices.set_block_live(false);
+        }
         // drop last run's AI-written encounters and any text cached for them
         self.loaded = self.orig_loaded.clone();
         self.gen_note = None;
         self.txt = Texts::default();
         self.run = new_run(&self.loaded);
-        self.run_seed = macroquad::rand::rand();
+        self.run_seed = daily_seed.unwrap_or_else(macroquad::rand::rand);
         self.pending_floor = false;
         if self.auto.start_floor > 0 {
             self.run.debug_start_floor(self.auto.start_floor);
@@ -1038,7 +1350,8 @@ impl App {
         self.kills = 0;
         self.txt.notes_key = None;
         // resets the AI extras and prefetches floor 1's banter, the 3 scam bodies and the tier lines
-        self.ai_fx.begin_run(&self.loaded.content, self.run_seed, get_time());
+        self.ai_fx
+            .begin_run(&self.loaded.content, self.run_seed, get_time());
         self.voices.begin_run();
         self.tip_wait = None;
         self.tip_log_open = false;
@@ -1057,7 +1370,8 @@ impl App {
         self.world = World::floor(self.tier());
         self.world.god = self.auto.god;
         // this floor's Keeper banter + owl hint start downloading now (free if already asked)
-        self.ai_fx.begin_floor(&self.loaded.content, self.run.room, get_time());
+        self.ai_fx
+            .begin_floor(&self.loaded.content, self.run.room, get_time());
         self.mini = None;
         self.owl = None;
         self.tip_wait = None;
@@ -1092,13 +1406,25 @@ impl App {
             Some(Side::Spot(_)) => " Someone pinned two messages to a board.",
             None => "",
         };
-        self.show_banner(format!("FLOOR {} OF {}", room + 1, rooms), format!("Somewhere down here: {name}. The Floor Keeper guards the stairs.{extra}"), KSU_GOLD);
+        self.show_banner(
+            format!("FLOOR {} OF {}", room + 1, rooms),
+            format!("Somewhere down here: {name}. The Floor Keeper guards the stairs.{extra}"),
+            KSU_GOLD,
+        );
         // the crypt's pace changed on the way down: say so under the floor banner
         if let (Some(ch), Some(b)) = (self.tier_change.take(), self.banner.as_mut()) {
             let col = if ch.to > ch.from { MIXED } else { SAFE };
-            let tag = format!("crypt pace: {} -> {}   -   {}", ch.from.id(), ch.to.id(), source_tag(&ch.source, "line"));
+            let tag = format!(
+                "crypt pace: {} -> {}   -   {}",
+                ch.from.id(),
+                ch.to.id(),
+                source_tag(&ch.source, "line")
+            );
             if self.auto.on {
-                println!("[auto] skill tier {:?} -> {:?}: {} ({})", ch.from, ch.to, ch.line, tag);
+                println!(
+                    "[auto] skill tier {:?} -> {:?}: {} ({})",
+                    ch.from, ch.to, ch.line, tag
+                );
             }
             b.note = Some((ch.line, tag, col));
             b.t = BANNER_NOTE_SECS;
@@ -1107,10 +1433,18 @@ impl App {
     }
 
     fn show_banner(&mut self, title: String, sub: String, color: Color) {
-        self.banner = Some(Banner { title, sub, color, t: BANNER_SECS, note: None, secs: BANNER_SECS });
+        self.banner = Some(Banner {
+            title,
+            sub,
+            color,
+            t: BANNER_SECS,
+            note: None,
+            secs: BANNER_SECS,
+        });
     }
 
     fn frame(&mut self, dt: f32) {
+        self.poll_daily();
         self.t += dt;
         self.hw.poll(dt);
         self.display_live.update(&mut self.hw, dt);
@@ -1138,7 +1472,12 @@ impl App {
         inp.left |= t.left;
         inp.right |= t.right;
         self.touch_hoot = t.hoot;
-        if self.touch.seen && !controls && self.touch_back() && inp.click && touch::Button::Pause.hit(inp.mouse) {
+        if self.touch.seen
+            && !controls
+            && self.touch_back()
+            && inp.click
+            && touch::Button::Pause.hit(inp.mouse)
+        {
             // the BACK button stands in for Esc where nothing else closes the screen
             inp.back = true;
             inp.click = false;
@@ -1166,15 +1505,23 @@ impl App {
         // the next one loads in the background. Silent until loaded, or if missing.
         let (track, next) = match self.screen {
             Screen::Title => (Track::Title, Track::for_floor(self.auto.start_floor)),
-            Screen::Playing => (Track::for_floor(self.run.room), Track::for_floor(self.run.room + 1)),
+            Screen::Playing => (
+                Track::for_floor(self.run.room),
+                Track::for_floor(self.run.room + 1),
+            ),
         };
-        let vol = if self.muted || !self.music_on { 0.0 } else { self.music_volume * self.master_volume };
+        let vol = if self.muted || !self.music_on {
+            0.0
+        } else {
+            self.music_volume * self.master_volume
+        };
         // finishing a native load costs ~0.1 s: only on the title or a black build
         // frame (between floors, or entering the warden arena)
         let black = self.screen == Screen::Playing
             && (self.pending_floor || (self.run.phase == Phase::BossFight && self.arena.is_none()));
         let allow_upload = self.screen == Screen::Title || black;
-        self.music.update(Some(track), Some(next), vol, dt, allow_upload);
+        self.music
+            .update(Some(track), Some(next), vol, dt, allow_upload);
         self.voices.set_volume(self.voice_level());
         self.voices.update(get_time());
         if self.auto.on {
@@ -1197,9 +1544,275 @@ impl App {
         self.hw_sync(dt);
     }
 
+    // ------------------------------------------------------------ daily
+
+    fn poll_daily(&mut self) {
+        let now = get_time();
+        if self.daily.waiting {
+            let timed_out = now - self.daily.wait_start >= 3.0;
+            if let Some(result) = self.net.poll_today(now) {
+                self.daily.waiting = false;
+                self.open_daily(result.ok());
+            } else if timed_out {
+                self.daily.waiting = false;
+                self.open_daily(None);
+            }
+        }
+        if let Some(read) = self.net.poll_score(now) {
+            self.on_score(read);
+        }
+        if let Some(board) = self.net.poll_board(now) {
+            match board {
+                Ok(b) => {
+                    self.daily.board = Some(b);
+                    self.daily.board_note.clear();
+                }
+                Err(()) => {
+                    self.daily.board = None;
+                    self.daily.board_note = daily::BOARD_OFFLINE.to_string();
+                }
+            }
+        }
+        if let Some((nick, club)) = daily_api::name_form_poll() {
+            self.accept_name(nick, club);
+        }
+    }
+
+    fn begin_daily(&mut self) {
+        self.daily.waiting = true;
+        self.daily.wait_start = get_time();
+        self.daily.notice.clear();
+        self.net.begin_today(get_time());
+        if let Some(result) = self.net.poll_today(get_time()) {
+            self.daily.waiting = false;
+            self.open_daily(result.ok());
+        }
+    }
+
+    fn open_daily(&mut self, server: Option<daily::Today>) {
+        let local = daily::today_ny();
+        let (date, seed) = daily::choose(server.as_ref(), local, self.daily.query.as_deref());
+        self.daily.date = date.format();
+        self.daily.seed_hex = seed.hex.clone();
+        self.daily.seed = seed.u64;
+        self.daily.active = true;
+        self.daily.started = get_time();
+        self.daily.reported = false;
+        self.daily.share.clear();
+        self.daily.need_name = false;
+        self.daily.posting = false;
+        self.daily.retries_left = 1;
+        self.daily.copied = false;
+        self.daily.notice.clear();
+        self.daily.name_error.clear();
+        layout_rng::install(seed.u64);
+        self.launch(Some(seed.run_seed()));
+    }
+
+    fn finish_daily(&mut self) {
+        if self.daily.reported {
+            return;
+        }
+        self.daily.reported = true;
+        let floors = self.run.rooms;
+        let reached = (self.run.room + 1).min(floors);
+        let mut marks = vec![None; floors];
+        for k in &self.run.keepers {
+            if k.floor < marks.len() {
+                marks[k.floor] = Some(k.correct);
+            }
+        }
+        let died = self.run.stats.health <= 0;
+        let glyphs = daily::glyphs(floors, reached, &marks, died);
+        let time_ms = ((get_time() - self.daily.started).max(0.0) * 1000.0) as u64;
+        self.daily.floors_reached = reached;
+        self.daily.floor_count = floors;
+        self.daily.time_ms = time_ms;
+        self.daily.glyphs = glyphs;
+        self.daily.share = daily::share_card(
+            &self.daily.date,
+            reached,
+            floors,
+            time_ms,
+            &self.daily.glyphs,
+        );
+        self.daily.copied = daily_api::copy_text(&self.daily.share);
+        if daily::nickname_ok(&self.daily.nickname) && daily::club_ok(&self.daily.club) {
+            self.send_score();
+        } else {
+            self.daily.need_name = true;
+            daily_api::name_form_open(&self.daily.nickname, &self.daily.club, "");
+        }
+    }
+
+    fn send_score(&mut self) {
+        let nickname = self.daily.nickname.clone();
+        let club = if self.daily.club.is_empty() {
+            String::new()
+        } else {
+            daily::club_sent(&self.daily.club)
+        };
+        if !daily::nickname_ok(&nickname) || !daily::club_ok(&club) {
+            self.daily.need_name = true;
+            self.daily.name_error = "Check the name and the club.".into();
+            daily_api::name_form_open(&nickname, &club, &self.daily.name_error);
+            return;
+        }
+        if !matches!(self.daily.floor_count, 10 | 20)
+            || !daily::glyphs_valid(
+                &self.daily.glyphs,
+                self.daily.floor_count,
+                self.daily.floors_reached,
+            )
+        {
+            self.daily.notice = daily::BOARD_OFFLINE.into();
+            return;
+        }
+        let seed_hex = self.daily.seed_hex.clone();
+        let glyphs = self.daily.glyphs.clone();
+        let install = self.daily.install_id.clone();
+        let date = self.daily.date.clone();
+        let reached = self.daily.floors_reached as u32;
+        let floor_count = self.daily.floor_count as u32;
+        let time_ms = self.daily.time_ms;
+        let parts = daily::ScoreParts {
+            seed_hex: &seed_hex,
+            nickname: &nickname,
+            club: &club,
+            floors_reached: reached,
+            floor_count,
+            time_ms,
+            glyphs: &glyphs,
+            build: daily::build_id(),
+        };
+        let sum = parts.checksum();
+        let body = daily::score_json(&parts, &sum, Some(&install));
+        self.daily.club = club;
+        self.daily.posting = true;
+        self.net.begin_score(&date, &body, get_time());
+    }
+
+    fn on_score(&mut self, read: daily::ScoreRead) {
+        self.daily.posting = false;
+        match read {
+            daily::ScoreRead::Accepted(a) => {
+                self.daily.need_name = false;
+                self.daily.name_error.clear();
+                daily_api::name_form_close();
+                self.daily.notice = format!("Rank {} of {}", a.rank, a.players);
+            }
+            daily::ScoreRead::FixName { code, message } => {
+                self.daily.need_name = true;
+                self.daily.name_error = if !message.is_empty() {
+                    message
+                } else if code == "nickname_taken" {
+                    "That name is taken today. Pick another.".into()
+                } else {
+                    "That name isn't allowed. Pick another.".into()
+                };
+                let nick = self.daily.nickname.clone();
+                let club = self.daily.club.clone();
+                let err = self.daily.name_error.clone();
+                daily_api::name_form_open(&nick, &club, &err);
+            }
+            daily::ScoreRead::Retry => {
+                if self.daily.retries_left > 0 {
+                    self.daily.retries_left -= 1;
+                    self.send_score();
+                } else {
+                    self.daily.notice = daily::BOARD_OFFLINE.into();
+                }
+            }
+            daily::ScoreRead::Fail => {
+                self.daily.notice = daily::BOARD_OFFLINE.into();
+            }
+        }
+    }
+
+    fn accept_name(&mut self, nick: String, club: String) {
+        let club = if club.trim().is_empty() {
+            String::new()
+        } else {
+            daily::club_sent(club.trim())
+        };
+        if !daily::nickname_ok(&nick) {
+            self.daily.name_error =
+                "Name: 3-16 letters, numbers, spaces, _ or -. No space at the ends.".into();
+            self.daily.need_name = true;
+            daily_api::name_form_open(&nick, &club, &self.daily.name_error);
+            return;
+        }
+        if !daily::club_ok(&club) {
+            self.daily.name_error =
+                "Club: leave it blank, or 2-12 letters, numbers, _ or -.".into();
+            self.daily.need_name = true;
+            daily_api::name_form_open(&nick, &club, &self.daily.name_error);
+            return;
+        }
+        self.daily.nickname = nick;
+        self.daily.club = club.clone();
+        daily_api::save_profile(&self.daily.nickname, &club);
+        self.daily.name_error.clear();
+        self.daily.need_name = false;
+        daily_api::name_form_close();
+        if self.daily.reported {
+            self.daily.retries_left = 1;
+            self.daily.notice.clear();
+            self.send_score();
+        }
+    }
+
+    fn open_board(&mut self) {
+        let date = if self.daily.date.is_empty() {
+            daily::today_ny().format()
+        } else {
+            self.daily.date.clone()
+        };
+        if self.daily.date.is_empty() {
+            self.daily.date = date.clone();
+        }
+        self.daily.board = None;
+        self.daily.board_note = "Loading the board...".into();
+        self.net.begin_board(&date, get_time());
+        if let Some(result) = self.net.poll_board(get_time()) {
+            match result {
+                Ok(b) => {
+                    self.daily.board = Some(b);
+                    self.daily.board_note.clear();
+                }
+                Err(()) => self.daily.board_note = daily::BOARD_OFFLINE.into(),
+            }
+        }
+    }
+
+    fn back_to_title(&mut self) {
+        self.screen = Screen::Title;
+        self.title_view = TitleView::Main;
+        self.menu_sel = 0;
+        layout_rng::clear();
+        self.daily.active = false;
+        self.daily.waiting = false;
+        self.reactor.set_enabled(self.ai_on);
+        self.ai_fx.set_enabled(self.ai_on);
+        self.voices.set_block_live(false);
+        daily_api::name_form_close();
+        self.hw.send_event(HwEvent::Menu);
+    }
+
+    fn copy_share(&mut self) {
+        if self.daily.share.is_empty() {
+            return;
+        }
+        self.daily.copied = daily_api::copy_text(&self.daily.share);
+    }
+
     // ------------------------------------------------------------ title
 
     fn title(&mut self, inp: Input) {
+        if art::portrait() {
+            self.title_phone(inp);
+            return;
+        }
         // the candlelit crypt stays up behind every title view
         crypt_backdrop(7, ROOM_TOP - 56.0, VH);
         for (i, x) in [140.0, 420.0, 860.0, 1140.0].iter().enumerate() {
@@ -1208,25 +1821,72 @@ impl App {
         vignette(0.0, VH);
         let cx = VW * 0.5;
         let view = self.title_view;
-        let (title_y, title_size) = if view == TitleView::Main { (170.0, 112.0) } else { (140.0, 64.0) };
+        let (title_y, title_size) = if view == TitleView::Main {
+            (170.0, 112.0)
+        } else {
+            (140.0, 64.0)
+        };
         shadow_centered("CAMPUS CRYPT", cx, title_y, title_size, KSU_GOLD);
         if view == TitleView::Main {
-            centered("A dungeon crawler of scams, deadlines, and split-second choices.", cx, 218.0, 28.0, PAPER);
-            centered("by Deyanna Gladney & Rythm-Prince Ogburn", cx, 250.0, 20.0, DIM);
+            centered(
+                "A dungeon crawler of scams, deadlines, and split-second choices.",
+                cx,
+                218.0,
+                28.0,
+                PAPER,
+            );
+            centered(
+                "by Deyanna Gladney & Rythm-Prince Ogburn",
+                cx,
+                250.0,
+                20.0,
+                DIM,
+            );
             // the student and the Keeper flank the menu
             let bob = (self.t * 2.0).sin() * 4.0;
-            glow(cx - 372.0, 420.0, 140.0, Color::new(1.0, 0.6, 0.2, 1.0), 1.2);
+            glow(
+                cx - 372.0,
+                420.0,
+                140.0,
+                Color::new(1.0, 0.6, 0.2, 1.0),
+                1.2,
+            );
             draw_sprite(&STUDENT, cx - 420.0, 372.0 + bob, 6.0, false);
-            glow(cx + 372.0, 420.0, 140.0, Color::new(0.7, 0.4, 1.0, 1.0), 1.0);
+            glow(
+                cx + 372.0,
+                420.0,
+                140.0,
+                Color::new(0.7, 0.4, 1.0, 1.0),
+                1.0,
+            );
             draw_sprite(&KEEPER, cx + 324.0, 372.0 - bob, 6.0, false);
         }
         match view {
-            TitleView::Main => self.title_menu(&inp),
+            TitleView::Main => {
+                if self.daily.waiting {
+                    self.draw_daily_wait();
+                } else {
+                    self.title_menu(&inp);
+                }
+            }
+            TitleView::Board => self.draw_board(&inp, true),
             TitleView::Options => {
                 let (x, y, w) = (cx - 330.0, 196.0, 660.0);
-                panel(x - 20.0, y - 26.0, w + 40.0, OPT_ROW * OPTS.len() as f32 + 70.0, KSU_GOLD);
+                panel(
+                    x - 20.0,
+                    y - 26.0,
+                    w + 40.0,
+                    OPT_ROW * OPTS.len() as f32 + 70.0,
+                    KSU_GOLD,
+                );
                 let (_, back) = self.options_panel(&inp, x, y, w, true);
-                centered("Up/Down pick  -  Left/Right or Enter change  -  Esc: back", cx, y + OPT_ROW * OPTS.len() as f32 + 28.0, 18.0, DIM);
+                centered(
+                    "Up/Down pick  -  Left/Right or Enter change  -  Esc: back",
+                    cx,
+                    y + OPT_ROW * OPTS.len() as f32 + 28.0,
+                    18.0,
+                    DIM,
+                );
                 if back || inp.back {
                     self.title_view = TitleView::Main;
                     self.sfx(Sfx::Click);
@@ -1250,17 +1910,39 @@ impl App {
         }
         #[cfg(target_arch = "wasm32")]
         if view == TitleView::Main {
-            centered("Live AI lines are in the desktop build. This web version uses scripted lines.", cx, 636.0, 16.0, DIM);
+            centered(
+                "Live AI lines are in the desktop build. This web version uses scripted lines.",
+                cx,
+                636.0,
+                16.0,
+                DIM,
+            );
         }
-        centered("Practice game: it teaches warning signs; it can't spot real scams for you.", cx, 694.0, 18.0, DIM);
+        centered(
+            "Practice game: it teaches warning signs; it can't spot real scams for you.",
+            cx,
+            694.0,
+            18.0,
+            DIM,
+        );
         let ver = concat!("v", env!("CARGO_PKG_VERSION"));
         let vw = measure_text(ver, None, 16, 1.0).width;
-        draw_text(ver, art::VW - 16.0 - vw, 24.0, 16.0, Color::new(1.0, 1.0, 1.0, 0.45));
+        draw_text(
+            ver,
+            art::VW - 16.0 - vw,
+            24.0,
+            16.0,
+            Color::new(1.0, 1.0, 1.0, 0.45),
+        );
         let loaded = &self.loaded;
         let t = self.txt.content.get(0, |s| {
             let _ = write!(s, "content: {}", loaded.source);
             if !loaded.warnings.is_empty() {
-                let _ = write!(s, "  ({} content warnings, see console)", loaded.warnings.len());
+                let _ = write!(
+                    s,
+                    "  ({} content warnings, see console)",
+                    loaded.warnings.len()
+                );
             }
         });
         draw_text(t, 12.0, 714.0, 16.0, Color::new(1.0, 1.0, 1.0, 0.3));
@@ -1282,20 +1964,39 @@ impl App {
             self.sfx(Sfx::Click);
         }
         let cx = VW * 0.5;
+        let step = if n >= 6 { 48.0 } else { 56.0 };
+        let y0 = if n >= 6 { 292.0 } else { 310.0 };
         let mut chosen = None;
         for (i, label) in items.iter().enumerate() {
-            let y = 318.0 + i as f32 * 64.0;
-            let hit = Rect::new(cx - 230.0, y - 42.0, 460.0, 58.0);
+            let y = y0 + i as f32 * step;
+            let hit_h = (step - 6.0).max(36.0);
+            let hit = Rect::new(cx - 250.0, y - hit_h * 0.72, 500.0, hit_h);
             if inp.mouse_moved && hit.contains(inp.mouse) {
                 self.menu_sel = i;
             }
             let on = self.menu_sel == i;
             if on {
                 // a lit slab behind the choice, with a flame on each side
-                draw_rectangle(hit.x, hit.y, hit.w, hit.h, Color::new(0.10, 0.07, 0.03, 0.75));
-                draw_rectangle_lines(hit.x, hit.y, hit.w, hit.h, 2.0, Color::new(1.0, 0.77, 0.16, 0.7));
+                draw_rectangle(
+                    hit.x,
+                    hit.y,
+                    hit.w,
+                    hit.h,
+                    Color::new(0.10, 0.07, 0.03, 0.75),
+                );
+                draw_rectangle_lines(
+                    hit.x,
+                    hit.y,
+                    hit.w,
+                    hit.h,
+                    2.0,
+                    Color::new(1.0, 0.77, 0.16, 0.7),
+                );
                 let w = measure_text(label, None, 40, 1.0).width;
-                for (k, fx) in [cx - w * 0.5 - 34.0, cx + w * 0.5 + 34.0].into_iter().enumerate() {
+                for (k, fx) in [cx - w * 0.5 - 34.0, cx + w * 0.5 + 34.0]
+                    .into_iter()
+                    .enumerate()
+                {
                     flame(fx, y - 12.0, self.t, k as f32 * 2.3);
                 }
                 shadow_centered(label, cx, y, 40.0, KSU_GOLD);
@@ -1309,20 +2010,15 @@ impl App {
         if inp.confirm {
             chosen = Some(self.menu_sel);
         }
-        centered("Up/Down or mouse to choose  -  Enter to pick", cx, 318.0 + n as f32 * 64.0 - 8.0, 18.0, DIM);
-        match chosen.map(|i| items[i]) {
-            Some("ENTER THE CRYPT") => self.start_run(),
-            Some("OPTIONS") => {
-                self.title_view = TitleView::Options;
-                self.settings_sel = 0;
-                self.sfx(Sfx::Click);
-            }
-            Some("HOW TO PLAY") => {
-                self.title_view = TitleView::HowTo;
-                self.sfx(Sfx::Click);
-            }
-            Some(_) => self.quit = true,
-            None => {}
+        centered(
+            "Up/Down or mouse to choose  -  Enter to pick",
+            cx,
+            y0 + n as f32 * step - 4.0,
+            18.0,
+            DIM,
+        );
+        if let Some(i) = chosen {
+            self.menu_action(items[i]);
         }
         #[cfg(not(target_arch = "wasm32"))]
         if inp.back {
@@ -1336,15 +2032,33 @@ impl App {
         centered("HOW TO PLAY", cx, 214.0, 34.0, KSU_GOLD);
         let rooms = self.run.rooms;
         let lines: [(&str, String); 9] = [
-            ("Goal", format!("Go down {rooms} floors. Each hides a trap from real campus life.")),
+            (
+                "Goal",
+                format!("Go down {rooms} floors. Each hides a trap from real campus life."),
+            ),
             ("Move", "WASD or the arrow keys".into()),
-            ("Fire", "Hold Space, J or the left mouse button (the mouse aims)".into()),
+            (
+                "Fire",
+                "Hold Space, J or the left mouse button (the mouse aims)".into(),
+            ),
             ("Roll", "Shift, K or right-click: a quick dodge".into()),
-            ("Talk", "E or Enter near the floor's character, then 1-3 to answer".into()),
-            ("Keeper", "Answer the Floor Keeper to open the stairs; miss = fight 2 wardens".into()),
-            ("Hoot", "T ask  -  L tip log  -  H hints  -  M mute  -  N music".into()),
+            (
+                "Talk",
+                "E or Enter near the floor's character, then 1-3 to answer".into(),
+            ),
+            (
+                "Keeper",
+                "Answer the Floor Keeper to open the stairs; miss = fight 2 wardens".into(),
+            ),
+            (
+                "Hoot",
+                "T ask  -  L tip log  -  H hints  -  M mute  -  N music".into(),
+            ),
             ("Pause", "Esc or O: pause and Options".into()),
-            ("Arduino", "Optional: a Mega 2560 mirrors the game on an LCD and an 8x8 matrix".into()),
+            (
+                "Arduino",
+                "Optional: a Mega 2560 mirrors the game on an LCD and an 8x8 matrix".into(),
+            ),
         ];
         for (i, (k, v)) in lines.iter().enumerate() {
             let y = 262.0 + i as f32 * 36.0;
@@ -1385,7 +2099,8 @@ impl App {
         }
         // Esc / O: the Options overlay (pauses a floor or the arena)
         let can_pause = !self.pending_floor
-            && ((self.run.phase == Phase::Explore && self.mini.is_none()) || (self.run.phase == Phase::BossFight && self.arena.is_some()));
+            && ((self.run.phase == Phase::Explore && self.mini.is_none())
+                || (self.run.phase == Phase::BossFight && self.arena.is_some()));
         let toggle = inp.back || is_key_pressed(KeyCode::O);
         if self.settings_open || (can_pause && toggle) {
             let opening = !self.settings_open;
@@ -1394,7 +2109,13 @@ impl App {
             self.draw_hud();
             draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.55));
             let rows = OPTS.len() as f32 - 1.0;
-            panel(VW * 0.5 - 350.0, 140.0, 700.0, rows * OPT_ROW + 130.0, KSU_GOLD);
+            panel(
+                VW * 0.5 - 350.0,
+                140.0,
+                700.0,
+                rows * OPT_ROW + 130.0,
+                KSU_GOLD,
+            );
             centered("PAUSED - OPTIONS", VW * 0.5, 186.0, 32.0, KSU_GOLD);
             if opening {
                 // the Enter/Esc that opened it must not also flip a row
@@ -1403,7 +2124,13 @@ impl App {
                 return;
             }
             self.options_panel(&inp, VW * 0.5 - 330.0, 206.0, 660.0, false);
-            centered("Up/Down pick  -  Left/Right or Enter change  -  Esc / O: resume", VW * 0.5, 206.0 + rows * OPT_ROW + 36.0, 18.0, DIM);
+            centered(
+                "Up/Down pick  -  Left/Right or Enter change  -  Esc / O: resume",
+                VW * 0.5,
+                206.0 + rows * OPT_ROW + 36.0,
+                18.0,
+                DIM,
+            );
             if toggle || !can_pause {
                 self.settings_open = false;
             }
@@ -1417,7 +2144,10 @@ impl App {
                 self.line = Some(Line::new(text, source));
             }
         }
-        for l in [&mut self.line, &mut self.taunt, &mut self.owl].into_iter().flatten() {
+        for l in [&mut self.line, &mut self.taunt, &mut self.owl]
+            .into_iter()
+            .flatten()
+        {
             l.shown += TYPE_CPS * dt;
         }
 
@@ -1451,7 +2181,13 @@ impl App {
         }
         if self.ai_fx.tip_busy() && (on_floor || phase == Phase::Encounter) {
             let dots = 1 + (self.t * 3.0) as usize % 3;
-            draw_text(&"Hoot is thinking..."[..16 + dots], 40.0, VH - 58.0, 22.0, DIM);
+            draw_text(
+                &"Hoot is thinking..."[..16 + dots],
+                40.0,
+                VH - 58.0,
+                22.0,
+                DIM,
+            );
         }
         if self.run.phase != Phase::Ending {
             self.draw_hud();
@@ -1483,7 +2219,9 @@ impl App {
 
     /// Screens only Esc closes: on a touch screen they get a BACK button.
     fn touch_back(&self) -> bool {
-        self.settings_open || self.tip_log_open || (self.screen == Screen::Title && self.title_view == TitleView::Options)
+        self.settings_open
+            || self.tip_log_open
+            || (self.screen == Screen::Title && self.title_view == TitleView::Options)
     }
 
     fn lock_choices(&mut self) {
@@ -1493,12 +2231,24 @@ impl App {
 
     fn gate_choices(&mut self, mut inp: Input, dt: f32) -> Input {
         let side_game = self.run.phase == Phase::Explore && self.mini.is_some();
-        if !(matches!(self.run.phase, Phase::Encounter | Phase::KeeperQuiz | Phase::Ending) || side_game) {
+        if !(matches!(
+            self.run.phase,
+            Phase::Encounter | Phase::KeeperQuiz | Phase::Ending
+        ) || side_game)
+        {
             return inp;
         }
         self.choice_lock = (self.choice_lock - dt).max(0.0);
         if !self.choice_open && self.choice_lock <= 0.0 {
-            let held = [KeyCode::Enter, KeyCode::KpEnter, KeyCode::E, KeyCode::Space, KeyCode::J].iter().any(|&k| is_key_down(k))
+            let held = [
+                KeyCode::Enter,
+                KeyCode::KpEnter,
+                KeyCode::E,
+                KeyCode::Space,
+                KeyCode::J,
+            ]
+            .iter()
+            .any(|&k| is_key_down(k))
                 || is_mouse_button_down(MouseButton::Left)
                 || self.hw.button_held();
             self.choice_open = !held || self.auto.on;
@@ -1513,7 +2263,11 @@ impl App {
 
     fn power(&self) -> Power {
         let s = self.run.stats;
-        Power { knowledge: s.knowledge, focus: s.focus, can_heal: s.health < MAX_HEALTH }
+        Power {
+            knowledge: s.knowledge,
+            focus: s.focus,
+            can_heal: s.health < MAX_HEALTH,
+        }
     }
 
     /// Mouse aiming stays on for a few seconds after the mouse moves or fires;
@@ -1528,8 +2282,15 @@ impl App {
         if inp.mouse_moved || inp.mouse_attack {
             self.mouse_aim_t = get_time();
         }
-        let aim = inp.aim_world.or_else(|| self.mouse_aiming().then(|| inp.mouse - offset));
-        Control { mv: inp.mv, attack: inp.attack, aim, dodge: inp.dodge }
+        let aim = inp
+            .aim_world
+            .or_else(|| self.mouse_aiming().then(|| inp.mouse - offset));
+        Control {
+            mv: inp.mv,
+            attack: inp.attack,
+            aim,
+            dodge: inp.dodge,
+        }
     }
 
     /// A small crosshair at the mouse while it aims the blaster.
@@ -1541,7 +2302,14 @@ impl App {
         let c = Color::from_rgba(255, 140, 40, 230);
         draw_circle_lines(m.x, m.y, 10.0, 2.0, c);
         for (dx, dy) in [(1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0)] {
-            draw_line(m.x + dx * 6.0, m.y + dy * 6.0, m.x + dx * 15.0, m.y + dy * 15.0, 2.0, c);
+            draw_line(
+                m.x + dx * 6.0,
+                m.y + dy * 6.0,
+                m.x + dx * 15.0,
+                m.y + dy * 15.0,
+                2.0,
+                c,
+            );
         }
         draw_circle(m.x, m.y, 2.0, Color::from_rgba(70, 140, 255, 255));
     }
@@ -1566,14 +2334,22 @@ impl App {
                     let total = self.arena.as_ref().map_or(2, |a| a.bosses_total);
                     let role = format!("warden:{}", kind.name());
                     self.speak(&role, kind.tell(), LineSource::Fallback("warden"));
-                    self.show_banner(format!("WARDEN {n} OF {total}: {}", kind.name()), kind.tell().to_string(), kind.color());
+                    self.show_banner(
+                        format!("WARDEN {n} OF {total}: {}", kind.name()),
+                        kind.tell().to_string(),
+                        kind.color(),
+                    );
                 }
                 WorldEvent::BossDown(kind) => {
                     self.kills += 1;
                     self.run.boss_defeated();
                     self.hw.send_event(HwEvent::LevelUp);
                     if self.run.phase == Phase::BossFight {
-                        self.show_banner(format!("{} FALLS", kind.name()), "One warden left. Grab the coffee if you need it.".into(), SAFE);
+                        self.show_banner(
+                            format!("{} FALLS", kind.name()),
+                            "One warden left. Grab the coffee if you need it.".into(),
+                            SAFE,
+                        );
                     }
                 }
             }
@@ -1595,7 +2371,11 @@ impl App {
         self.mini = None;
         self.ai_fx.hints.stop();
         // the mistake log is fixed now; the study guide is written in the background (<= 8.5 s)
-        self.ai_fx.request_debrief(&self.run, &self.loaded.content, get_time());
+        if self.daily.active {
+            self.finish_daily();
+        }
+        self.ai_fx
+            .request_debrief(&self.run, &self.loaded.content, get_time());
         self.ending_tab = 0;
         self.debrief_logged = false;
         self.debrief_size = None;
@@ -1609,7 +2389,8 @@ impl App {
             a.draw(t, None, false);
         } else {
             let sprite = character_sprite(&enc_at(&self.loaded, self.run.room).id);
-            self.world.draw(t, Some((sprite, self.run.met)), self.run.stairs_open);
+            self.world
+                .draw(t, Some((sprite, self.run.met)), self.run.stairs_open);
         }
         vignette(ROOM_TOP, VH);
     }
@@ -1670,22 +2451,47 @@ impl App {
             let bob = (self.t * 4.0).sin() * 3.0;
             if self.run.keeper_ready() {
                 panel(p.x - 170.0, p.y - 110.0 + bob, 340.0, 40.0, KSU_GOLD);
-                centered("[E] Answer the Floor Keeper", p.x, p.y - 82.0 + bob, 26.0, KSU_GOLD);
+                centered(
+                    "[E] Answer the Floor Keeper",
+                    p.x,
+                    p.y - 82.0 + bob,
+                    26.0,
+                    KSU_GOLD,
+                );
                 if inp.interact && self.run.begin_keeper() {
                     let q = self.build_quiz();
                     // floor 1: the Inbox Mimic fight (the message comes with the quiz);
                     // its lines are scripted, so it skips the AI taunt
-                    self.fight = q.case.clone().map(|c| Fight::new(c, q.id, self.reduced_motion));
+                    self.fight = q
+                        .case
+                        .clone()
+                        .map(|c| Fight::new(c, q.id, self.reduced_motion));
                     self.voiced_said.clear();
                     self.voiced_hoot.clear();
                     if let (true, Some(c)) = (self.auto.on, &q.case) {
-                        println!("[auto] investigation: {} ({:?}, variant {}), planted {:?}", c.name, c.medium, c.variant, c.planted);
+                        println!(
+                            "[auto] investigation: {} ({:?}, variant {}), planted {:?}",
+                            c.name, c.medium, c.variant, c.planted
+                        );
                     }
                     let fight = self.fight.is_some();
                     self.quiz = Some(Rc::new(q));
                     if !fight {
                         // the Keeper's opening taunt: AI-voiced if its floor pack arrived, else scripted
-                        let (t, src) = self.ai_fx.keeper_taunt(self.run.room);
+                        let (t, src) = if self.daily.active {
+                            let id = enc_at(&self.loaded, self.run.room).id.clone();
+                            (
+                                ai_features::banter::scripted_taunt(
+                                    &self.ai_fx.data,
+                                    &id,
+                                    self.run_seed,
+                                    self.run.room,
+                                ),
+                                LineSource::Fallback("daily crypt"),
+                            )
+                        } else {
+                            self.ai_fx.keeper_taunt(self.run.room)
+                        };
                         self.speak("keeper", &t, src.clone());
                         if self.auto.on {
                             println!("[auto] keeper taunt ({}): {t}", source_tag(&src, "line"));
@@ -1708,7 +2514,10 @@ impl App {
                 centered(t, p.x, p.y - 82.0 + bob, 22.0, PAPER);
             }
         }
-        let near_prop = self.world.prop.is_some_and(|pr| !pr.done && ppos.distance(pr.pos) < TALK_RANGE);
+        let near_prop = self
+            .world
+            .prop
+            .is_some_and(|pr| !pr.done && ppos.distance(pr.pos) < TALK_RANGE);
         if near_prop && !near_npc {
             if let Some(pr) = self.world.prop {
                 let p = pr.pos + off;
@@ -1727,7 +2536,11 @@ impl App {
         }
         if near_stairs {
             let p = self.world.stairs + off;
-            let label = if self.run.is_last_floor() { "[E] Climb out of the crypt" } else { "[E] Take the stairs down" };
+            let label = if self.run.is_last_floor() {
+                "[E] Climb out of the crypt"
+            } else {
+                "[E] Take the stairs down"
+            };
             panel(p.x - 170.0, p.y - 84.0, 340.0, 40.0, SAFE);
             centered(label, p.x, p.y - 56.0, 26.0, SAFE);
             if inp.interact {
@@ -1751,13 +2564,20 @@ impl App {
             let loaded = self.loaded.clone();
             let e = enc_at(&loaded, self.run.room);
             let (room, rooms) = (self.run.room, self.run.rooms);
-            panel(40.0, 560.0, VW - 80.0, 140.0, KSU_GOLD);
             let t = self.txt.room_line.get(key(&[room, rooms]), |s| {
                 let _ = write!(s, "Floor {} of {}: {}", room + 1, rooms, e.name);
             });
-            draw_text(t, 64.0, 596.0, 30.0, KSU_GOLD);
-            text_block(&e.room_intro, 64.0, 630.0, 26.0, VW - 130.0, PAPER);
-            draw_text("walk up to them and press E", VW - 340.0, 690.0, 20.0, DIM);
+            if art::portrait() {
+                let y = art::vh() - 340.0;
+                panel(12.0, y, art::vw() - 24.0, 110.0, KSU_GOLD);
+                draw_text(t, 24.0, y + 28.0, 18.0, KSU_GOLD);
+                text_block(&e.room_intro, 24.0, y + 52.0, 16.0, art::vw() - 48.0, PAPER);
+            } else {
+                panel(40.0, 560.0, VW - 80.0, 140.0, KSU_GOLD);
+                draw_text(t, 64.0, 596.0, 30.0, KSU_GOLD);
+                text_block(&e.room_intro, 64.0, 630.0, 26.0, VW - 130.0, PAPER);
+                draw_text("walk up to them and press E", VW - 340.0, 690.0, 20.0, DIM);
+            }
         } else {
             self.draw_objective();
         }
@@ -1778,19 +2598,23 @@ impl App {
             _ if last => b.push_str("The way out is open: take the stairs"),
             _ => b.push_str("The stairs are open: go down"),
         });
-        let w = measure_text(t, None, 22, 1.0).width;
-        draw_rectangle(20.0, VH - 50.0, w + 56.0, 34.0, PANEL);
-        draw_rectangle_lines(20.0, VH - 50.0, w + 56.0, 34.0, 2.0, KSU_GOLD);
-        draw_text(">", 32.0, VH - 26.0, 24.0, KSU_GOLD);
-        draw_text(t, 56.0, VH - 26.0, 22.0, PAPER);
-        let on = self.ai_fx.hints.enabled;
-        let help = self.txt.help.get(key(&[on as usize]), |b| {
+        if art::portrait() {
+            text_block(t, 16.0, art::vh() - 250.0, 16.0, art::vw() - 32.0, PAPER);
+        } else {
+            let w = measure_text(t, None, 22, 1.0).width;
+            draw_rectangle(20.0, VH - 50.0, w + 56.0, 34.0, PANEL);
+            draw_rectangle_lines(20.0, VH - 50.0, w + 56.0, 34.0, 2.0, KSU_GOLD);
+            draw_text(">", 32.0, VH - 26.0, 24.0, KSU_GOLD);
+            draw_text(t, 56.0, VH - 26.0, 22.0, PAPER);
+            let on = self.ai_fx.hints.enabled;
+            let help = self.txt.help.get(key(&[on as usize]), |b| {
             let _ = write!(b, "Click/Space: fire   Shift: roll   E: talk   T: ask Hoot   L: tips   H: hints {}", if on { "on" } else { "off" });
         });
-        let hw = measure_text(help, None, 20, 1.0).width;
-        if !self.touch.seen {
-            // keyboard hints; a touch screen has its buttons there instead
-            draw_text(help, VW - 24.0 - hw, VH - 26.0, 20.0, DIM);
+            let hw = measure_text(help, None, 20, 1.0).width;
+            if !self.touch.seen {
+                // keyboard hints; a touch screen has its buttons there instead
+                draw_text(help, VW - 24.0 - hw, VH - 26.0, 20.0, DIM);
+            }
         }
         // compass arrow
         let off = self.world.offset();
@@ -1802,7 +2626,12 @@ impl App {
             let base = p + d * 42.0;
             let side = vec2(-d.y, d.x) * 9.0;
             let a = 0.55 + 0.35 * (self.t * 4.0).sin();
-            draw_triangle(tip, base + side, base - side, Color::new(1.0, 0.77, 0.16, a));
+            draw_triangle(
+                tip,
+                base + side,
+                base - side,
+                Color::new(1.0, 0.77, 0.16, a),
+            );
         }
     }
 
@@ -1816,7 +2645,11 @@ impl App {
             Side::Scam(slot) => {
                 let m = self.ai_fx.scam_message(slot);
                 let data = &self.ai_fx.data;
-                let tips = m.flags.iter().map(|&f| ai_features::debrief::flag_tip(data, f)).collect();
+                let tips = m
+                    .flags
+                    .iter()
+                    .map(|&f| ai_features::debrief::flag_tip(data, f))
+                    .collect();
                 let src = m.source.clone();
                 (MiniKind::Scam(m, tips), src)
             }
@@ -1828,9 +2661,16 @@ impl App {
         };
         let tag = source_tag(&source, "message");
         if self.auto.on {
-            println!("[auto] side game {side:?} on floor {} ({tag})", self.run.room + 1);
+            println!(
+                "[auto] side game {side:?} on floor {} ({tag})",
+                self.run.room + 1
+            );
         }
-        self.mini = Some(Mini { kind, verdict: None, tag });
+        self.mini = Some(Mini {
+            kind,
+            verdict: None,
+            tag,
+        });
         self.minis_opened += 1;
         self.banner = None; // the floor banner would cover the cards
         self.sel = 0;
@@ -1861,16 +2701,29 @@ impl App {
             MiniStep::Answer(pick) => {
                 let right = match &m.kind {
                     // generated messages are always scams: "report" (0) is right
-                    MiniKind::Scam(msg, _) => self.ai_fx.record_scam_verdict(self.run.room, msg, pick == 0),
+                    MiniKind::Scam(msg, _) => {
+                        self.ai_fx
+                            .record_scam_verdict(self.run.room, msg, pick == 0)
+                    }
                     // code's label decides; logged for the debrief
                     MiniKind::Spot(r) => self.ai_fx.answer_spot(self.run.room, r, pick),
                 };
                 if self.auto.on {
-                    println!("[auto] side game answer {pick}: {}", if right { "right" } else { "wrong" });
+                    println!(
+                        "[auto] side game answer {pick}: {}",
+                        if right { "right" } else { "wrong" }
+                    );
                 }
                 self.sfx(if right { Sfx::Coin } else { Sfx::Hurt });
-                self.hw.send_event(if right { HwEvent::LevelUp } else { HwEvent::Hit });
-                self.mini = Some(Mini { verdict: Some((pick, right)), ..m });
+                self.hw.send_event(if right {
+                    HwEvent::LevelUp
+                } else {
+                    HwEvent::Hit
+                });
+                self.mini = Some(Mini {
+                    verdict: Some((pick, right)),
+                    ..m
+                });
             }
             MiniStep::Close(answered) => self.close_mini(answered),
         }
@@ -1916,7 +2769,13 @@ impl App {
         inp.confirm || inp.back || (inp.click && hover)
     }
 
-    fn scam_screen(&mut self, inp: &Input, msg: &ScamMessage, tips: &[String], m: &Mini) -> MiniStep {
+    fn scam_screen(
+        &mut self,
+        inp: &Input,
+        msg: &ScamMessage,
+        tips: &[String],
+        m: &Mini,
+    ) -> MiniStep {
         let title = match msg.channel.as_str() {
             "text" => "YOUR PHONE BUZZES: A NEW TEXT",
             "dm" => "YOUR PHONE BUZZES: A NEW DM",
@@ -1929,20 +2788,55 @@ impl App {
             None => KSU_GOLD,
             Some(_) => RISKY,
         };
-        let bottom = message_card(&card, x, 124.0, w, 24.0, border, if m.verdict.is_some() { Some("SCAM") } else { None });
+        let bottom = message_card(
+            &card,
+            x,
+            124.0,
+            w,
+            24.0,
+            border,
+            if m.verdict.is_some() {
+                Some("SCAM")
+            } else {
+                None
+            },
+        );
         small_print(&m.tag, x + w, bottom + 4.0);
         match m.verdict {
             None => {
                 let y = (bottom + 40.0).min(560.0);
-                let rects = [Rect::new(250.0, y, 370.0, 70.0), Rect::new(660.0, y, 370.0, 70.0)];
-                for (i, (r, label)) in rects.iter().zip(["Report it: it's a scam", "Trust it: looks fine"]).enumerate() {
+                let rects = [
+                    Rect::new(250.0, y, 370.0, 70.0),
+                    Rect::new(660.0, y, 370.0, 70.0),
+                ];
+                for (i, (r, label)) in rects
+                    .iter()
+                    .zip(["Report it: it's a scam", "Trust it: looks fine"])
+                    .enumerate()
+                {
                     let on = self.sel == i;
                     let lift = if on { -4.0 } else { 0.0 };
                     panel(r.x, r.y + lift, r.w, r.h, if on { KSU_GOLD } else { DIM });
-                    draw_text(["1", "2"][i], r.x + 20.0, r.y + 46.0 + lift, 34.0, if on { KSU_GOLD } else { DIM });
-                    draw_text(label, r.x + 62.0, r.y + 44.0 + lift, 26.0, if on { WHITE } else { PAPER });
+                    draw_text(
+                        ["1", "2"][i],
+                        r.x + 20.0,
+                        r.y + 46.0 + lift,
+                        34.0,
+                        if on { KSU_GOLD } else { DIM },
+                    );
+                    draw_text(
+                        label,
+                        r.x + 62.0,
+                        r.y + 44.0 + lift,
+                        26.0,
+                        if on { WHITE } else { PAPER },
+                    );
                 }
-                let hint = if self.choice_open { "Read it like it landed on your real phone.   1-2, arrows + Enter, or click   -   Esc: leave it" } else { "Read carefully..." };
+                let hint = if self.choice_open {
+                    "Read it like it landed on your real phone.   1-2, arrows + Enter, or click   -   Esc: leave it"
+                } else {
+                    "Read carefully..."
+                };
                 centered(hint, VW * 0.5, 710.0, 20.0, DIM);
                 if inp.back {
                     return MiniStep::Close(false);
@@ -1955,9 +2849,17 @@ impl App {
             Some((pick, right)) => {
                 let y = (bottom + 34.0).min(470.0);
                 let (badge, sub, col) = if right {
-                    ("GOOD CALL", "You reported it. Every one of these was planted by the crypt.", SAFE)
+                    (
+                        "GOOD CALL",
+                        "You reported it. Every one of these was planted by the crypt.",
+                        SAFE,
+                    )
                 } else {
-                    ("THAT WAS A SCAM", "You trusted it. Here's what gave it away.", RISKY)
+                    (
+                        "THAT WAS A SCAM",
+                        "You trusted it. Here's what gave it away.",
+                        RISKY,
+                    )
                 };
                 let _ = pick;
                 let bw = measure_text(badge, None, 28, 1.0).width + 30.0;
@@ -1969,7 +2871,13 @@ impl App {
                 let cy = y + 26.0;
                 for l in &msg.flag_labels {
                     let cw = measure_text(l, None, 22, 1.0).width + 24.0;
-                    draw_rectangle(cx, cy, cw, 32.0, Color::new(RISKY.r * 0.3, RISKY.g * 0.3, RISKY.b * 0.3, 1.0));
+                    draw_rectangle(
+                        cx,
+                        cy,
+                        cw,
+                        32.0,
+                        Color::new(RISKY.r * 0.3, RISKY.g * 0.3, RISKY.b * 0.3, 1.0),
+                    );
                     draw_rectangle_lines(cx, cy, cw, 32.0, 2.0, RISKY);
                     draw_text(l, cx + 12.0, cy + 23.0, 22.0, RISKY);
                     cx += cw + 10.0;
@@ -1993,7 +2901,13 @@ impl App {
     }
 
     fn spot_screen(&mut self, inp: &Input, r: &SpotRound, m: &Mini) -> MiniStep {
-        shadow_centered("SPOT THE FAKE: ONE OF THESE IS A SCAM", VW * 0.5, 100.0, 34.0, KSU_GOLD);
+        shadow_centered(
+            "SPOT THE FAKE: ONE OF THESE IS A SCAM",
+            VW * 0.5,
+            100.0,
+            34.0,
+            KSU_GOLD,
+        );
         let cards = [Msg::of_spot(r, 0), Msg::of_spot(r, 1)];
         let (w, xs) = (585.0, [40.0, 655.0]);
         let size = 21.0;
@@ -2011,14 +2925,27 @@ impl App {
                 // the card's number, right side of its header strip
                 let label = ["CARD 1", "CARD 2"][i];
                 let lw = measure_text(label, None, 20, 1.0).width;
-                draw_text(label, xs[i] + w - lw - 16.0, top + 25.0, 20.0, if self.sel == i { KSU_GOLD } else { DIM });
+                draw_text(
+                    label,
+                    xs[i] + w - lw - 16.0,
+                    top + 25.0,
+                    20.0,
+                    if self.sel == i { KSU_GOLD } else { DIM },
+                );
             }
         }
         let low = bottoms[0].max(bottoms[1]);
         match m.verdict {
             None => {
-                let rects = [Rect::new(xs[0], top, w, low - top), Rect::new(xs[1], top, w, low - top)];
-                let hint = if self.choice_open { "Which one is the fake?   1-2, arrows + Enter, or click a card   -   Esc: leave it" } else { "Read both carefully..." };
+                let rects = [
+                    Rect::new(xs[0], top, w, low - top),
+                    Rect::new(xs[1], top, w, low - top),
+                ];
+                let hint = if self.choice_open {
+                    "Which one is the fake?   1-2, arrows + Enter, or click a card   -   Esc: leave it"
+                } else {
+                    "Read both carefully..."
+                };
                 centered(hint, VW * 0.5, 710.0, 22.0, DIM);
                 if inp.back {
                     return MiniStep::Close(false);
@@ -2040,7 +2967,13 @@ impl App {
                         cx = xs[f];
                         cy += 36.0;
                     }
-                    draw_rectangle(cx, cy - 22.0, cw, 30.0, Color::new(RISKY.r * 0.3, RISKY.g * 0.3, RISKY.b * 0.3, 1.0));
+                    draw_rectangle(
+                        cx,
+                        cy - 22.0,
+                        cw,
+                        30.0,
+                        Color::new(RISKY.r * 0.3, RISKY.g * 0.3, RISKY.b * 0.3, 1.0),
+                    );
                     draw_rectangle_lines(cx, cy - 22.0, cw, 30.0, 2.0, RISKY);
                     draw_text(l, cx + 10.0, cy, 20.0, RISKY);
                     cx += cw + 8.0;
@@ -2055,7 +2988,11 @@ impl App {
                     draw_rectangle(xs[s] + 2.0, ty - 13.0, 8.0, 8.0, SAFE);
                     ty = text_block(t, xs[s] + 20.0, ty, 20.0, w - 30.0, PAPER) + 2.0;
                 }
-                let (badge, col) = if right { ("You caught the fake.", SAFE) } else { ("The fake slipped past you this time.", RISKY) };
+                let (badge, col) = if right {
+                    ("You caught the fake.", SAFE)
+                } else {
+                    ("The fake slipped past you this time.", RISKY)
+                };
                 centered(badge, VW * 0.5, 644.0, 24.0, col);
                 if self.mini_continue(inp, col) {
                     MiniStep::Close(true)
@@ -2096,7 +3033,11 @@ impl App {
             self.world.player.invuln = 1.0;
             self.world.snap_camera();
             self.room_fade = 0.8;
-            self.show_banner("THE STAIRS ARE OPEN".into(), "Both wardens beaten. The Keeper steps aside.".into(), SAFE);
+            self.show_banner(
+                "THE STAIRS ARE OPEN".into(),
+                "Both wardens beaten. The Keeper steps aside.".into(),
+                SAFE,
+            );
             self.sfx(Sfx::LevelUp);
             self.draw_world();
             return;
@@ -2110,52 +3051,132 @@ impl App {
             if let Some(b) = &a.boss {
                 let (n, total) = (a.boss_number(), a.bosses_total);
                 let name = b.kind.name();
-                let t = self.txt.boss_bar.get(key(&[n, total, b.kind as usize]), |s| {
-                    let _ = write!(s, "WARDEN {n}/{total}  {name}");
-                });
+                let t = self
+                    .txt
+                    .boss_bar
+                    .get(key(&[n, total, b.kind as usize]), |s| {
+                        let _ = write!(s, "WARDEN {n}/{total}  {name}");
+                    });
                 let (x, y, w) = (240.0, 76.0, VW - 480.0);
                 draw_rectangle(x - 4.0, y - 4.0, w + 8.0, 30.0, PANEL);
                 let f = (b.hp / b.max_hp).clamp(0.0, 1.0);
                 draw_rectangle(x, y, w, 22.0, Color::from_rgba(50, 20, 26, 255));
-                draw_rectangle(x, y, w * f, 22.0, if b.enraged() { RISKY } else { b.kind.color() });
+                draw_rectangle(
+                    x,
+                    y,
+                    w * f,
+                    22.0,
+                    if b.enraged() { RISKY } else { b.kind.color() },
+                );
                 draw_rectangle_lines(x - 4.0, y - 4.0, w + 8.0, 30.0, 2.0, KSU_GOLD);
                 centered(t, VW * 0.5, y + 46.0, 24.0, PAPER);
             }
         }
-        let hint = if self.touch.seen { "Beat both wardens to open the stairs." } else { "Beat both wardens to open the stairs.   Click/Space: fire   Shift: roll" };
+        let hint = if self.touch.seen {
+            "Beat both wardens to open the stairs."
+        } else {
+            "Beat both wardens to open the stairs.   Click/Space: fire   Shift: roll"
+        };
         draw_text(hint, 20.0, VH - 22.0, 20.0, DIM);
         self.draw_reticle(&inp);
     }
 
     fn draw_banner(&mut self, dt: f32) {
+        if art::portrait() {
+            self.draw_banner_phone(dt);
+            return;
+        }
         let Some(b) = &mut self.banner else { return };
         b.t -= dt;
         if b.t <= 0.0 {
             self.banner = None;
             return;
         }
-        let a = (b.t / 0.6).min(1.0).min((b.secs - b.t) / 0.25 + 0.2).clamp(0.0, 1.0);
-        let y = if self.run.phase == Phase::BossFight { 150.0 } else { 96.0 };
-        let mut sub_w = measure_text(&b.sub, None, 22, 1.0).width.max(measure_text(&b.title, None, 48, 1.0).width);
+        let a = (b.t / 0.6)
+            .min(1.0)
+            .min((b.secs - b.t) / 0.25 + 0.2)
+            .clamp(0.0, 1.0);
+        let y = if self.run.phase == Phase::BossFight {
+            150.0
+        } else {
+            96.0
+        };
+        let mut sub_w = measure_text(&b.sub, None, 22, 1.0)
+            .width
+            .max(measure_text(&b.title, None, 48, 1.0).width);
         if let Some((line, _, _)) = &b.note {
             sub_w = sub_w.max(measure_text(line, None, 24, 1.0).width);
         }
         let w = (sub_w + 80.0).min(VW - 40.0);
         let h = if b.note.is_some() { 150.0 } else { 96.0 };
-        draw_rectangle(VW * 0.5 - w * 0.5, y, w, h, Color::new(0.06, 0.05, 0.08, 0.85 * a));
-        draw_rectangle_lines(VW * 0.5 - w * 0.5, y, w, h, 2.0, Color::new(b.color.r, b.color.g, b.color.b, a));
-        centered(&b.title, VW * 0.5 + 2.0, y + 50.0, 48.0, Color::new(0.0, 0.0, 0.0, a));
-        centered(&b.title, VW * 0.5, y + 48.0, 48.0, Color::new(b.color.r, b.color.g, b.color.b, a));
-        centered(&b.sub, VW * 0.5, y + 82.0, 22.0, Color::new(PAPER.r, PAPER.g, PAPER.b, a));
+        draw_rectangle(
+            VW * 0.5 - w * 0.5,
+            y,
+            w,
+            h,
+            Color::new(0.06, 0.05, 0.08, 0.85 * a),
+        );
+        draw_rectangle_lines(
+            VW * 0.5 - w * 0.5,
+            y,
+            w,
+            h,
+            2.0,
+            Color::new(b.color.r, b.color.g, b.color.b, a),
+        );
+        centered(
+            &b.title,
+            VW * 0.5 + 2.0,
+            y + 50.0,
+            48.0,
+            Color::new(0.0, 0.0, 0.0, a),
+        );
+        centered(
+            &b.title,
+            VW * 0.5,
+            y + 48.0,
+            48.0,
+            Color::new(b.color.r, b.color.g, b.color.b, a),
+        );
+        centered(
+            &b.sub,
+            VW * 0.5,
+            y + 82.0,
+            22.0,
+            Color::new(PAPER.r, PAPER.g, PAPER.b, a),
+        );
         // difficulty narration: the crypt's pace changed (code decided; the line is AI or scripted)
         if let Some((line, tag, col)) = &b.note {
-            draw_line(VW * 0.5 - w * 0.5 + 30.0, y + 96.0, VW * 0.5 + w * 0.5 - 30.0, y + 96.0, 1.0, Color::new(col.r, col.g, col.b, 0.4 * a));
-            centered(line, VW * 0.5, y + 122.0, 24.0, Color::new(col.r, col.g, col.b, a));
-            centered(tag, VW * 0.5, y + 142.0, 16.0, Color::new(DIM.r, DIM.g, DIM.b, a));
+            draw_line(
+                VW * 0.5 - w * 0.5 + 30.0,
+                y + 96.0,
+                VW * 0.5 + w * 0.5 - 30.0,
+                y + 96.0,
+                1.0,
+                Color::new(col.r, col.g, col.b, 0.4 * a),
+            );
+            centered(
+                line,
+                VW * 0.5,
+                y + 122.0,
+                24.0,
+                Color::new(col.r, col.g, col.b, a),
+            );
+            centered(
+                tag,
+                VW * 0.5,
+                y + 142.0,
+                16.0,
+                Color::new(DIM.r, DIM.g, DIM.b, a),
+            );
         }
     }
 
     fn draw_hud(&mut self) {
+        if art::portrait() {
+            self.draw_hud_phone();
+            return;
+        }
         draw_rectangle(0.0, 0.0, VW, HUD_H, Color::from_rgba(14, 10, 18, 255));
         draw_line(0.0, HUD_H, VW, HUD_H, 2.0, KSU_GOLD);
         let s = self.run.stats;
@@ -2165,7 +3186,11 @@ impl App {
         }
         draw_text("FOCUS", 370.0, 35.0, 22.0, DIM);
         for i in 0..MAX_FOCUS {
-            let col = if i < s.focus { FOCUS } else { Color::from_rgba(40, 50, 70, 255) };
+            let col = if i < s.focus {
+                FOCUS
+            } else {
+                Color::from_rgba(40, 50, 70, 255)
+            };
             draw_rectangle(370.0 + 72.0 + i as f32 * 30.0, 18.0, 24.0, 22.0, col);
         }
         let kn = s.knowledge;
@@ -2192,12 +3217,355 @@ impl App {
             draw_text("hints off", VW - 370.0, 35.0, 20.0, DIM);
         }
     }
+    fn draw_hud_phone(&mut self) {
+        let w = art::vw();
+        draw_rectangle(0.0, 0.0, w, HUD_H, Color::from_rgba(14, 10, 18, 255));
+        draw_line(0.0, HUD_H, w, HUD_H, 2.0, KSU_GOLD);
+        let s = self.run.stats;
+        for i in 0..MAX_HEALTH {
+            heart(8.0 + i as f32 * 26.0, 16.0, 3.0, i < s.health);
+        }
+        for i in 0..MAX_FOCUS {
+            let col = if i < s.focus {
+                FOCUS
+            } else {
+                Color::from_rgba(40, 50, 70, 255)
+            };
+            draw_rectangle(150.0 + i as f32 * 18.0, 18.0, 14.0, 14.0, col);
+        }
+        let (room, rooms, kn) = (self.run.room, self.run.rooms, s.knowledge);
+        let t = self
+            .txt
+            .room_hud
+            .get(key(&[room, rooms, kn as usize]), |b| {
+                let _ = write!(b, "F {}/{}   K{kn}", room + 1, rooms);
+            });
+        draw_text(t, 250.0, 36.0, 20.0, PAPER);
+    }
+
+    fn draw_banner_phone(&mut self, dt: f32) {
+        let Some(b) = &mut self.banner else { return };
+        b.t -= dt;
+        if b.t <= 0.0 {
+            self.banner = None;
+            return;
+        }
+        let a = (b.t / 0.6)
+            .min(1.0)
+            .min((b.secs - b.t) / 0.25 + 0.2)
+            .clamp(0.0, 1.0);
+        let (w, _) = art::canvas();
+        let y = 64.0;
+        draw_rectangle(
+            8.0,
+            y,
+            w - 16.0,
+            88.0,
+            Color::new(0.06, 0.05, 0.08, 0.9 * a),
+        );
+        draw_rectangle_lines(
+            8.0,
+            y,
+            w - 16.0,
+            88.0,
+            2.0,
+            Color::new(b.color.r, b.color.g, b.color.b, a),
+        );
+        centered(
+            &b.title,
+            w * 0.5,
+            y + 28.0,
+            22.0,
+            Color::new(b.color.r, b.color.g, b.color.b, a),
+        );
+        text_block(
+            &b.sub,
+            16.0,
+            y + 52.0,
+            14.0,
+            w - 32.0,
+            Color::new(PAPER.r, PAPER.g, PAPER.b, a),
+        );
+    }
+
+    fn encounter_phone(&mut self, inp: Input) {
+        let (w, h) = art::canvas();
+        draw_rectangle(0.0, 0.0, w, h, Color::new(0.0, 0.0, 0.0, 0.72));
+        let loaded = self.loaded.clone();
+        let e = enc_at(&loaded, self.run.room);
+        let name = e.character.name.clone();
+        let scenario = e.scenario.clone();
+        let labels: Vec<String> = e.choices.iter().map(|c| c.label.clone()).collect();
+        let source = e.source.clone();
+        drop(loaded);
+        centered(&name, w * 0.5, 88.0, 26.0, KSU_GOLD);
+        if self.daily.active {
+            centered("scripted", w * 0.5, 112.0, 14.0, DIM);
+        } else if source != "scripted" {
+            centered(&source, w * 0.5, 112.0, 14.0, DIM);
+        }
+        let bottom = text_block(&scenario, 16.0, 136.0, 18.0, w - 32.0, PAPER);
+        let n = labels.len().min(4);
+        if inp.up || inp.left {
+            self.sel = (self.sel + n - 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        if inp.down || inp.right {
+            self.sel = (self.sel + 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        let mut picked = None;
+        let y0 = (bottom + 16.0).max(280.0);
+        for (i, label) in labels.iter().take(n).enumerate() {
+            let r = Rect::new(12.0, y0 + i as f32 * 78.0, w - 24.0, 70.0);
+            if r.contains(inp.mouse) {
+                if inp.mouse_moved {
+                    self.sel = i;
+                }
+                if inp.click {
+                    picked = Some(i);
+                }
+            }
+            let on = self.sel == i;
+            panel(r.x, r.y, r.w, r.h, if on { KSU_GOLD } else { DIM });
+            draw_text(
+                ["1", "2", "3", "4"][i],
+                r.x + 12.0,
+                r.y + 44.0,
+                28.0,
+                if on { KSU_GOLD } else { DIM },
+            );
+            text_block(
+                label,
+                r.x + 48.0,
+                r.y + 28.0,
+                18.0,
+                r.w - 64.0,
+                if on { WHITE } else { PAPER },
+            );
+        }
+        if h > y0 + n as f32 * 78.0 + 30.0 {
+            centered("1-3 or tap a choice", w * 0.5, h - 24.0, 16.0, DIM);
+        }
+        if let Some(d) = inp.digit {
+            if d < n {
+                picked = Some(d);
+            }
+        }
+        if inp.confirm {
+            picked = Some(self.sel);
+        }
+        if let Some(i) = picked {
+            self.pick(i);
+        }
+    }
+
+    fn reaction_phone(&mut self, inp: Input) {
+        let (w, h) = art::canvas();
+        draw_rectangle(0.0, 0.0, w, h, Color::new(0.0, 0.0, 0.0, 0.78));
+        let loaded = self.loaded.clone();
+        let e = enc_at(&loaded, self.run.room).clone();
+        let Some(d) = self.run.history.last() else {
+            return;
+        };
+        let choice = d.choice;
+        let ch = e.choices[choice].clone();
+        drop(loaded);
+        let oc = match ch.outcome {
+            Outcome::Safe => SAFE,
+            Outcome::Risky => RISKY,
+            Outcome::Mixed => MIXED,
+        };
+        centered(&e.character.name, w * 0.5, 80.0, 22.0, KSU_GOLD);
+        match &self.line {
+            None => centered("...", w * 0.5, 120.0, 22.0, DIM),
+            Some(l) => {
+                let n = (l.shown as usize).min(l.text.len());
+                text_block(&l.text[..n], 16.0, 110.0, 18.0, w - 32.0, WHITE);
+            }
+        }
+        let typed = self
+            .line
+            .as_ref()
+            .is_some_and(|l| l.shown as usize >= l.len);
+        if self.run.phase == Phase::Reaction
+            && self.line.is_some()
+            && (typed || inp.confirm || inp.click)
+        {
+            if let Some(l) = &mut self.line {
+                l.shown = l.len as f32;
+            }
+            self.applied = self.run.reveal_lesson(&self.loaded.content);
+            if self.ai_fx.hints.enabled && !self.run.is_last_lesson() {
+                let picked = tips::Picked {
+                    label: ch.label.clone(),
+                    outcome: ch.outcome,
+                    warning_signs: ch.warning_signs.clone(),
+                    safer_next_move: ch.safer_next_move.clone(),
+                };
+                let ctx = tips::TipContext {
+                    kind: tips::TipKind::PostFloor,
+                    stage: tips::TipStage::Reviewed,
+                    floor: self.run.room,
+                    enc: e.clone(),
+                    picked: Some(picked),
+                    floor_tips: Vec::new(),
+                };
+                self.ai_fx.ask_tip(ctx, get_time());
+            }
+            self.txt.chips.clear();
+            if let Some(a) = self.applied {
+                for (name, v, col) in [
+                    ("Knowledge", a.knowledge, KSU_GOLD),
+                    ("Focus", a.focus, FOCUS),
+                    ("Health", a.health, RISKY),
+                ] {
+                    if v != 0 {
+                        let txt = format!("{:+} {}", v, name);
+                        let tw = measure_text(&txt, None, 20, 1.0).width + 20.0;
+                        self.txt.chips.push((txt, tw, col));
+                    }
+                }
+            }
+            self.sfx(match ch.outcome {
+                Outcome::Safe => Sfx::Coin,
+                Outcome::Risky => Sfx::Hurt,
+                Outcome::Mixed => Sfx::Equip,
+            });
+            self.hw.send_event(match ch.outcome {
+                Outcome::Risky => HwEvent::Hit,
+                _ => HwEvent::LevelUp,
+            });
+            return;
+        }
+        if self.run.phase != Phase::Lesson {
+            return;
+        }
+        let badge = ch.outcome.label();
+        draw_text(badge, 16.0, 200.0, 22.0, oc);
+        let mut x = 16.0;
+        for (txt, tw, col) in &self.txt.chips {
+            draw_text(txt, x, 228.0, 16.0, *col);
+            x += tw + 8.0;
+        }
+        let mut y = text_block(
+            &format!("You chose: {}", ch.label),
+            16.0,
+            256.0,
+            18.0,
+            w - 32.0,
+            PAPER,
+        ) + 12.0;
+        draw_text("WARNING SIGNS", 16.0, y, 18.0, RISKY);
+        y += 24.0;
+        for sign in &ch.warning_signs {
+            y = text_block(sign, 16.0, y, 16.0, w - 32.0, PAPER) + 6.0;
+        }
+        y += 8.0;
+        draw_text("SAFER NEXT MOVE", 16.0, y, 18.0, SAFE);
+        y += 24.0;
+        text_block(&ch.safer_next_move, 16.0, y, 16.0, w - 32.0, PAPER);
+        let label = if self.run.is_last_lesson() {
+            "See how you did"
+        } else {
+            "Back to the floor"
+        };
+        let r = Rect::new(16.0, h - 80.0, w - 32.0, 52.0);
+        panel(r.x, r.y, r.w, r.h, KSU_GOLD);
+        centered(label, w * 0.5, r.y + 34.0, 22.0, KSU_GOLD);
+        if inp.confirm || (inp.click && r.contains(inp.mouse)) {
+            self.run.advance();
+            match self.run.phase {
+                Phase::Explore => {
+                    self.sfx(Sfx::Click);
+                    self.line = None;
+                    self.world.player.invuln = 1.0;
+                }
+                Phase::Ending => self.on_run_end(),
+                _ => {}
+            }
+        }
+    }
+
+    fn keeper_quiz_phone(&mut self, inp: &Input, q: &Quiz) {
+        let (w, h) = art::canvas();
+        centered("FLOOR KEEPER", w * 0.5, 80.0, 24.0, KSU_GOLD);
+        if self.daily.active {
+            centered(q.source, w * 0.5, 104.0, 14.0, DIM);
+        }
+        let mut y = 120.0;
+        if let Some(l) = &self.taunt {
+            y = text_block(&l.text, 16.0, y, 16.0, w - 32.0, DIM) + 8.0;
+        }
+        y = text_block(&q.situation, 16.0, y, 16.0, w - 32.0, PAPER) + 6.0;
+        y = text_block(&q.question, 16.0, y, 18.0, w - 32.0, KSU_GOLD) + 10.0;
+        let n = q.options.len().min(4);
+        if inp.up || inp.left {
+            self.sel = (self.sel + n - 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        if inp.down || inp.right {
+            self.sel = (self.sel + 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        let mut picked = None;
+        for (i, opt) in q.options.iter().take(n).enumerate() {
+            let r = Rect::new(12.0, y + i as f32 * 86.0, w - 24.0, 78.0);
+            if r.y + r.h > h - 16.0 {
+                break;
+            }
+            if r.contains(inp.mouse) {
+                if inp.mouse_moved {
+                    self.sel = i;
+                }
+                if inp.click {
+                    picked = Some(i);
+                }
+            }
+            let on = self.sel == i;
+            panel(r.x, r.y, r.w, r.h, if on { KSU_GOLD } else { DIM });
+            draw_text(
+                ["1", "2", "3", "4"][i],
+                r.x + 10.0,
+                r.y + 28.0,
+                20.0,
+                if on { KSU_GOLD } else { DIM },
+            );
+            text_block(
+                opt,
+                r.x + 36.0,
+                r.y + 28.0,
+                16.0,
+                r.w - 48.0,
+                if on { WHITE } else { PAPER },
+            );
+        }
+        if let Some(d) = inp.digit {
+            if d < n {
+                picked = Some(d);
+            }
+        }
+        if inp.confirm {
+            picked = Some(self.sel);
+        }
+        if let Some(i) = picked {
+            self.answer_keeper(q, i);
+        }
+    }
+
     // ------------------------------------------------------------ encounter
 
     fn encounter(&mut self, inp: Input, dt: f32) {
         // Hoot: any cursor move or key restarts the hesitation clock; code decides when it speaks
         let now = get_time();
-        if inp.up || inp.down || inp.left || inp.right || inp.mouse_moved || inp.digit.is_some() || inp.click {
+        if inp.up
+            || inp.down
+            || inp.left
+            || inp.right
+            || inp.mouse_moved
+            || inp.digit.is_some()
+            || inp.click
+        {
             self.ai_fx.hints.input(now);
         }
         if self.owl.is_none() {
@@ -2212,6 +3580,10 @@ impl App {
             }
         }
         self.owl_t += dt;
+        if art::portrait() {
+            self.encounter_phone(inp);
+            return;
+        }
         draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.55));
         let loaded = self.loaded.clone();
         let e = enc_at(&loaded, self.run.room);
@@ -2226,12 +3598,23 @@ impl App {
         }
         // scenario card
         panel(390.0, 76.0, 850.0, 400.0, KSU_GOLD);
-        let t = self.txt.enc_name.get(key(&[self.run.room]), |b| b.push_str(&e.name.to_uppercase()));
+        let t = self.txt.enc_name.get(key(&[self.run.room]), |b| {
+            b.push_str(&e.name.to_uppercase())
+        });
         draw_text(t, 420.0, 120.0, 32.0, KSU_GOLD);
-        draw_line(420.0, 134.0, 1210.0, 134.0, 1.0, Color::new(1.0, 0.77, 0.16, 0.4));
+        draw_line(
+            420.0,
+            134.0,
+            1210.0,
+            134.0,
+            1.0,
+            Color::new(1.0, 0.77, 0.16, 0.4),
+        );
         text_block(&e.scenario, 420.0, 176.0, 30.0, 790.0, PAPER);
         if let Some(tag) = self.gen_note {
             draw_text(tag, 1100.0, 108.0, 18.0, DIM);
+        } else if e.source != "scripted" {
+            draw_text(&e.source, 1100.0, 108.0, 18.0, DIM);
         }
 
         // choices
@@ -2262,17 +3645,33 @@ impl App {
             let on = self.sel == i;
             let lift = if on { -6.0 } else { 0.0 };
             panel(r.x, r.y + lift, r.w, r.h, if on { KSU_GOLD } else { DIM });
-            draw_text(["1", "2", "3", "4"][i], r.x + 18.0, r.y + 44.0 + lift, 34.0, if on { KSU_GOLD } else { DIM });
+            draw_text(
+                ["1", "2", "3", "4"][i],
+                r.x + 18.0,
+                r.y + 44.0 + lift,
+                34.0,
+                if on { KSU_GOLD } else { DIM },
+            );
             let lines = wrap(&ch.label, 32.0, r.w - 80.0);
             let total = lines.len() as f32 * 34.0;
             for (j, l) in lines.iter().enumerate() {
-                draw_text(l, r.x + 60.0, r.y + bh * 0.5 - total * 0.5 + 26.0 + j as f32 * 34.0 + lift, 32.0, if on { WHITE } else { PAPER });
+                draw_text(
+                    l,
+                    r.x + 60.0,
+                    r.y + bh * 0.5 - total * 0.5 + 26.0 + j as f32 * 34.0 + lift,
+                    32.0,
+                    if on { WHITE } else { PAPER },
+                );
             }
         }
         self.draw_owl(0.0);
         let on = self.ai_fx.hints.enabled;
         let t = self.txt.enc_help.get(key(&[on as usize]), |b| {
-            let _ = write!(b, "1-3, or arrows + Enter, or click a choice   -   T: ask Hoot   -   H: owl hints {}", if on { "on" } else { "off" });
+            let _ = write!(
+                b,
+                "1-3, or arrows + Enter, or click a choice   -   T: ask Hoot   -   H: owl hints {}",
+                if on { "on" } else { "off" }
+            );
         });
         centered(t, VW * 0.5, 710.0, 22.0, DIM);
         if let Some(d) = inp.digit {
@@ -2293,8 +3692,20 @@ impl App {
     /// The facts a tip may use: this floor's encounter (and, after a choice, the choice).
     fn tip_context(&self, kind: tips::TipKind, stage: tips::TipStage) -> tips::TipContext {
         let enc = enc_at(&self.loaded, self.run.room).clone();
-        let floor_tips = self.cases.cases.get(&enc.id).map(|c| c.hoot.clone()).unwrap_or_default();
-        tips::TipContext { kind, stage, floor: self.run.room, enc, picked: None, floor_tips }
+        let floor_tips = self
+            .cases
+            .cases
+            .get(&enc.id)
+            .map(|c| c.hoot.clone())
+            .unwrap_or_default();
+        tips::TipContext {
+            kind,
+            stage,
+            floor: self.run.room,
+            enc,
+            picked: None,
+            floor_tips,
+        }
     }
 
     /// Hoot's tips, once per frame: pop a waiting tip back in on the floor, collect a finished
@@ -2327,15 +3738,30 @@ impl App {
                     self.sfx(Sfx::Click);
                     self.hw.send_event(HwEvent::Tip);
                 } else {
-                    self.show_banner("HOOT IS NAPPING".into(), "Press H to wake Hoot up.".into(), DIM);
+                    self.show_banner(
+                        "HOOT IS NAPPING".into(),
+                        "Press H to wake Hoot up.".into(),
+                        DIM,
+                    );
                 }
             }
         }
-        if (is_key_pressed(KeyCode::T) || self.touch_hoot) && (on_floor || reading) && !self.pending_floor {
+        if (is_key_pressed(KeyCode::T) || self.touch_hoot)
+            && (on_floor || reading)
+            && !self.pending_floor
+        {
             if !self.ai_fx.hints.enabled {
-                self.show_banner("HOOT IS NAPPING".into(), "Press H to wake Hoot up.".into(), DIM);
+                self.show_banner(
+                    "HOOT IS NAPPING".into(),
+                    "Press H to wake Hoot up.".into(),
+                    DIM,
+                );
             } else {
-                let stage = if reading { tips::TipStage::Deciding } else { tips::TipStage::Exploring };
+                let stage = if reading {
+                    tips::TipStage::Deciding
+                } else {
+                    tips::TipStage::Exploring
+                };
                 let ctx = self.tip_context(tips::TipKind::Ask, stage);
                 if self.ai_fx.ask_tip(ctx, now) {
                     self.sfx(Sfx::Click);
@@ -2354,7 +3780,11 @@ impl App {
     /// Hoot speaks a tip: the bubble pops in, and the board's matrix shows the owl.
     fn show_tip(&mut self, t: tips::Tip) {
         if self.auto.on {
-            println!("[auto] hoot tip ({}): {}", source_tag(&t.source, "line"), t.text);
+            println!(
+                "[auto] hoot tip ({}): {}",
+                source_tag(&t.source, "line"),
+                t.text
+            );
         }
         self.speak("hoot", &t.text, t.source.clone());
         self.owl = Some(Line::new(t.text, t.source));
@@ -2368,7 +3798,10 @@ impl App {
         !self.pending_floor
             && !self.settings_open
             && self.mini.is_none()
-            && matches!(self.run.phase, Phase::Explore | Phase::Encounter | Phase::Lesson)
+            && matches!(
+                self.run.phase,
+                Phase::Explore | Phase::Encounter | Phase::Lesson
+            )
     }
 
     /// Hoot's tip log: this run's tips, newest first, Up/Down to scroll.
@@ -2390,9 +3823,21 @@ impl App {
         let log = self.ai_fx.tip_log();
         if log.is_empty() {
             centered("No tips yet.", VW * 0.5, 300.0, 28.0, PAPER);
-            centered("Press T on a floor or while reading a scenario to ask Hoot.", VW * 0.5, 340.0, 22.0, DIM);
+            centered(
+                "Press T on a floor or while reading a scenario to ask Hoot.",
+                VW * 0.5,
+                340.0,
+                22.0,
+                DIM,
+            );
         }
-        for (i, tip) in log.iter().rev().skip(self.tip_log_scroll).take(PER_PAGE).enumerate() {
+        for (i, tip) in log
+            .iter()
+            .rev()
+            .skip(self.tip_log_scroll)
+            .take(PER_PAGE)
+            .enumerate()
+        {
             let y0 = 160.0 + i as f32 * 104.0;
             let head = format!("FLOOR {}  -  {}", tip.floor + 1, tip.kind.tag());
             draw_text(&head, 150.0, y0 + 22.0, 22.0, KSU_GOLD);
@@ -2442,15 +3887,39 @@ impl App {
         }
         panel(bx, y, right - bx, h, KSU_GOLD);
         // the bubble's tail points at Hoot
-        draw_triangle(vec2(bx + 2.0, y + 26.0), vec2(bx + 2.0, y + 44.0), vec2(bx - 12.0, y + 36.0), KSU_GOLD);
+        draw_triangle(
+            vec2(bx + 2.0, y + 26.0),
+            vec2(bx + 2.0, y + 44.0),
+            vec2(bx - 12.0, y + 36.0),
+            KSU_GOLD,
+        );
         let name = &self.ai_fx.data.owl_name;
         draw_text(name, bx + 18.0, y + 24.0, 20.0, KSU_GOLD);
         if one_line {
-            text_typed(&l.text, l.shown as usize, bx + 18.0, y + 52.0, 24.0, text_w, PAPER);
+            text_typed(
+                &l.text,
+                l.shown as usize,
+                bx + 18.0,
+                y + 52.0,
+                24.0,
+                text_w,
+                PAPER,
+            );
         } else {
             // the largest size whose lines end above the bubble's bottom edge
-            let size = [21.0, 20.0, 18.0, 16.0].into_iter().find(|&sz| wrap(&l.text, sz, text_w).len() as f32 * sz * 1.15 <= h - 34.0).unwrap_or(16.0);
-            text_typed(&l.text, l.shown as usize, bx + 18.0, y + 46.0, size, text_w, PAPER);
+            let size = [21.0, 20.0, 18.0, 16.0]
+                .into_iter()
+                .find(|&sz| wrap(&l.text, sz, text_w).len() as f32 * sz * 1.15 <= h - 34.0)
+                .unwrap_or(16.0);
+            text_typed(
+                &l.text,
+                l.shown as usize,
+                bx + 18.0,
+                y + 46.0,
+                size,
+                text_w,
+                PAPER,
+            );
         }
         draw_text(&l.tag, right - 12.0 - l.tag_w, y + 22.0, 18.0, DIM);
     }
@@ -2470,23 +3939,36 @@ impl App {
         self.sel = i;
         self.line = None;
         self.applied = None;
-        self.reactor.request(
-            ReactionRequest {
-                encounter_id: e.id.clone(),
-                character: e.character.name.clone(),
-                scenario: e.scenario.clone(),
-                choice_label: ch.label.clone(),
-                outcome: ch.outcome.as_str(),
-            },
-            ch.fallback_reaction.clone(),
-            get_time(),
-        );
+        if self.daily.active {
+            // scripted line now: no live reaction call, and the clip can play
+            let text = ch.fallback_reaction.clone();
+            let source = LineSource::Fallback("daily crypt");
+            let role = self.char_role();
+            self.speak(&role, &text, source.clone());
+            self.line = Some(Line::new(text, source));
+        } else {
+            self.reactor.request(
+                ReactionRequest {
+                    encounter_id: e.id.clone(),
+                    character: e.character.name.clone(),
+                    scenario: e.scenario.clone(),
+                    choice_label: ch.label.clone(),
+                    outcome: ch.outcome.as_str(),
+                },
+                ch.fallback_reaction.clone(),
+                get_time(),
+            );
+        }
         self.sfx(Sfx::Click);
     }
 
     // ------------------------------------------------------------ reaction + lesson
 
     fn reaction(&mut self, inp: Input) {
+        if art::portrait() {
+            self.reaction_phone(inp);
+            return;
+        }
         draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.6));
         let loaded = self.loaded.clone();
         let e = enc_at(&loaded, self.run.room);
@@ -2502,7 +3984,11 @@ impl App {
 
         // portrait + speech bubble
         panel(40.0, 76.0, 200.0, 200.0, oc);
-        let shake = if ch.outcome == Outcome::Risky { 0.0 } else { (self.t * 18.0).sin() * 1.5 };
+        let shake = if ch.outcome == Outcome::Risky {
+            0.0
+        } else {
+            (self.t * 18.0).sin() * 1.5
+        };
         draw_sprite(character_sprite(&e.id), 52.0 + shake, 88.0, 11.0, false);
         panel(270.0, 76.0, 970.0, 200.0, PAPER);
         draw_text(&e.character.name, 296.0, 112.0, 26.0, KSU_GOLD);
@@ -2521,8 +4007,14 @@ impl App {
         }
 
         // reveal the lesson (applies effects) once the line has finished typing
-        let typed = self.line.as_ref().is_some_and(|l| l.shown as usize >= l.len);
-        if self.run.phase == Phase::Reaction && self.line.is_some() && (typed || inp.confirm || inp.click) {
+        let typed = self
+            .line
+            .as_ref()
+            .is_some_and(|l| l.shown as usize >= l.len);
+        if self.run.phase == Phase::Reaction
+            && self.line.is_some()
+            && (typed || inp.confirm || inp.click)
+        {
             if let Some(l) = &mut self.line {
                 l.shown = l.len as f32;
             }
@@ -2547,7 +4039,11 @@ impl App {
             }
             self.txt.chips.clear();
             if let Some(a) = self.applied {
-                for (name, v, col) in [("Knowledge", a.knowledge, KSU_GOLD), ("Focus", a.focus, FOCUS), ("Health", a.health, RISKY)] {
+                for (name, v, col) in [
+                    ("Knowledge", a.knowledge, KSU_GOLD),
+                    ("Focus", a.focus, FOCUS),
+                    ("Health", a.health, RISKY),
+                ] {
                     if v != 0 {
                         let txt = format!("{:+} {}", v, name);
                         let w = measure_text(&txt, None, 24, 1.0).width + 24.0;
@@ -2584,7 +4080,13 @@ impl App {
         for (txt, w, col) in &self.txt.chips {
             let (w, col) = (*w, *col);
             x -= w + 10.0;
-            draw_rectangle(x, y - 26.0, w, 36.0, Color::new(col.r * 0.3, col.g * 0.3, col.b * 0.3, 1.0));
+            draw_rectangle(
+                x,
+                y - 26.0,
+                w,
+                36.0,
+                Color::new(col.r * 0.3, col.g * 0.3, col.b * 0.3, 1.0),
+            );
             draw_rectangle_lines(x, y - 26.0, w, 36.0, 2.0, col);
             draw_text(txt, x + 12.0, y, 24.0, col);
         }
@@ -2602,7 +4104,11 @@ impl App {
         text_block(&ch.safer_next_move, 674.0, 414.0, 27.0, 540.0, PAPER);
 
         let last = self.run.is_last_lesson();
-        let label = if last { "See how you did  [Enter]" } else { "Back to the floor  [Enter]" };
+        let label = if last {
+            "See how you did  [Enter]"
+        } else {
+            "Back to the floor  [Enter]"
+        };
         let r = Rect::new(VW * 0.5 - 200.0, 652.0, 400.0, 52.0);
         let hover = r.contains(inp.mouse);
         panel(r.x, r.y, r.w, r.h, if hover { WHITE } else { KSU_GOLD });
@@ -2647,14 +4153,32 @@ impl App {
         };
         if self.fight.is_some() {
             // Undertale-style: the fight gets a clean black stage, no dungeon behind the panels
-            draw_rectangle(0.0, 0.0, VW, VH, BLACK);
+            let (w, h) = art::canvas();
+            draw_rectangle(0.0, 0.0, w, h, BLACK);
             self.keeper_fight_round(&q, inp, dt);
+            return;
+        }
+        if art::portrait() {
+            self.keeper_quiz_phone(&inp, &q);
             return;
         }
         self.keeper_portrait(40.0, 76.0, 260.0, 236.0, KSU_GOLD, None);
         panel(320.0, 76.0, 920.0, 236.0, KSU_GOLD);
-        draw_text("THE FLOOR KEEPER BLOCKS THE STAIRS", 346.0, 112.0, 30.0, KSU_GOLD);
-        draw_line(346.0, 124.0, 1210.0, 124.0, 1.0, Color::new(1.0, 0.77, 0.16, 0.4));
+        draw_text(
+            "THE FLOOR KEEPER BLOCKS THE STAIRS",
+            346.0,
+            112.0,
+            30.0,
+            KSU_GOLD,
+        );
+        draw_line(
+            346.0,
+            124.0,
+            1210.0,
+            124.0,
+            1.0,
+            Color::new(1.0, 0.77, 0.16, 0.4),
+        );
         // the Keeper's taunt (AI-voiced or scripted), typed out; the layout below is
         // sized for the whole line so nothing jumps while it types
         let y = match &self.taunt {
@@ -2663,7 +4187,14 @@ impl App {
                 centered(&l.tag, 170.0, 304.0, 16.0, DIM);
                 154.0 + wrap(&l.text, 24.0, 860.0).len() as f32 * 24.0 * 1.15
             }
-            None => text_block("\"None pass without proving they listened.\"", 346.0, 154.0, 24.0, 860.0, DIM),
+            None => text_block(
+                "\"None pass without proving they listened.\"",
+                346.0,
+                154.0,
+                24.0,
+                860.0,
+                DIM,
+            ),
         };
         let y = text_block(&q.situation, 346.0, y + 4.0, 25.0, 860.0, PAPER);
         text_block(&q.question, 346.0, y + 10.0, 28.0, 860.0, KSU_GOLD);
@@ -2691,14 +4222,30 @@ impl App {
             let on = self.sel == i;
             let lift = if on { -4.0 } else { 0.0 };
             panel(r.x, r.y + lift, r.w, r.h, if on { KSU_GOLD } else { DIM });
-            draw_text(["1", "2", "3", "4"][i], r.x + 22.0, r.y + 64.0 + lift, 36.0, if on { KSU_GOLD } else { DIM });
+            draw_text(
+                ["1", "2", "3", "4"][i],
+                r.x + 22.0,
+                r.y + 64.0 + lift,
+                36.0,
+                if on { KSU_GOLD } else { DIM },
+            );
             let lines = wrap(opt, 26.0, r.w - 110.0);
             let total = lines.len() as f32 * 30.0;
             for (j, l) in lines.iter().enumerate() {
-                draw_text(l, r.x + 72.0, r.y + r.h * 0.5 - total * 0.5 + 22.0 + j as f32 * 30.0 + lift, 26.0, if on { WHITE } else { PAPER });
+                draw_text(
+                    l,
+                    r.x + 72.0,
+                    r.y + r.h * 0.5 - total * 0.5 + 22.0 + j as f32 * 30.0 + lift,
+                    26.0,
+                    if on { WHITE } else { PAPER },
+                );
             }
         }
-        let hint = if self.choice_open { "Right: the stairs open.  Wrong: fight 2 wardens first.   1-3, arrows + Enter, or click" } else { "Read carefully..." };
+        let hint = if self.choice_open {
+            "Right: the stairs open.  Wrong: fight 2 wardens first.   1-3, arrows + Enter, or click"
+        } else {
+            "Read carefully..."
+        };
         centered(hint, VW * 0.5, 712.0, 20.0, DIM);
         if let Some(d) = inp.digit {
             if d < n {
@@ -2716,13 +4263,28 @@ impl App {
     /// The Keeper's question about the choice made on this floor; the layout is
     /// fixed by the run seed and floor, so a replay with CC_SEED is identical.
     fn build_quiz(&self) -> Quiz {
-        keeper::build_for_floor(&self.loaded.content, &self.cases, self.run.room, self.run.choice_on_floor(), self.run_seed)
+        keeper::build_for_floor(
+            &self.loaded.content,
+            &self.cases,
+            self.run.room,
+            self.run.choice_on_floor(),
+            self.run_seed,
+        )
     }
 
     /// The floor's investigation fight (keeper_fight.rs, investigate.rs). Turns:
     /// pick a command, then dodge its attack in the box. The fight decides the verdict.
     fn keeper_fight_round(&mut self, q: &Quiz, inp: Input, dt: f32) {
-        let fi = FightInput { up: inp.up, down: inp.down, left: inp.left, right: inp.right, confirm: inp.confirm, back: inp.back, digit: inp.digit, mv: inp.mv };
+        let fi = FightInput {
+            up: inp.up,
+            down: inp.down,
+            left: inp.left,
+            right: inp.right,
+            confirm: inp.confirm,
+            back: inp.back,
+            digit: inp.digit,
+            mv: inp.mv,
+        };
         let open = self.choice_open;
         let hints_on = self.ai_fx.hints.enabled;
         let Some(f) = self.fight.as_mut() else { return };
@@ -2736,9 +4298,18 @@ impl App {
             _ => "Enter / E: continue",
         };
         let (takeaway, ending) = (f.takeaway(), f.ending);
-        centered(help, VW * 0.5, 676.0, 20.0, DIM);
-        let rm = if self.reduced_motion { "R: reduced motion ON (no attacks)" } else { "R: reduced motion OFF" };
-        centered(rm, VW * 0.5, 702.0, 18.0, DIM);
+        let (cx, help_y, rm_y, help_size) = if art::portrait() {
+            (art::vw() * 0.5, art::vh() - 250.0, art::vh() - 228.0, 14.0)
+        } else {
+            (VW * 0.5, 676.0, 702.0, 20.0)
+        };
+        centered(help, cx, help_y, help_size, DIM);
+        let rm = if self.reduced_motion {
+            "R: reduced motion ON (no attacks)"
+        } else {
+            "R: reduced motion OFF"
+        };
+        centered(rm, cx, rm_y, if art::portrait() { 14.0 } else { 18.0 }, DIM);
         match ev {
             Some(FightEvent::Hit) => {
                 self.sfx(Sfx::Hurt);
@@ -2747,7 +4318,10 @@ impl App {
             Some(FightEvent::Reset) => {
                 self.sfx(Sfx::Stairs);
                 if self.auto.on {
-                    let (h, f) = (self.run.stats.health, self.fight.as_ref().map_or(0, |f| f.resets));
+                    let (h, f) = (
+                        self.run.stats.health,
+                        self.fight.as_ref().map_or(0, |f| f.resets),
+                    );
                     println!("[auto] fight box hearts ran out: reset #{f}, run health still {h}, no verdict");
                 }
             }
@@ -2762,13 +4336,29 @@ impl App {
                 // the verdict screen: the safe move vs. what this fight did wrong
                 let case = self.fight.as_ref().map(|f| f.case.clone());
                 let wrong = match (ending, &case) {
-                    (Some(keeper_fight::Ending::DeletedUnread), _) => "Delete it without checking a single detail".to_string(),
-                    (_, Some(c)) => format!("Do what it asks: {}", c.bad.iter().map(|b| b.label.to_lowercase()).collect::<Vec<_>>().join(", or ")),
+                    (Some(keeper_fight::Ending::DeletedUnread), _) => {
+                        "Delete it without checking a single detail".to_string()
+                    }
+                    (_, Some(c)) => format!(
+                        "Do what it asks: {}",
+                        c.bad
+                            .iter()
+                            .map(|b| b.label.to_lowercase())
+                            .collect::<Vec<_>>()
+                            .join(", or ")
+                    ),
                     _ => "Do what it asks".to_string(),
                 };
                 // the warning sign shown: the first red flag you caught, else the first planted one
-                let warning = self.fight.as_ref().and_then(|f| f.first_tell.map(|t| f.case.tell(t).to_string())).or_else(|| q.warning.clone());
-                let situation = case.as_ref().map_or_else(|| q.situation.clone(), |c| format!("You investigated {}'s {}.", c.name, c.medium.noun()));
+                let warning = self
+                    .fight
+                    .as_ref()
+                    .and_then(|f| f.first_tell.map(|t| f.case.tell(t).to_string()))
+                    .or_else(|| q.warning.clone());
+                let situation = case.as_ref().map_or_else(
+                    || q.situation.clone(),
+                    |c| format!("You investigated {}'s {}.", c.name, c.medium.noun()),
+                );
                 let summary = Quiz {
                     situation,
                     question: q.question.clone(),
@@ -2777,15 +4367,26 @@ impl App {
                     warning,
                     id: q.id,
                     case,
+                    source: q.source,
                 };
                 if self.auto.on {
-                    println!("[auto] keeper fight verdict {}: {takeaway}", if right { "right" } else { "wrong" });
+                    println!(
+                        "[auto] keeper fight verdict {}: {takeaway}",
+                        if right { "right" } else { "wrong" }
+                    );
                 }
                 self.quiz = Some(Rc::new(summary));
                 self.quiz_pick = Some(if right { 0 } else { 1 });
                 self.verdict_ready = false;
-                self.speak("char:trap", &takeaway, LineSource::Fallback("the trap's takeaway"));
-                self.line = Some(Line::new(takeaway, LineSource::Fallback("the trap's takeaway")));
+                self.speak(
+                    "char:trap",
+                    &takeaway,
+                    LineSource::Fallback("the trap's takeaway"),
+                );
+                self.line = Some(Line::new(
+                    takeaway,
+                    LineSource::Fallback("the trap's takeaway"),
+                ));
                 self.fight = None;
                 self.sfx(Sfx::Click);
             }
@@ -2809,9 +4410,20 @@ impl App {
         // Keeper banter: code picked the verdict (`correct`); the backend checks the AI line
         // agrees with it (`banter::verdict_consistent`) and otherwise hands back the written
         // `keeper::line`, so the line on screen can never contradict the verdict
-        let (t, src) = self.ai_fx.keeper_reaction(self.run.room, correct);
+        let (t, src) = if self.daily.active {
+            (
+                keeper::line(correct, self.run.room).to_string(),
+                LineSource::Fallback("daily crypt"),
+            )
+        } else {
+            self.ai_fx.keeper_reaction(self.run.room, correct)
+        };
         if self.auto.on {
-            println!("[auto] keeper verdict {} ({}): {t}", if correct { "right" } else { "wrong" }, source_tag(&src, "line"));
+            println!(
+                "[auto] keeper verdict {} ({}): {t}",
+                if correct { "right" } else { "wrong" },
+                source_tag(&src, "line")
+            );
         }
         self.speak("keeper", &t, src.clone());
         self.line = Some(Line::new(t, src));
@@ -2832,16 +4444,45 @@ impl App {
             self.risk_round(&inp, dt, trap.as_ref().map(|t| t.1.as_str()));
             return;
         }
-        draw_rectangle(0.0, 0.0, VW, VH, if mimic { BLACK } else { Color::new(0.0, 0.0, 0.0, 0.62) });
+        draw_rectangle(
+            0.0,
+            0.0,
+            VW,
+            VH,
+            if mimic {
+                BLACK
+            } else {
+                Color::new(0.0, 0.0, 0.0, 0.62)
+            },
+        );
         let correct = q.is_correct(pick);
         let oc = if correct { SAFE } else { RISKY };
-        self.keeper_portrait(40.0, 76.0, 200.0, 200.0, oc, trap.as_ref().map(|t| t.0.as_str()));
+        self.keeper_portrait(
+            40.0,
+            76.0,
+            200.0,
+            200.0,
+            oc,
+            trap.as_ref().map(|t| t.0.as_str()),
+        );
         panel(270.0, 76.0, 970.0, 200.0, PAPER);
-        draw_text(trap.as_ref().map_or(keeper::KEEPER_NAME, |t| t.1.as_str()), 296.0, 112.0, 26.0, KSU_GOLD);
+        draw_text(
+            trap.as_ref().map_or(keeper::KEEPER_NAME, |t| t.1.as_str()),
+            296.0,
+            112.0,
+            26.0,
+            KSU_GOLD,
+        );
         match &self.line {
             None => {
                 let dots = 1 + (self.t * 3.0) as usize % 3;
-                draw_text(&"The Keeper considers your answer..."[..32 + dots], 296.0, 160.0, 28.0, DIM);
+                draw_text(
+                    &"The Keeper considers your answer..."[..32 + dots],
+                    296.0,
+                    160.0,
+                    28.0,
+                    DIM,
+                );
             }
             Some(l) => {
                 text_typed(&l.text, l.shown as usize, 296.0, 156.0, 30.0, 920.0, WHITE);
@@ -2849,7 +4490,10 @@ impl App {
             }
         }
         if !self.verdict_ready {
-            let typed = self.line.as_ref().is_some_and(|l| l.shown as usize >= l.len);
+            let typed = self
+                .line
+                .as_ref()
+                .is_some_and(|l| l.shown as usize >= l.len);
             if self.line.is_some() && (typed || inp.confirm || inp.click) {
                 if let Some(l) = &mut self.line {
                     l.shown = l.len as f32;
@@ -2872,17 +4516,35 @@ impl App {
         draw_rectangle(40.0, y - 28.0, bw, 40.0, oc);
         draw_text(badge, 55.0, y, 28.0, INK);
         let who = trap.as_ref().map_or(keeper::KEEPER_NAME, |t| t.1.as_str());
-        let reward = if correct { format!("+1 Knowledge.  {who} steps aside.") } else { format!("{who} rings for its wardens.") };
+        let reward = if correct {
+            format!("+1 Knowledge.  {who} steps aside.")
+        } else {
+            format!("{who} rings for its wardens.")
+        };
         draw_text(&reward, 60.0 + bw, y, 28.0, PAPER);
 
         panel(40.0, 340.0, VW - 80.0, 300.0, SAFE);
         draw_text("THE SAFER NEXT MOVE", 64.0, 376.0, 28.0, SAFE);
         let mut yy = text_block(&q.situation, 64.0, 414.0, 24.0, VW - 140.0, DIM);
-        yy = text_block(&q.options[q.correct], 64.0, yy + 4.0, 27.0, VW - 140.0, PAPER);
+        yy = text_block(
+            &q.options[q.correct],
+            64.0,
+            yy + 4.0,
+            27.0,
+            VW - 140.0,
+            PAPER,
+        );
         if !correct {
-            let t = self.txt.chose.get(key(&[self.run.room, pick, 99, q.id as usize]), |b| {
-                let _ = write!(b, "You picked: {}  That's the move the trap is hoping for.", q.options[pick]);
-            });
+            let t = self
+                .txt
+                .chose
+                .get(key(&[self.run.room, pick, 99, q.id as usize]), |b| {
+                    let _ = write!(
+                        b,
+                        "You picked: {}  That's the move the trap is hoping for.",
+                        q.options[pick]
+                    );
+                });
             yy = text_block(t, 64.0, yy + 10.0, 22.0, VW - 140.0, RISKY);
         }
         if let Some(w) = &q.warning {
@@ -2892,7 +4554,11 @@ impl App {
 
         if correct {
             // SPARE (the stairs, as always) or RISK IT (the bonus round)
-            let stairs = if self.run.is_last_floor() { "SPARE: to the way out" } else { "SPARE: to the stairs" };
+            let stairs = if self.run.is_last_floor() {
+                "SPARE: to the way out"
+            } else {
+                "SPARE: to the stairs"
+            };
             let labels = [stairs, "RISK IT: bonus round"];
             let cols = [SAFE, RISKY];
             if inp.left || inp.up || inp.right || inp.down {
@@ -2910,11 +4576,23 @@ impl App {
                     picked = Some(i);
                 }
                 let on = self.verdict_sel == i;
-                panel(r.x, r.y - if on { 3.0 } else { 0.0 }, r.w, r.h, if on || hover { WHITE } else { cols[i] });
+                panel(
+                    r.x,
+                    r.y - if on { 3.0 } else { 0.0 },
+                    r.w,
+                    r.h,
+                    if on || hover { WHITE } else { cols[i] },
+                );
                 let t = self.txt.chose.get(key(&[i, 77]), |b| {
                     let _ = write!(b, "{}  {label}", i + 1);
                 });
-                centered(t, r.x + r.w * 0.5, 686.0 - if on { 3.0 } else { 0.0 }, 26.0, cols[i]);
+                centered(
+                    t,
+                    r.x + r.w * 0.5,
+                    686.0 - if on { 3.0 } else { 0.0 },
+                    26.0,
+                    cols[i],
+                );
             }
             centered("Left/Right + Enter, 1-2 or click.  Risk It: grab 3 red flags in the box for +1 Health.", VW * 0.5, 624.0, 18.0, DIM);
             if let Some(d) = inp.digit.filter(|&d| d < 2) {
@@ -2925,12 +4603,19 @@ impl App {
             }
             match picked {
                 Some(1) => {
-                    self.risk = Some(RiskIt::new(self.run_seed ^ q.id, self.run.room, self.reduced_motion));
+                    self.risk = Some(RiskIt::new(
+                        self.run_seed ^ q.id,
+                        self.run.room,
+                        self.reduced_motion,
+                    ));
                     self.verdict_sel = 0;
                     self.sfx(Sfx::Equip);
                     self.hw.send_event(HwEvent::Menu);
                     if self.auto.on {
-                        println!("[auto] risk it: round starts on floor {}", self.run.room + 1);
+                        println!(
+                            "[auto] risk it: round starts on floor {}",
+                            self.run.room + 1
+                        );
                     }
                 }
                 Some(_) => self.leave_keeper_verdict(),
@@ -2957,13 +4642,21 @@ impl App {
             Phase::Explore => {
                 self.sfx(Sfx::LevelUp);
                 self.world.player.invuln = 1.0;
-                self.show_banner("THE STAIRS ARE OPEN".into(), "The Keeper steps aside. Take the stairs.".into(), SAFE);
+                self.show_banner(
+                    "THE STAIRS ARE OPEN".into(),
+                    "The Keeper steps aside. Take the stairs.".into(),
+                    SAFE,
+                );
             }
             Phase::BossFight => {
                 self.arena = None; // built next frame, behind the black fade
                 self.room_fade = 1.0;
                 self.sfx(Sfx::Stairs);
-                self.show_banner("THE KEEPER'S WARDENS".into(), "Full hearts for this fight only. Beat both to open the stairs.".into(), RISKY);
+                self.show_banner(
+                    "THE KEEPER'S WARDENS".into(),
+                    "Full hearts for this fight only. Beat both to open the stairs.".into(),
+                    RISKY,
+                );
             }
             _ => {}
         }
@@ -2975,7 +4668,11 @@ impl App {
         let ev = r.update(dt, inp.mv);
         r.draw(trap.unwrap_or(keeper::KEEPER_NAME), self.t);
         let leave = r.can_leave() && (inp.confirm || inp.click);
-        let help = if r.done() { "Enter: to the stairs" } else { "WASD/arrows: move.  Touch the red flags, dodge everything else." };
+        let help = if r.done() {
+            "Enter: to the stairs"
+        } else {
+            "WASD/arrows: move.  Touch the red flags, dodge everything else."
+        };
         centered(help, VW * 0.5, 676.0, 20.0, DIM);
         match ev {
             Some(RiskEvent::Hit) => {
@@ -2988,15 +4685,28 @@ impl App {
                 self.run.risk_it(o);
                 let after = self.run.stats;
                 let reward = match o {
-                    risk_it::Outcome::Defeated if after.health > before.health => "+1 Health. The Keeper bows out.".to_string(),
-                    risk_it::Outcome::Defeated if after.focus > before.focus => "Health is full: +1 Focus instead.".to_string(),
-                    risk_it::Outcome::Defeated => "Health and Focus are full. Bragging rights only.".to_string(),
-                    risk_it::Outcome::KnockedOut if after.health < before.health => "-1 Health. The stairs still open.".to_string(),
-                    risk_it::Outcome::KnockedOut => "Your last heart is safe: the box can't end a run.".to_string(),
+                    risk_it::Outcome::Defeated if after.health > before.health => {
+                        "+1 Health. The Keeper bows out.".to_string()
+                    }
+                    risk_it::Outcome::Defeated if after.focus > before.focus => {
+                        "Health is full: +1 Focus instead.".to_string()
+                    }
+                    risk_it::Outcome::Defeated => {
+                        "Health and Focus are full. Bragging rights only.".to_string()
+                    }
+                    risk_it::Outcome::KnockedOut if after.health < before.health => {
+                        "-1 Health. The stairs still open.".to_string()
+                    }
+                    risk_it::Outcome::KnockedOut => {
+                        "Your last heart is safe: the box can't end a run.".to_string()
+                    }
                     risk_it::Outcome::TimeUp => "No harm done. The stairs are open.".to_string(),
                 };
                 if self.auto.on {
-                    println!("[auto] risk it: {:?}, health {} -> {}, focus {} -> {}", o, before.health, after.health, before.focus, after.focus);
+                    println!(
+                        "[auto] risk it: {:?}, health {} -> {}, focus {} -> {}",
+                        o, before.health, after.health, before.focus, after.focus
+                    );
                 }
                 match o {
                     risk_it::Outcome::Defeated => {
@@ -3023,17 +4733,39 @@ impl App {
     // ------------------------------------------------------------ ending
 
     fn ending(&mut self, inp: Input) {
+        if self.daily.active {
+            self.daily_ending(inp);
+            return;
+        }
         draw_rectangle(0.0, 0.0, VW, VH, Color::new(0.0, 0.0, 0.0, 0.75));
         let (title, sub, col) = match self.run.ending() {
-            Ending::CryptKeeper => ("CRYPT KEEPER", "Every trap spotted, every Keeper answered. The monsters are filing complaints.", KSU_GOLD),
-            Ending::Survivor => ("YOU ESCAPED THE CRYPT", "A few traps bit, but you walked out knowing their tricks.", SAFE),
-            Ending::Overwhelmed => ("OVERWHELMED (BUT WISER)", "The crypt got the better of you this time. The traps don't change; you can.", RISKY),
+            Ending::CryptKeeper => (
+                "CRYPT KEEPER",
+                "Every trap spotted, every Keeper answered. The monsters are filing complaints.",
+                KSU_GOLD,
+            ),
+            Ending::Survivor => (
+                "YOU ESCAPED THE CRYPT",
+                "A few traps bit, but you walked out knowing their tricks.",
+                SAFE,
+            ),
+            Ending::Overwhelmed => (
+                "OVERWHELMED (BUT WISER)",
+                "The crypt got the better of you this time. The traps don't change; you can.",
+                RISKY,
+            ),
         };
         shadow_centered(title, VW * 0.5, 90.0, 64.0, col);
         centered(sub, VW * 0.5, 130.0, 26.0, PAPER);
         let s = self.run.stats;
         let (safe, n) = (self.run.safe_choices(), self.run.history.len());
-        let k = key(&[s.health as usize, s.focus as usize, s.knowledge as usize, safe, n]);
+        let k = key(&[
+            s.health as usize,
+            s.focus as usize,
+            s.knowledge as usize,
+            safe,
+            n,
+        ]);
         let t = self.txt.ending_stats.get(k, |b| {
             let _ = write!(
                 b,
@@ -3043,14 +4775,26 @@ impl App {
         });
         centered(t, VW * 0.5, 166.0, 24.0, KSU_GOLD);
         // out of the Keepers actually reached (Run::keeper_tally): an early death never reads "0/10"
-        let (kc, kn, wb, kills) = (self.run.keepers_correct(), self.run.keepers.len(), self.run.wardens_beaten(), self.kills as usize);
+        let (kc, kn, wb, kills) = (
+            self.run.keepers_correct(),
+            self.run.keepers.len(),
+            self.run.wardens_beaten(),
+            self.kills as usize,
+        );
         let run = &self.run;
-        let t = self.txt.ending_keepers.get(key(&[kc, kn, wb, kills, run.room, run.keepers_defeated as usize]), |b| {
-            let _ = write!(b, "{}   -   Wardens beaten {wb}   -   Monsters defeated {kills}", run.keeper_tally());
-            if run.keepers_defeated > 0 {
-                let _ = write!(b, "   -   Keepers defeated {}", run.keepers_defeated);
-            }
-        });
+        let t = self.txt.ending_keepers.get(
+            key(&[kc, kn, wb, kills, run.room, run.keepers_defeated as usize]),
+            |b| {
+                let _ = write!(
+                    b,
+                    "{}   -   Wardens beaten {wb}   -   Monsters defeated {kills}",
+                    run.keeper_tally()
+                );
+                if run.keepers_defeated > 0 {
+                    let _ = write!(b, "   -   Keepers defeated {}", run.keepers_defeated);
+                }
+            },
+        );
         centered(t, VW * 0.5, 192.0, 20.0, DIM);
         panel(40.0, 204.0, VW - 80.0, 432.0, KSU_GOLD);
         // two tabs: Hoot's study guide (the debrief) and the field notes
@@ -3077,15 +4821,463 @@ impl App {
         } else {
             self.draw_field_notes();
         }
-        centered("Can you name one warning sign from the crypt? That's the whole trick.", VW * 0.5, 666.0, 24.0, PAPER);
+        centered(
+            "Can you name one warning sign from the crypt? That's the whole trick.",
+            VW * 0.5,
+            666.0,
+            24.0,
+            PAPER,
+        );
         let r = Rect::new(VW * 0.5 - 150.0, 680.0, 300.0, 34.0);
-        centered("[Enter] Play again", VW * 0.5, 704.0, 26.0, if r.contains(inp.mouse) { WHITE } else { KSU_GOLD });
+        centered(
+            "[Enter] Play again",
+            VW * 0.5,
+            704.0,
+            26.0,
+            if r.contains(inp.mouse) {
+                WHITE
+            } else {
+                KSU_GOLD
+            },
+        );
         // docs/FLOWCHART.md: EndWin/EndLose --> Title ("play again"); Enter on the title starts the next run
         if inp.confirm || inp.back || (inp.click && r.contains(inp.mouse)) {
-            self.screen = Screen::Title;
+            self.back_to_title();
+        }
+    }
+
+    fn menu_action(&mut self, item: &str) {
+        match item {
+            "ENTER THE CRYPT" => self.start_run(),
+            "DAILY CRYPT" => self.begin_daily(),
+            "TODAY'S BOARD" => {
+                self.title_view = TitleView::Board;
+                self.daily.board_scroll = 0;
+                self.open_board();
+                self.sfx(Sfx::Click);
+            }
+            "OPTIONS" => {
+                self.title_view = TitleView::Options;
+                self.settings_sel = 0;
+                self.sfx(Sfx::Click);
+            }
+            "HOW TO PLAY" => {
+                self.title_view = TitleView::HowTo;
+                self.sfx(Sfx::Click);
+            }
+            _ => self.quit = true,
+        }
+    }
+
+    fn draw_daily_wait(&self) {
+        let (w, h) = art::canvas();
+        panel(w * 0.5 - 220.0, h * 0.5 - 70.0, 440.0, 140.0, KSU_GOLD);
+        centered(
+            "OPENING TODAY'S CRYPT",
+            w * 0.5,
+            h * 0.5 - 16.0,
+            26.0,
+            KSU_GOLD,
+        );
+        centered(
+            "Same floors for everyone. Scripted lines only.",
+            w * 0.5,
+            h * 0.5 + 24.0,
+            18.0,
+            PAPER,
+        );
+    }
+
+    fn title_phone(&mut self, inp: Input) {
+        let (w, h) = art::canvas();
+        draw_rectangle(0.0, 0.0, w, h, Color::from_rgba(8, 6, 12, 255));
+        for (i, x) in [70.0, w - 70.0].iter().enumerate() {
+            candle(*x, 48.0, self.t, i as f32 * 1.7);
+        }
+        shadow_centered("CAMPUS CRYPT", w * 0.5, 110.0, 48.0, KSU_GOLD);
+        centered(
+            "Scams, deadlines, split-second choices.",
+            w * 0.5,
+            150.0,
+            18.0,
+            PAPER,
+        );
+        match self.title_view {
+            TitleView::Main => {
+                if self.daily.waiting {
+                    self.draw_daily_wait();
+                } else {
+                    self.phone_menu(&inp);
+                }
+            }
+            TitleView::Options => {
+                panel(12.0, 180.0, w - 24.0, h - 280.0, KSU_GOLD);
+                let (_, back) = self.options_panel(&inp, 24.0, 200.0, w - 48.0, true);
+                if back || inp.back {
+                    self.title_view = TitleView::Main;
+                    self.sfx(Sfx::Click);
+                }
+            }
+            TitleView::HowTo => self.phone_howto(&inp),
+            TitleView::Board => self.draw_board(&inp, true),
+        }
+        let ver = concat!("v", env!("CARGO_PKG_VERSION"));
+        draw_text(ver, 12.0, h - 16.0, 16.0, DIM);
+    }
+
+    fn phone_menu(&mut self, inp: &Input) {
+        let items = MENU_ITEMS;
+        let n = items.len();
+        if inp.up {
+            self.menu_sel = (self.menu_sel + n - 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        if inp.down {
+            self.menu_sel = (self.menu_sel + 1) % n;
+            self.sfx(Sfx::Click);
+        }
+        let (w, _) = art::canvas();
+        let y0 = 200.0;
+        let step = 78.0;
+        let mut chosen = None;
+        for (i, label) in items.iter().enumerate() {
+            let y = y0 + i as f32 * step;
+            let hit = Rect::new(24.0, y, w - 48.0, 68.0);
+            if inp.mouse_moved && hit.contains(inp.mouse) {
+                self.menu_sel = i;
+            }
+            let on = self.menu_sel == i;
+            panel(hit.x, hit.y, hit.w, hit.h, if on { KSU_GOLD } else { DIM });
+            centered(
+                label,
+                w * 0.5,
+                y + 44.0,
+                26.0,
+                if on { KSU_GOLD } else { PAPER },
+            );
+            if (inp.click && hit.contains(inp.mouse)) || (on && inp.confirm) {
+                chosen = Some(i);
+            }
+        }
+        if let Some(i) = chosen {
+            self.menu_action(items[i]);
+        }
+    }
+
+    fn phone_howto(&mut self, inp: &Input) {
+        let (w, h) = art::canvas();
+        panel(16.0, 180.0, w - 32.0, h - 250.0, KSU_GOLD);
+        centered("HOW TO PLAY", w * 0.5, 214.0, 28.0, KSU_GOLD);
+        let lines = [
+            "Joystick on the left, FIRE / ROLL / TALK on the right.",
+            "Talk to the floor's character, then pick a choice.",
+            "The Floor Keeper checks what you learned.",
+            "Daily Crypt is the same crypt for every player.",
+            "Your share card has no spoilers. The board is optional.",
+        ];
+        let mut y = 260.0;
+        for line in lines {
+            y = text_block(line, 32.0, y, 20.0, w - 64.0, PAPER) + 16.0;
+        }
+        centered("Tap or Esc: back", w * 0.5, h - 80.0, 18.0, DIM);
+        if inp.back || inp.confirm || inp.click {
             self.title_view = TitleView::Main;
-            self.menu_sel = 0;
-            self.hw.send_event(HwEvent::Menu);
+            self.sfx(Sfx::Click);
+        }
+    }
+
+    fn draw_glyph_row(&self, glyphs: &str, y: f32) {
+        let n = glyphs.chars().count().max(1) as f32;
+        let w = art::vw();
+        let size = ((w - 32.0) / n - 3.0).clamp(8.0, 26.0);
+        let total = n * (size + 3.0) - 3.0;
+        let mut x = (w - total) * 0.5;
+        for c in glyphs.chars() {
+            let col = match c {
+                'C' => SAFE,
+                'M' => Color::new(0.93, 0.76, 0.18, 1.0),
+                'X' => RISKY,
+                _ => Color::new(0.16, 0.14, 0.18, 1.0),
+            };
+            draw_rectangle(x, y, size, size, col);
+            draw_rectangle_lines(x, y, size, size, 1.0, Color::new(1.0, 1.0, 1.0, 0.25));
+            x += size + 3.0;
+        }
+    }
+
+    fn daily_ending(&mut self, inp: Input) {
+        if self.title_view == TitleView::Board {
+            self.draw_board(&inp, false);
+            return;
+        }
+        let (w, h) = art::canvas();
+        draw_rectangle(0.0, 0.0, w, h, Color::from_rgba(8, 6, 12, 255));
+        let (title, col) = match self.run.ending() {
+            Ending::CryptKeeper => ("CRYPT KEEPER", KSU_GOLD),
+            Ending::Survivor => ("YOU ESCAPED", SAFE),
+            Ending::Overwhelmed => ("OVERWHELMED", RISKY),
+        };
+        let title_size = if art::portrait() { 36.0 } else { 54.0 };
+        shadow_centered(
+            title,
+            w * 0.5,
+            if art::portrait() { 78.0 } else { 86.0 },
+            title_size,
+            col,
+        );
+        centered(
+            "DAILY CRYPT  ·  scripted lines",
+            w * 0.5,
+            if art::portrait() { 112.0 } else { 124.0 },
+            20.0,
+            DIM,
+        );
+        centered(
+            &self.daily.date,
+            w * 0.5,
+            if art::portrait() { 148.0 } else { 160.0 },
+            28.0,
+            KSU_GOLD,
+        );
+        let stats = format!(
+            "{}/{} floors    {}",
+            self.daily.floors_reached,
+            self.daily.floor_count,
+            daily::format_time(self.daily.time_ms)
+        );
+        centered(
+            &stats,
+            w * 0.5,
+            if art::portrait() { 186.0 } else { 198.0 },
+            24.0,
+            PAPER,
+        );
+        self.draw_glyph_row(
+            &self.daily.glyphs,
+            if art::portrait() { 210.0 } else { 224.0 },
+        );
+        let link_y = if art::portrait() { 260.0 } else { 280.0 };
+        text_block(
+            &daily::play_link(&self.daily.date),
+            24.0,
+            link_y,
+            16.0,
+            w - 48.0,
+            DIM,
+        );
+        if !self.daily.notice.is_empty() {
+            text_block(
+                &self.daily.notice,
+                24.0,
+                link_y + 48.0,
+                18.0,
+                w - 48.0,
+                PAPER,
+            );
+        } else if self.daily.posting {
+            centered("Posting your run...", w * 0.5, link_y + 64.0, 18.0, DIM);
+        }
+        let naming = self.daily.need_name;
+        #[cfg(not(target_arch = "wasm32"))]
+        if naming {
+            self.native_name(inp);
+        }
+        #[cfg(target_arch = "wasm32")]
+        if self.daily.need_name {
+            let msg = if self.daily.name_error.is_empty() {
+                "Type a nickname in the box to join the board."
+            } else {
+                self.daily.name_error.as_str()
+            };
+            text_block(msg, 24.0, link_y + 90.0, 18.0, w - 48.0, KSU_GOLD);
+        }
+        let copy_label = if self.daily.copied {
+            "COPIED"
+        } else {
+            "COPY CARD"
+        };
+        let yb = h - if art::portrait() { 210.0 } else { 80.0 };
+        let bw = (w - 48.0) / 3.0;
+        let labels = [copy_label, "BOARD", "TITLE"];
+        let mut hit = None;
+        for (i, label) in labels.iter().enumerate() {
+            let x = 16.0 + i as f32 * (bw + 8.0);
+            let r = Rect::new(x, yb, bw - 8.0, 52.0);
+            let on = r.contains(inp.mouse);
+            panel(r.x, r.y, r.w, r.h, if on { WHITE } else { KSU_GOLD });
+            centered(label, r.x + r.w * 0.5, r.y + 34.0, 20.0, KSU_GOLD);
+            if inp.click && on {
+                hit = Some(i);
+            }
+        }
+        if inp.confirm && !naming {
+            hit = Some(2);
+        }
+        match hit {
+            Some(0) => self.copy_share(),
+            Some(1) => {
+                self.title_view = TitleView::Board;
+                self.daily.board_scroll = 0;
+                self.open_board();
+                self.sfx(Sfx::Click);
+            }
+            Some(2) => self.back_to_title(),
+            _ => {}
+        }
+    }
+
+    /// Nickname and club, native only. The web build uses the page's text box.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn native_name(&mut self, inp: Input) {
+        let (w, _) = art::canvas();
+        let y = if art::portrait() { 340.0 } else { 360.0 };
+        panel(24.0, y, w - 48.0, 150.0, KSU_GOLD);
+        let nick_on = self.daily.name_field == 0;
+        draw_text(
+            "NICKNAME",
+            40.0,
+            y + 28.0,
+            16.0,
+            if nick_on { KSU_GOLD } else { DIM },
+        );
+        draw_text(
+            if self.daily.nickname.is_empty() {
+                "_"
+            } else {
+                self.daily.nickname.as_str()
+            },
+            160.0,
+            y + 28.0,
+            20.0,
+            PAPER,
+        );
+        draw_text(
+            "CLUB",
+            40.0,
+            y + 64.0,
+            16.0,
+            if nick_on { DIM } else { KSU_GOLD },
+        );
+        let club = if self.daily.club.is_empty() {
+            "(none)"
+        } else {
+            self.daily.club.as_str()
+        };
+        draw_text(club, 160.0, y + 64.0, 20.0, PAPER);
+        let err = if self.daily.name_error.is_empty() {
+            "Up/Down switches. Enter posts the run. Club can be blank."
+        } else {
+            self.daily.name_error.as_str()
+        };
+        text_block(
+            err,
+            40.0,
+            y + 96.0,
+            16.0,
+            w - 80.0,
+            if self.daily.name_error.is_empty() {
+                DIM
+            } else {
+                RISKY
+            },
+        );
+        if inp.up || inp.down {
+            self.daily.name_field = 1 - self.daily.name_field;
+        }
+        let max = if nick_on { 16 } else { 12 };
+        let field = if nick_on {
+            &mut self.daily.nickname
+        } else {
+            &mut self.daily.club
+        };
+        while let Some(c) = get_char_pressed() {
+            if !c.is_control() && c.is_ascii() && field.chars().count() < max {
+                field.push(c);
+            }
+        }
+        if is_key_pressed(KeyCode::Backspace) {
+            let field = if self.daily.name_field == 0 {
+                &mut self.daily.nickname
+            } else {
+                &mut self.daily.club
+            };
+            field.pop();
+        }
+        if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::KpEnter) {
+            let nick = self.daily.nickname.clone();
+            let club = self.daily.club.clone();
+            self.accept_name(nick, club);
+        }
+        let _ = inp;
+    }
+
+    fn draw_board(&mut self, inp: &Input, from_title: bool) {
+        let (w, h) = art::canvas();
+        draw_rectangle(0.0, 0.0, w, h, Color::from_rgba(8, 6, 12, 255));
+        centered(
+            "TODAY'S BOARD",
+            w * 0.5,
+            48.0,
+            if art::portrait() { 32.0 } else { 40.0 },
+            KSU_GOLD,
+        );
+        centered(&self.daily.date, w * 0.5, 80.0, 20.0, DIM);
+        if !self.daily.board_note.is_empty() {
+            text_block(&self.daily.board_note, 24.0, 130.0, 22.0, w - 48.0, PAPER);
+        }
+        let rows = self.daily.board.as_ref().map(|b| b.rows.len()).unwrap_or(0);
+        let page = if art::portrait() { 8 } else { 12 };
+        if inp.up {
+            self.daily.board_scroll = self.daily.board_scroll.saturating_sub(1);
+        }
+        if inp.down {
+            self.daily.board_scroll = (self.daily.board_scroll + 1).min(rows.saturating_sub(page));
+        }
+        if let Some(board) = &self.daily.board {
+            let mut y = 110.0;
+            for row in board.rows.iter().skip(self.daily.board_scroll).take(page) {
+                let club = row.club.as_deref().unwrap_or("");
+                let line = format!(
+                    "#{:<2} {:<16} {:>2}/{}  {}",
+                    row.rank,
+                    row.nickname.chars().take(16).collect::<String>(),
+                    row.floors_reached,
+                    row.floor_count,
+                    daily::format_time(row.time_ms)
+                );
+                draw_text(
+                    &line,
+                    20.0,
+                    y,
+                    if art::portrait() { 16.0 } else { 20.0 },
+                    PAPER,
+                );
+                if !club.is_empty() {
+                    let cw = measure_text(club, None, 14, 1.0).width;
+                    draw_text(club, w - 24.0 - cw, y, 14.0, DIM);
+                }
+                y += if art::portrait() { 28.0 } else { 32.0 };
+            }
+            y += 16.0;
+            if !board.clubs.is_empty() {
+                draw_text("CLUBS", 20.0, y, 18.0, KSU_GOLD);
+                y += 26.0;
+                for c in board.clubs.iter().take(6) {
+                    let line = format!(
+                        "{}   {} players   best {}   avg {:.1}",
+                        c.club, c.players, c.best_floors, c.avg_floors
+                    );
+                    y = text_block(&line, 20.0, y, 16.0, w - 40.0, PAPER) + 6.0;
+                }
+            }
+        }
+        let back = Rect::new(w * 0.5 - 80.0, h - 70.0, 160.0, 44.0);
+        panel(back.x, back.y, back.w, back.h, KSU_GOLD);
+        centered("BACK", w * 0.5, h - 40.0, 22.0, KSU_GOLD);
+        if inp.back || inp.confirm || (inp.click && back.contains(inp.mouse)) {
+            self.title_view = TitleView::Main;
+            self.sfx(Sfx::Click);
+            let _ = from_title;
         }
     }
 
@@ -3108,7 +5300,13 @@ impl App {
                 // a quill scratching: three gold dashes that grow
                 for i in 0..3 {
                     let len = 30.0 + 20.0 * ((self.t * 4.0 + i as f32).sin() * 0.5 + 0.5);
-                    draw_rectangle(x, 330.0 + i as f32 * 18.0, len * (i as f32 + 2.0), 6.0, Color::new(1.0, 0.77, 0.16, 0.35));
+                    draw_rectangle(
+                        x,
+                        330.0 + i as f32 * 18.0,
+                        len * (i as f32 + 2.0),
+                        6.0,
+                        Color::new(1.0, 0.77, 0.16, 0.35),
+                    );
                 }
             }
             Some(mut d) => {
@@ -3118,14 +5316,24 @@ impl App {
                 if self.auto.on && !self.debrief_logged {
                     self.debrief_logged = true;
                     println!("[auto] debrief ({}):", source_tag(&d.source, "study guide"));
-                    d.lines.iter().for_each(|l| println!("[auto]   {l} ({} chars)", l.len()));
+                    d.lines
+                        .iter()
+                        .for_each(|l| println!("[auto]   {l} ({} chars)", l.len()));
                 }
                 // every line wraps inside the panel; if they don't all fit at 24px, step the
                 // size down (never drop a line). Picked once: the guide doesn't change.
                 let (top, gap) = (290.0, 10.0);
                 let size = *self.debrief_size.get_or_insert_with(|| {
-                    let items: Vec<Vec<(&str, f32)>> = d.lines.iter().map(|l| vec![(l.as_str(), 0.0)]).collect();
-                    let sizes = [(24.0, 24.0), (22.0, 22.0), (21.0, 21.0), (20.0, 20.0), (18.0, 18.0), (16.0, 16.0)];
+                    let items: Vec<Vec<(&str, f32)>> =
+                        d.lines.iter().map(|l| vec![(l.as_str(), 0.0)]).collect();
+                    let sizes = [
+                        (24.0, 24.0),
+                        (22.0, 22.0),
+                        (21.0, 21.0),
+                        (20.0, 20.0),
+                        (18.0, 18.0),
+                        (16.0, 16.0),
+                    ];
                     fit_sizes(&items, top, DEBRIEF_BOTTOM, w, gap, &sizes).0
                 });
                 let mut y = top;
@@ -3134,7 +5342,13 @@ impl App {
                     y = text_block(l, x, y, size, w, PAPER) + gap;
                 }
                 let tag = source_tag(&d.source, "study guide");
-                draw_text(&tag, VW - 56.0 - measure_text(&tag, None, 16, 1.0).width, 626.0, 16.0, DIM);
+                draw_text(
+                    &tag,
+                    VW - 56.0 - measure_text(&tag, None, 16, 1.0).width,
+                    626.0,
+                    16.0,
+                    DIM,
+                );
             }
         }
     }
@@ -3154,11 +5368,21 @@ impl App {
         let line = |&(i, j): &(usize, usize)| {
             let (e, ch) = (&enc[i], &enc[i].choices[j]);
             let sign = ch.warning_signs.first().map_or("", String::as_str);
-            format!("Floor {}, {}: you picked {}. {} Next time: {}", i + 1, e.character.name, ch.label, sign, ch.safer_next_move)
+            format!(
+                "Floor {}, {}: you picked {}. {} Next time: {}",
+                i + 1,
+                e.character.name,
+                ch.label,
+                sign,
+                ch.safer_next_move
+            )
         };
         let mut lines: Vec<String> = picks.iter().map(line).collect();
         lines.sort_by_key(|l| std::cmp::Reverse(l.len()));
-        let troll = picks.iter().find(|&&(i, j)| enc[i].choices[j].label == "Tap pay link").map(line);
+        let troll = picks
+            .iter()
+            .find(|&&(i, j)| enc[i].choices[j].label == "Tap pay link")
+            .map(line);
         lines.retain(|l| Some(l) != troll.as_ref());
         troll.into_iter().chain(lines).take(5).collect()
     }
@@ -3196,7 +5420,10 @@ impl App {
         let col_w = (VW - 80.0 - 72.0) * 0.5;
         let (top, gap) = if short { (274.0, 8.0) } else { (268.0, 10.0) };
         if self.txt.notes_sizes.0 == 0.0 {
-            let fit = |notes: &[(String, Option<String>, String, Outcome)], w: f32, sizes: &[(f32, f32)], with_spot: bool| {
+            let fit = |notes: &[(String, Option<String>, String, Outcome)],
+                       w: f32,
+                       sizes: &[(f32, f32)],
+                       with_spot: bool| {
                 let items: Vec<Vec<(&str, f32)>> = notes
                     .iter()
                     .map(|(head, spot, next, _)| {
@@ -3211,13 +5438,28 @@ impl App {
                 fit_sizes(&items, top, DEBRIEF_BOTTOM, w, gap, sizes)
             };
             self.txt.notes_sizes = if short {
-                fit(&self.txt.notes, VW - 160.0, &[(24.0, 21.0), (22.0, 20.0), (20.0, 18.0), (18.0, 16.0)], true)
+                fit(
+                    &self.txt.notes,
+                    VW - 160.0,
+                    &[(24.0, 21.0), (22.0, 20.0), (20.0, 18.0), (18.0, 16.0)],
+                    true,
+                )
             } else {
                 // both columns must fit: take the smaller pair of the two
-                let sizes = [(21.0, 18.0), (20.0, 18.0), (20.0, 16.0), (18.0, 16.0), (16.0, 16.0)];
+                let sizes = [
+                    (21.0, 18.0),
+                    (20.0, 18.0),
+                    (20.0, 16.0),
+                    (18.0, 16.0),
+                    (16.0, 16.0),
+                ];
                 let (l, r) = self.txt.notes.split_at(5.min(self.txt.notes.len()));
                 let (a, b) = (fit(l, col_w, &sizes, false), fit(r, col_w, &sizes, false));
-                if a.0 + a.1 <= b.0 + b.1 { a } else { b }
+                if a.0 + a.1 <= b.0 + b.1 {
+                    a
+                } else {
+                    b
+                }
             };
         }
         let (hs, bs) = self.txt.notes_sizes;
@@ -3299,7 +5541,12 @@ impl App {
 
     /// CC_AUTO: print each state change, so a play-test can be read back from the console.
     fn trace(&mut self) {
-        let now = (self.screen, self.run.phase, self.run.room, self.run.bosses_left);
+        let now = (
+            self.screen,
+            self.run.phase,
+            self.run.room,
+            self.run.bosses_left,
+        );
         if self.auto.last == Some(now) {
             return;
         }
@@ -3339,9 +5586,14 @@ impl App {
             (Screen::Title, _) if t > 1.0 => Some("title".to_string()),
             (Screen::Playing, Phase::Explore) => match &self.mini {
                 Some(m) if m.verdict.is_none() && t > 2.6 => Some(format!("f{floor:02}_side_ask")),
-                Some(m) if m.verdict.is_some() && t > 3.1 => Some(format!("f{floor:02}_side_reveal")),
+                Some(m) if m.verdict.is_some() && t > 3.1 => {
+                    Some(format!("f{floor:02}_side_reveal"))
+                }
                 Some(_) => None,
-                None if self.world.prop.is_some_and(|p| !p.done && self.world.player.pos.distance(p.pos) < TALK_RANGE) => {
+                None if self.world.prop.is_some_and(|p| {
+                    !p.done && self.world.player.pos.distance(p.pos) < TALK_RANGE
+                }) =>
+                {
                     Some(format!("f{floor:02}_side_prop"))
                 }
                 None => self
@@ -3350,28 +5602,65 @@ impl App {
                     .filter(|b| b.note.is_some() && b.secs - b.t > 1.0)
                     .map(|_| format!("f{floor:02}_tier_banner")),
             },
-            (Screen::Playing, Phase::Encounter) if self.owl.is_none() && t > 0.8 => Some(format!("f{floor:02}_encounter")),
-            (Screen::Playing, Phase::Encounter) if typed(&self.owl) && self.owl_t > 1.6 => Some(format!("f{floor:02}_owl_hint")),
-            (Screen::Playing, Phase::KeeperQuiz) if self.fight.is_some() => self.fight.as_ref().and_then(|f| match &f.stage {
-                FightStage::Menu if f.spareable() && t > 0.8 => Some("f01_fight_spareable".to_string()),
-                FightStage::Menu if f.tells() == 0 && f.bad == 0 && t > 0.8 => Some("f01_fight_menu".to_string()),
-                FightStage::Talk(_) if f.tells() > 0 && !f.spareable() && t > 0.8 => Some("f01_fight_reveal".to_string()),
-                FightStage::Dodge(d) if d.t > 2.4 => Some(format!("f01_fight_attack_{:?}", d.pattern).to_lowercase()),
-                FightStage::Inspect if t > 0.8 => Some(format!("f{floor:02}_fight_inspect")),
-                FightStage::Menu if f.hoot.is_some() && f.tells() == 1 && t > 0.8 => Some(format!("f{floor:02}_fight_hoot")),
-                _ => None,
-            }),
-            (Screen::Playing, Phase::KeeperQuiz) if typed(&self.taunt) && t > 2.1 => Some(format!("f{floor:02}_keeper_taunt")),
-            (Screen::Playing, Phase::KeeperVerdict) if self.risk.is_some() => self.risk.as_ref().and_then(|r| match r.outcome {
-                None if r.t > 4.0 && r.flag.is_some() => Some(format!("f{floor:02}_risk_round")),
-                Some(_) if r.can_leave() => Some(format!("f{floor:02}_risk_result")),
-                _ => None,
-            }),
-            (Screen::Playing, Phase::KeeperVerdict) if self.verdict_ready && t > 1.0 => Some(format!("f{floor:02}_keeper_verdict")),
-            (Screen::Playing, Phase::BossFight) => self.arena.as_ref().and_then(|a| a.boss_shot()).map(|s| format!("f{floor:02}_{s}")),
+            (Screen::Playing, Phase::Encounter) if self.owl.is_none() && t > 0.8 => {
+                Some(format!("f{floor:02}_encounter"))
+            }
+            (Screen::Playing, Phase::Encounter) if typed(&self.owl) && self.owl_t > 1.6 => {
+                Some(format!("f{floor:02}_owl_hint"))
+            }
+            (Screen::Playing, Phase::KeeperQuiz) if self.fight.is_some() => {
+                self.fight.as_ref().and_then(|f| match &f.stage {
+                    FightStage::Menu if f.spareable() && t > 0.8 => {
+                        Some("f01_fight_spareable".to_string())
+                    }
+                    FightStage::Menu if f.tells() == 0 && f.bad == 0 && t > 0.8 => {
+                        Some("f01_fight_menu".to_string())
+                    }
+                    FightStage::Talk(_) if f.tells() > 0 && !f.spareable() && t > 0.8 => {
+                        Some("f01_fight_reveal".to_string())
+                    }
+                    FightStage::Dodge(d) if d.t > 2.4 => {
+                        Some(format!("f01_fight_attack_{:?}", d.pattern).to_lowercase())
+                    }
+                    FightStage::Inspect if t > 0.8 => Some(format!("f{floor:02}_fight_inspect")),
+                    FightStage::Menu if f.hoot.is_some() && f.tells() == 1 && t > 0.8 => {
+                        Some(format!("f{floor:02}_fight_hoot"))
+                    }
+                    _ => None,
+                })
+            }
+            (Screen::Playing, Phase::KeeperQuiz) if typed(&self.taunt) && t > 2.1 => {
+                Some(format!("f{floor:02}_keeper_taunt"))
+            }
+            (Screen::Playing, Phase::KeeperVerdict) if self.risk.is_some() => {
+                self.risk.as_ref().and_then(|r| match r.outcome {
+                    None if r.t > 4.0 && r.flag.is_some() => {
+                        Some(format!("f{floor:02}_risk_round"))
+                    }
+                    Some(_) if r.can_leave() => Some(format!("f{floor:02}_risk_result")),
+                    _ => None,
+                })
+            }
+            (Screen::Playing, Phase::KeeperVerdict) if self.verdict_ready && t > 1.0 => {
+                Some(format!("f{floor:02}_keeper_verdict"))
+            }
+            (Screen::Playing, Phase::BossFight) => self
+                .arena
+                .as_ref()
+                .and_then(|a| a.boss_shot())
+                .map(|s| format!("f{floor:02}_{s}")),
             (Screen::Playing, Phase::Ending) if self.room_fade <= 0.0 => {
-                let ready = self.ai_fx.poll_debrief(&self.loaded.content, get_time()).is_some();
-                if !ready && !self.auto.shots_taken.iter().any(|s| s == "ending_debrief_wait") {
+                let ready = self
+                    .ai_fx
+                    .poll_debrief(&self.loaded.content, get_time())
+                    .is_some();
+                if !ready
+                    && !self
+                        .auto
+                        .shots_taken
+                        .iter()
+                        .any(|s| s == "ending_debrief_wait")
+                {
                     Some("ending_debrief_wait".to_string())
                 } else if ready && t > 1.5 && self.ending_tab == 0 {
                     if self.auto.shots_taken.iter().any(|s| s == "ending_debrief") {
@@ -3420,9 +5709,20 @@ impl App {
                     if answered {
                         inp.confirm = true;
                     } else {
-                        let right = self.auto.mini.get(self.minis_opened - 1).copied().unwrap_or(true);
+                        let right = self
+                            .auto
+                            .mini
+                            .get(self.minis_opened - 1)
+                            .copied()
+                            .unwrap_or(true);
                         let pick = match self.mini.as_ref().map(|m| &m.kind) {
-                            Some(MiniKind::Spot(r)) => if right { r.fake_index() } else { 1 - r.fake_index() },
+                            Some(MiniKind::Spot(r)) => {
+                                if right {
+                                    r.fake_index()
+                                } else {
+                                    1 - r.fake_index()
+                                }
+                            }
                             _ => usize::from(!right), // 0 = report (right), 1 = trust
                         };
                         inp.digit = Some(pick);
@@ -3464,7 +5764,8 @@ impl App {
                     // dodge on the Mimic's turns (CC_FIGHT_SEEK=1: fly into attacks instead)
                     let right = self.auto.keeper.get(self.run.room).copied().unwrap_or(true);
                     if let Some(f) = &self.fight {
-                        if matches!(f.stage, FightStage::Menu) && f.tells() == 1 && f.hoot.is_none() {
+                        if matches!(f.stage, FightStage::Menu) && f.tells() == 1 && f.hoot.is_none()
+                        {
                             // ask Hoot once, mid-investigation (screenshots, play-checks)
                             self.touch_hoot = true;
                         }
@@ -3512,10 +5813,18 @@ impl App {
             (Screen::Playing, Phase::KeeperQuiz) => {
                 if let Some(q) = &self.quiz {
                     let right = self.auto.keeper.get(self.run.room).copied().unwrap_or(true);
-                    inp.digit = Some(if right { q.correct } else { (q.correct + 1) % q.options.len() });
+                    inp.digit = Some(if right {
+                        q.correct
+                    } else {
+                        (q.correct + 1) % q.options.len()
+                    });
                 }
             }
-            (Screen::Playing, Phase::KeeperVerdict) if self.auto.risk && self.verdict_ready && self.run.keepers.last().is_some_and(|k| k.correct) => {
+            (Screen::Playing, Phase::KeeperVerdict)
+                if self.auto.risk
+                    && self.verdict_ready
+                    && self.run.keepers.last().is_some_and(|k| k.correct) =>
+            {
                 inp.digit = Some(1);
             }
             _ => inp.confirm = true,
@@ -3546,16 +5855,36 @@ fn automation() -> Auto {
         let env = |k: &str| std::env::var(k).ok();
         Auto {
             on: env("CC_AUTO").as_deref() == Some("1"),
-            picks: env("CC_PICKS").map(|s| s.split(',').filter_map(|x| x.trim().parse().ok()).collect()).unwrap_or_default(),
-            shots: env("CC_SHOTS").map(|s| s.split(',').filter_map(|x| x.trim().parse().ok()).collect()).unwrap_or_default(),
+            picks: env("CC_PICKS")
+                .map(|s| s.split(',').filter_map(|x| x.trim().parse().ok()).collect())
+                .unwrap_or_default(),
+            shots: env("CC_SHOTS")
+                .map(|s| s.split(',').filter_map(|x| x.trim().parse().ok()).collect())
+                .unwrap_or_default(),
             prefix: env("CC_SHOT_PREFIX").unwrap_or_else(|| "shot_".into()),
-            exit_at: env("CC_EXIT").and_then(|s| s.parse().ok()).unwrap_or(f32::INFINITY),
+            exit_at: env("CC_EXIT")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(f32::INFINITY),
             timer: 0.0,
-            keeper: env("CC_KEEPER").map(|s| s.split(',').map(|x| !x.trim().eq_ignore_ascii_case("w")).collect()).unwrap_or_default(),
+            keeper: env("CC_KEEPER")
+                .map(|s| {
+                    s.split(',')
+                        .map(|x| !x.trim().eq_ignore_ascii_case("w"))
+                        .collect()
+                })
+                .unwrap_or_default(),
             god: env("CC_GOD").as_deref() == Some("1"),
             start_floor: env("CC_FLOOR").and_then(|s| s.parse().ok()).unwrap_or(0),
-            mini: env("CC_MINI").map(|s| s.split(',').map(|x| !x.trim().eq_ignore_ascii_case("w")).collect()).unwrap_or_default(),
-            enc_wait: env("CC_ENC_WAIT").and_then(|s| s.parse().ok()).unwrap_or(2.0),
+            mini: env("CC_MINI")
+                .map(|s| {
+                    s.split(',')
+                        .map(|x| !x.trim().eq_ignore_ascii_case("w"))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            enc_wait: env("CC_ENC_WAIT")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(2.0),
             fight_seek: env("CC_FIGHT_SEEK").as_deref() == Some("1"),
             long_debrief: env("CC_DEBRIEF_LONG").as_deref() == Some("1"),
             shot_events: env("CC_SHOT_EVENTS").as_deref() == Some("1"),
@@ -3631,7 +5960,10 @@ async fn main() {
     let seed = (macroquad::miniquad::date::now() * 1000.0) as u64;
     // CC_SEED=n: the same floors every run (screenshots, play-tests)
     #[cfg(not(target_arch = "wasm32"))]
-    let seed = std::env::var("CC_SEED").ok().and_then(|s| s.parse().ok()).unwrap_or(seed);
+    let seed = std::env::var("CC_SEED")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(seed);
     rand::srand(seed);
     clear_background(Color::from_rgba(8, 6, 12, 255));
     draw_text("Loading...", 40.0, 60.0, 32.0, WHITE);
@@ -3690,12 +6022,18 @@ mod tests {
                 match side {
                     Some(Side::Scam(slot)) => {
                         assert_eq!(SCAM_FLOORS[*slot], f);
-                        assert!(*slot < scamgen::POOL_SIZE, "phones use the prefetched slots");
+                        assert!(
+                            *slot < scamgen::POOL_SIZE,
+                            "phones use the prefetched slots"
+                        );
                         templates.push(scamgen::plan(&data, seed, *slot).template);
                     }
                     Some(Side::Spot(slot)) => {
                         assert!(SPOT_FLOORS.contains(&f));
-                        assert!(*slot >= scamgen::POOL_SIZE, "boards never reuse a prefetched slot");
+                        assert!(
+                            *slot >= scamgen::POOL_SIZE,
+                            "boards never reuse a prefetched slot"
+                        );
                         templates.push(scamgen::plan(&data, seed, *slot).template);
                     }
                     None => assert!(!SCAM_FLOORS.contains(&f), "every phone floor has a phone"),
@@ -3706,9 +6044,14 @@ mod tests {
             templates.dedup();
             assert_eq!(templates.len(), n, "seed {seed}: a template repeats");
             // as many boards as there are unused templates (9 templates today: all 3 boards)
-            assert_eq!(n, (SCAM_FLOORS.len() + SPOT_FLOORS.len()).min(data.scam_templates.len()));
+            assert_eq!(
+                n,
+                (SCAM_FLOORS.len() + SPOT_FLOORS.len()).min(data.scam_templates.len())
+            );
         }
         // a short run only plans the floors it has
-        assert!(plan_sides(&data, 1, 2).iter().all(|s| !matches!(s, Some(Side::Spot(_)))));
+        assert!(plan_sides(&data, 1, 2)
+            .iter()
+            .all(|s| !matches!(s, Some(Side::Spot(_)))));
     }
 }

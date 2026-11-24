@@ -814,6 +814,10 @@ pub const BOX_Y: f32 = 300.0;
 impl Fight {
     /// The whole fight screen (below the HUD).
     pub fn draw(&self, t: f32) {
+        if crate::art::portrait() {
+            draw_phone(self, t);
+            return;
+        }
         let gold = self.spareable();
         // what the trap sent (top left): a mini inbox or a notification
         self.case.draw_preview(40.0, 68.0, 480.0, 218.0);
@@ -934,40 +938,103 @@ impl Fight {
     }
 }
 
+fn draw_phone(fight: &Fight, t: f32) {
+    let w = crate::art::vw();
+    let gold = fight.spareable();
+    let name = fight.case.name.to_uppercase();
+    draw_text(&name, 16.0, 80.0, 22.0, if gold { KSU_GOLD } else { PAPER });
+    for i in 0..fight.needed() {
+        let on = i < fight.tells();
+        draw_rectangle(16.0 + i as f32 * 22.0, 92.0, 16.0, 14.0, if on { RISKY } else { Color::new(0.3, 0.12, 0.12, 1.0) });
+    }
+    for i in 0..BOX_HEARTS {
+        heart(w - 88.0 + i as f32 * 26.0, 70.0, 2.6, i < fight.hearts);
+    }
+    let mut y = text_block(&fight.said, 16.0, 128.0, 18.0, w - 32.0, PAPER) + 8.0;
+    match &fight.stage {
+        Stage::Acts => {
+            for (i, a) in fight.act_order.iter().enumerate() {
+                let on = i == fight.act_sel;
+                let yy = y + i as f32 * 40.0;
+                if on {
+                    draw_rectangle(12.0, yy - 22.0, w - 24.0, 36.0, Color::new(0.3, 0.22, 0.04, 0.95));
+                }
+                let done = matches!(a, Act::Check(f) if fight.checked(*f));
+                let c = if done { DIM } else if on { KSU_GOLD } else { PAPER };
+                draw_text(format!("{} {}", i + 1, fight.case.act_label(*a)), 20.0, yy, 18.0, c);
+            }
+        }
+        Stage::Inspect => {
+            fight.case.draw_full(12.0, 120.0, w - 24.0, crate::art::vh() - 360.0, fight.found, fight.checked);
+        }
+        Stage::Dodge(d) => {
+            let scale = (w - 16.0) / BOX_W;
+            let o = vec2(8.0, y);
+            draw_rectangle(o.x, o.y, BOX_W * scale, BOX_H * scale, BLACK);
+            draw_pattern_scaled(d, o, scale);
+            let blink = fight.invuln > 0.0 && (t * 18.0).sin() < 0.0;
+            if !blink {
+                draw_sprite_centered(&BOX_OWL, o.x + fight.owl.x * scale, o.y + fight.owl.y * scale, 1.6 * scale, fight.facing_left, WHITE);
+            }
+            draw_rectangle_lines(o.x - 2.0, o.y - 2.0, BOX_W * scale + 4.0, BOX_H * scale + 4.0, 3.0, KSU_GOLD);
+        }
+        _ => {
+            y = text_block(&fight.flavor, 16.0, y, 16.0, w - 32.0, WHITE) + 10.0;
+            for (i, c) in COMMANDS.iter().enumerate() {
+                let (col, row) = (i % 2, i / 2);
+                let bw = (w - 36.0) * 0.5;
+                let x = 12.0 + col as f32 * (bw + 12.0);
+                let yy = y + row as f32 * 68.0;
+                let on = matches!(fight.stage, Stage::Menu) && i == fight.sel;
+                let spare_gold = *c == Command::Spare && gold;
+                draw_rectangle(x, yy, bw, 58.0, if on { Color::new(0.3, 0.22, 0.04, 0.95) } else { Color::new(0.08, 0.06, 0.1, 0.95) });
+                draw_rectangle_lines(x, yy, bw, 58.0, if on { 3.0 } else { 2.0 }, if on || spare_gold { KSU_GOLD } else { DIM });
+                centered(&format!("{} {}", i + 1, c.label()), x + bw * 0.5, yy + 38.0, 22.0, if on || spare_gold { KSU_GOLD } else { PAPER });
+            }
+        }
+    }
+}
+
 pub fn draw_pattern(d: &Dodge, o: Vec2) {
+    draw_pattern_scaled(d, o, 1.0);
+}
+
+pub fn draw_pattern_scaled(d: &Dodge, o: Vec2, scale: f32) {
     {
+        let at = |p: Vec2| o + p * scale;
         if d.pattern == Pattern::Clock && !d.reduced {
             // the 5:00 PM dial behind the hand
-            let p = o + HAND_PIVOT;
+            let p = at(HAND_PIVOT);
             // the lower half only: a full circle would poke out of the box into the speech bubble
-            draw_arc(p.x, p.y, 32, 32.0, 0.0, 2.0, 180.0, Color::new(1.0, 0.77, 0.16, 0.5));
+            draw_arc(p.x, p.y, 32, 32.0 * scale, 0.0, 2.0 * scale, 180.0, Color::new(1.0, 0.77, 0.16, 0.5));
             let l = CLOCK_LABEL;
-            draw_rectangle_lines(o.x + l.x, o.y + l.y, l.w, l.h, 1.0, Color::new(1.0, 0.77, 0.16, 0.5));
-            centered("DUE 5:00 PM", o.x + l.x + l.w * 0.5, o.y + l.y + 17.0, 16.0, KSU_GOLD);
-            let tip = o + d.hand_tip();
-            draw_line(p.x, p.y, tip.x, tip.y, 6.0, KSU_GOLD);
-            draw_line(p.x, p.y, tip.x, tip.y, 2.0, WHITE);
-            draw_circle(p.x, p.y, 7.0, KSU_GOLD);
+            let origin = at(vec2(l.x, l.y));
+            draw_rectangle_lines(origin.x, origin.y, l.w * scale, l.h * scale, 1.0, Color::new(1.0, 0.77, 0.16, 0.5));
+            centered("DUE 5:00 PM", origin.x + l.w * scale * 0.5, origin.y + 17.0 * scale, 16.0 * scale, KSU_GOLD);
+            let tip = at(d.hand_tip());
+            draw_line(p.x, p.y, tip.x, tip.y, 6.0 * scale, KSU_GOLD);
+            draw_line(p.x, p.y, tip.x, tip.y, 2.0 * scale, WHITE);
+            draw_circle(p.x, p.y, 7.0 * scale, KSU_GOLD);
         }
         for h in &d.hazards {
-            let (x, y) = (o.x + h.pos.x, o.y + h.pos.y);
+            let c = at(h.pos);
             match h.kind {
                 HazardKind::Envelope => {
-                    draw_sprite_centered(&ENVELOPE, x, y, 1.6, false, WHITE);
-                    draw_text("URGENT", x - 16.0, y - 12.0, 11.0, RISKY);
+                    draw_sprite_centered(&ENVELOPE, c.x, c.y, 1.6 * scale, false, WHITE);
+                    draw_text("URGENT", c.x - 16.0 * scale, c.y - 12.0 * scale, 11.0 * scale, RISKY);
                 }
-                HazardKind::At => draw_sprite_centered(&AT_SIGN, x, y, 1.5, false, WHITE),
+                HazardKind::At => draw_sprite_centered(&AT_SIGN, c.x, c.y, 1.5 * scale, false, WHITE),
                 HazardKind::Numeral => {
-                    let s = if (h.pos.x as i32) % 2 == 0 { "5" } else { "00" };
-                    draw_text(s, x - 8.0, y + 8.0, 24.0, KSU_GOLD);
+                    let label = if (h.pos.x as i32) % 2 == 0 { "5" } else { "00" };
+                    draw_text(label, c.x - 8.0 * scale, c.y + 8.0 * scale, 24.0 * scale, KSU_GOLD);
                 }
             }
         }
         if let Some(b) = d.button {
-            let (x, y) = (o.x + b.x - BUTTON_W * 0.5, o.y + b.y - BUTTON_H * 0.5);
-            draw_rectangle(x, y, BUTTON_W, BUTTON_H, Color::new(0.2, 0.45, 0.95, 1.0));
-            draw_rectangle_lines(x, y, BUTTON_W, BUTTON_H, 2.0, WHITE);
-            centered("CONFIRM LOGIN", x + BUTTON_W * 0.5, y + 20.0, 16.0, WHITE);
+            let top = at(b - vec2(BUTTON_W, BUTTON_H) * 0.5);
+            draw_rectangle(top.x, top.y, BUTTON_W * scale, BUTTON_H * scale, Color::new(0.2, 0.45, 0.95, 1.0));
+            draw_rectangle_lines(top.x, top.y, BUTTON_W * scale, BUTTON_H * scale, 2.0, WHITE);
+            centered("CONFIRM LOGIN", top.x + BUTTON_W * scale * 0.5, top.y + 20.0 * scale, 16.0 * scale, WHITE);
         }
     }
 }

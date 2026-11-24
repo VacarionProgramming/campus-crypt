@@ -331,6 +331,7 @@ pub fn build(theme: &Theme, raw: &str, rotation: usize) -> Result<Encounter, Str
         choices,
         keeper: None,
         keeper_box: None,
+        source: "ai".into(),
     })
 }
 

@@ -165,6 +165,35 @@ pub fn measure_text(text: impl AsRef<str>, font: Option<&Font>, font_size: u16, 
 /// camera letterboxes it to the real window.
 pub const VW: f32 = 1280.0;
 pub const VH: f32 = 720.0;
+/// Phone portrait canvas. Narrow enough that 20px text stays readable on a 390px-wide screen.
+pub const PHONE_W: f32 = 540.0;
+pub const PHONE_H: f32 = 960.0;
+
+thread_local! {
+    static CANVAS: Cell<(f32, f32)> = const { Cell::new((VW, VH)) };
+}
+
+/// The canvas the current frame is drawing into. Tests and the desktop stay on 1280x720.
+pub fn set_canvas(w: f32, h: f32) {
+    CANVAS.with(|c| c.set((w.max(1.0), h.max(1.0))));
+}
+
+pub fn canvas() -> (f32, f32) {
+    CANVAS.with(|c| c.get())
+}
+
+pub fn vw() -> f32 {
+    canvas().0
+}
+
+pub fn vh() -> f32 {
+    canvas().1
+}
+
+pub fn portrait() -> bool {
+    let (w, h) = canvas();
+    h > w * 1.02
+}
 
 pub const INK: Color = Color::new(0.08, 0.06, 0.10, 1.0);
 pub const KSU_GOLD: Color = Color::new(1.0, 0.77, 0.16, 1.0); // KSU-ish gold

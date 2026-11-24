@@ -1,6 +1,6 @@
 [package]
 name = "campus_crypt"
-version = "0.4.5"
+version = "0.5.0-dev"
 edition = "2021"
 description = "Campus Crypt: a pixel-art dungeon crawler of scams, deadlines, and split-second choices"
 
@@ -9,6 +9,8 @@ macroquad = { version = "0.4", default-features = false, features = ["audio"] }
 # encounters.json is parsed with serde (works on native and wasm)
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Daily seed and score checksum. Pure Rust, no OS randomness, fine in wasm.
+sha2 = "0.10"
 
 # Native-only extras:
 #  - serialport: optional USB link to the ELEGOO/Arduino controller (bonus)
